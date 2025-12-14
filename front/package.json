@@ -13,6 +13,7 @@
     "@heroicons/react": "^2.2.0",
     "@maptiler/sdk": "^3.9.0",
     "@mercadopago/sdk-js": "^0.0.3",
+    "@stripe/stripe-js": "^8.5.3",
     "country-state-city": "^3.2.1",
     "flowbite": "^4.0.1",
     "formik": "^2.4.9",
