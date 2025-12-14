@@ -237,32 +237,37 @@ function CartPage() {
     setIsCheckingOut(true);
     try {
       const stripe = await stripePromise;
+      if (!stripe) throw new Error("No se pudo cargar Stripe");
 
-      // Aquí deberías llamar a tu backend para crear un Checkout Session y obtener su ID
-      const response = await fetch("/api/create-stripe-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: items,
-          userId: userData.user.id,
-        }),
-      });
+      // Llamar a la API del backend para crear una sesión de checkout
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/sale-orders/checkout-stripe/${userData.user.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userData.token}`,
+          },
+          body: JSON.stringify({
+            success_url: `${window.location.origin}/checkout/success`,
+            cancel_url: `${window.location.origin}/checkout/failure`,
+          }),
+        }
+      );
 
-      const session = await response.json();
+      const result = await response.json();
 
-      // Redirigir a Stripe Checkout
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (result.error) {
-        toast.error(result.error.message);
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Error al crear la sesión de checkout"
+        );
       }
-    } catch (error) {
+
+      // Redirigir a la URL de checkout
+      window.location.href = result.data.checkoutUrl;
+    } catch (error: any) {
       console.error("Error al procesar el pago con Stripe:", error);
-      toast.error("Error al procesar el pago con Stripe");
+      toast.error(error.message || "Error al procesar el pago con Stripe");
     } finally {
       setIsCheckingOut(false);
     }

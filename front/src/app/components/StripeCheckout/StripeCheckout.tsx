@@ -1,8 +1,7 @@
-// components/StripeCheckout/StripeCheckout.tsx
+"use client";
+
 import { loadStripe } from "@stripe/stripe-js";
 import { useState } from "react";
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
 interface StripeCheckoutProps {
   amount: number;
@@ -10,49 +9,71 @@ interface StripeCheckoutProps {
   onError?: (error: any) => void;
 }
 
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
+);
+
 export default function StripeCheckout({
   amount,
   onSuccess,
   onError,
 }: StripeCheckoutProps) {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
-    setIsProcessing(true);
-
+    setLoading(true);
     try {
       const stripe = await stripePromise;
-      const response = await fetch("/api/stripe/create-checkout-session", {
+      if (!stripe) throw new Error("Stripe no pudo inicializarse");
+
+      // Llamar a tu API para crear una sesión de checkout
+      const response = await fetch("/api/create-stripe-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({
+          amount,
+        }),
       });
 
-      const { sessionId } = await response.json();
+      const data = await response.json();
 
-      const { error } = await stripe!.redirectToCheckout({ sessionId });
+      if (response.ok) {
+        // Redirigir a la página de checkout de Stripe
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: data.id,
+        });
 
-      if (error) {
-        console.error("Stripe error:", error);
-        onError?.(error);
+        if (error) {
+          if (onError) onError(error);
+          console.error("Error en redirectToCheckout:", error);
+        }
+      } else {
+        throw new Error(data.error || "Error al crear la sesión de checkout");
       }
     } catch (error) {
-      console.error("Error during checkout:", error);
-      onError?.(error);
+      if (onError) onError(error);
+      console.error("Error en el checkout de Stripe:", error);
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
     }
   };
 
   return (
     <button
       onClick={handleCheckout}
-      disabled={isProcessing}
-      className="btn-primary"
+      disabled={loading}
+      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:bg-blue-300"
     >
-      {isProcessing ? "Processing..." : `Pay $${amount}`}
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+          Procesando...
+        </div>
+      ) : (
+        "Pagar con Stripe"
+      )}
     </button>
   );
 }
