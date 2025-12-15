@@ -20,7 +20,7 @@ export const AuthContext = createContext<IAuthContextProps>({
     logout: () => { },
     isLoading: true,
     activeTab: 'profile',
-    setActiveTab: () => {}
+    setActiveTab: () => { }
 });
 
 interface AuthProviderProps {
@@ -49,10 +49,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     useEffect(() => {
         const checkSession = async () => {
-            
+
             try {
                 const token = localStorage.getItem('authToken') || '';
-                
+
                 const headers: HeadersInit = {
                     'Content-Type': 'application/json'
                 };
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     headers['Authorization'] = `Bearer ${token}`;
                     console.log('🔑 Enviando token en Authorization header');
                 }
-                
+
                 const res = await fetch(`${API}/auth/me`, {
                     credentials: "include",
                     headers: headers
@@ -69,11 +69,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
                 if (!res.ok) {
                     console.log('❌ No hay sesión activa desde API (status:', res.status, ')');
-                    
+
                     // ⚠️ WORKAROUND TEMPORAL: Si hay token en localStorage, intentar mantener una sesión básica
                     const storedToken = localStorage.getItem('authToken');
                     const storedUser = localStorage.getItem('userData');
-                    
+
                     if (storedToken && storedUser) {
                         console.warn('⚠️ Token expirado pero recuperando sesión desde localStorage');
                         try {
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                             console.error('Error al parsear userData desde localStorage');
                         }
                     }
-                    
+
                     setUserData(null);
                     // localStorage.removeItem('authToken'); // Comentado para debugging
                     console.warn('⚠️ El backend debe extender la expiración del token JWT.');
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 }
 
                 const user = await res.json();
-                
+
                 const formattedUser: IUserSession = {
                     user: {
                         id: user.id,
@@ -117,10 +117,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     },
                     token: token
                 };
-                
+
                 // Guardar datos del usuario en localStorage para recuperación
                 localStorage.setItem('userData', JSON.stringify(formattedUser.user));
-                
+
                 setUserData(formattedUser);
             } catch (err) {
                 setUserData(null);
@@ -129,12 +129,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
         };
 
-        checkSession();      
+        checkSession();
     }, []);
 
     // Log para debug cuando userData cambia
     useEffect(() => {
-        console.log("🔄 userData cambió a:", userData);      
+        console.log("🔄 userData cambió a:", userData);
     }, [userData]);
 
     const logout = async () => {
@@ -147,6 +147,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } finally {
             localStorage.removeItem('authToken');
             setUserData(null);
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('requirePasswordChange');
+            document.cookie = "role=; path=/; max-age=0";
+            document.cookie = "requirePasswordChange=; path=/; max-age=0";
             window.location.href = "/"
         }
     };

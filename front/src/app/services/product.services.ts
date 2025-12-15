@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 // Mapeo de imágenes por categoría para productos sin imagen
-const getCategoryImage = (categoryId: number | string | undefined, name: string) => {
+const getCategoryImage = (categoryId: number | string | undefined, name: string | null) => {
     // Intentar determinar la categoría por el nombre si no hay categoryId
-    const productName = name.toLowerCase();
+    const productName = (name || '').toLowerCase();
     
     if (productName.includes('alimento') || productName.includes('balanceado') || 
         productName.includes('comida') || productName.includes('chow') || 
@@ -76,17 +76,34 @@ export const getAllProducts = async (): Promise<IProduct[]> => {
         // El backend puede devolver {data: [...]} o directamente [...]
         let products = result.data || result;
         
-        // Agregar imágenes a productos que no las tienen
-        products = products.map((product: IProduct) => {
-            if (!product.image) {
-                const defaultImage = getCategoryImage(product.categoryId, product.name);
-                return {
-                    ...product,
-                    image: defaultImage,
-                    images: product.images || [defaultImage]
-                };
+        // Mapear las propiedades del backend al formato que espera el frontend
+        products = products.map((product: any) => {
+            // El backend devuelve:
+            // - imgUrl: imagen principal
+            // - images: array de objetos {id, imageUrl, order}
+            
+            const mainImage = product.imgUrl || product.image;
+            const defaultImage = getCategoryImage(product.categoryId, product.name);
+            
+            // Convertir array de objetos images a array de strings
+            let additionalImages: string[] = [];
+            if (product.images && Array.isArray(product.images)) {
+                additionalImages = product.images
+                    .filter((img: any) => img.imageUrl) // Solo los que tengan imageUrl
+                    .map((img: any) => img.imageUrl); // Extraer solo la URL
             }
-            return product;
+            
+            // Construir el array completo de imágenes: [imagen principal, ...imágenes adicionales]
+            const allImages = mainImage 
+                ? [mainImage, ...additionalImages]
+                : [defaultImage];
+            
+            return {
+                ...product,
+                image: mainImage || defaultImage, // Imagen principal para mostrar en cards
+                images: allImages, // Array completo para galería
+                categoryId: product.category?.id || product.categoryId // Normalizar categoryId
+            };
         });
         
         /* console.log(`✅ ${products.length} productos obtenidos del backend`); */

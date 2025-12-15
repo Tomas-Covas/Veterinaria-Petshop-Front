@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { changeVeterinarianPassword } from '@/src/services/veterinarian.admin.services';
 import { toast } from 'react-toastify';
 
 export default function ChangePasswordPage() {
-  const { userData } = useAuth();
+  const { userData,setUserData } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,8 +22,8 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+    if (!newPassword || newPassword.trim() === '') {
+      alert('La contraseña no puede estar vacía');
       return;
     }
 
@@ -47,14 +47,24 @@ export default function ChangePasswordPage() {
         confirmPassword,
         token
       );
-      
+
       // Si el backend devuelve un nuevo token, guardarlo
       if (result.token) {
         localStorage.setItem('authToken', result.token);
       }
 
-      toast.success('✅ Contraseña cambiada exitosamente');
-      
+      toast.success('Contraseña cambiada exitosamente');
+      setUserData((prev: any) => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          requirePasswordChange: false
+        }
+      }));
+      localStorage.setItem('requirePasswordChange', 'false');
+      document.cookie = "requirePasswordChange=false; path=/";
+
+
       // Redirigir al dashboard
       router.push('/dashboard');
     } catch (error: any) {
@@ -63,6 +73,12 @@ export default function ChangePasswordPage() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    const mustChange = userData?.user.requirePasswordChange;
+    if (!mustChange) router.push('/dashboard');
+  }, [userData]);
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 via-orange-50 to-amber-100 pt-24 pb-12 flex items-center justify-center">

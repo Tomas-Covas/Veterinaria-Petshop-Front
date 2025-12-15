@@ -87,9 +87,11 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{pet.name}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {(pet as any).nombre || pet.name || 'Sin nombre'}
+                      </h3>
                       <p className="text-sm text-gray-600">
-                        {pet.species} • {pet.breed} • {pet.age} años
+                        {(pet as any).especie || pet.species || 'N/A'} • {pet.breed || 'N/A'} • {pet.age || 'N/A'} años
                       </p>
                     </div>
                     <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">

@@ -22,7 +22,17 @@ export async function register(userData: IRegister) {
     }
 
     const result = await response.json();
-    toast.success("Usuario registrado con éxito");
+    
+    // Si el backend genera contraseña aleatoria, mostrarla al usuario
+    if (result.temporaryPassword || result.password) {
+      toast.success(
+        `✅ Usuario registrado. Contraseña temporal: ${result.temporaryPassword || result.password}`,
+        { autoClose: 10000 }
+      );
+    } else {
+      toast.success("Usuario registrado con éxito");
+    }
+    
     return result;
   } catch (error: any) {
     toast.error("Error al registrarse, intentelo nuevamente");
@@ -31,7 +41,7 @@ export async function register(userData: IRegister) {
 }
 
 export async function login(userData: ILoginProps) {
-  try {     
+  try {
     const response = await fetch(`${APIURL}/auth/signin`, {
       method: "POST",
       headers: {
@@ -41,9 +51,17 @@ export async function login(userData: ILoginProps) {
       body: JSON.stringify(userData),
     });
 
+    console.log('📡 Respuesta status:', response.status);
+
     if (!response.ok) {
       const error = await response.json();
-      toast.error("Error al ingresar: Credenciales inválidas");
+      
+      if (response.status === 401) {
+        toast.error('Credenciales inválidas. Verifica tu email y contraseña.');
+      } else {
+        toast.error(error.message || 'Error al iniciar sesión');
+      }
+      
       throw new Error(error.message || "Fallo al ingresar");
     }
 
@@ -63,36 +81,6 @@ export async function login(userData: ILoginProps) {
     throw error;
   }
 }
-
-/* export async function loginVeterinarian(userData: ILoginProps) {
-  try {  
-    const response = await fetch(`${APIURL}/auth/signin`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Credenciales inválidas");
-    }
-
-    const result = await response.json();
-    console.log('🔍 RESPUESTA COMPLETA DEL BACKEND (loginVeterinarian):', JSON.stringify(result, null, 2));
-    
-    // Guardar el token en localStorage si viene en la respuesta
-    if (result.token) {
-      localStorage.setItem('authToken', result.token);
-    }
-    
-    return result;
-  } catch (error: any) {
-    throw error;
-  }
-} */
 
 export async function getGoogleAuthUrl() {
   try {

@@ -1,5 +1,8 @@
 import { StaticImageData } from 'next/image';
 
+// Re-exportar tipos de diagnóstico
+export { DiagnosisType, DIAGNOSIS_OPTIONS, getDiagnosisIcon, getDiagnosisLabel } from './diagnosis';
+
 export interface IUserSession {
     token:string,
     user:IUser
@@ -91,15 +94,25 @@ export interface UserProfile {
 
 export interface Order {
   id: string
-  total: number
+  total: number | string
   status: 'ACTIVE' | 'delivered'
   items: OrderItem[]
+  createdAt?: string
 }
 
 export interface OrderItem {
-  productName: string
+  id: string
+  productName?: string
   quantity: number
-  price: number
+  price?: number
+  unitPrice?: string | number
+  product?: {
+    id: string
+    name: string
+    price: number | string
+    stock: number
+    imgUrl: string
+  }
 }
 
 export interface IPetCreate {
@@ -159,6 +172,7 @@ export interface IVeterinarian {
   phone: string;
   time: string;
   isActive: boolean;
+  profileImageUrl: string;
 }
 
 export interface ILoginProps{

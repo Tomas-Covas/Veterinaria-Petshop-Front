@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import Link from 'next/link'
 import Image from 'next/image'
@@ -13,15 +14,17 @@ function Card({ product }: CardProps) {
 
   // Manejar diferentes tipos de imagen: string URL, objeto StaticImageData, o fallback
   let imageSrc: string | any = '/next.svg';
-  if (product.image) {
-    if (typeof product.image === 'string') {
-      if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
-        imageSrc = product.image;
+  const imageToUse = (product as any).imgUrl || product.image;
+  
+  if (imageToUse) {
+    if (typeof imageToUse === 'string') {
+      if (imageToUse.startsWith('http://') || imageToUse.startsWith('https://')) {
+        imageSrc = imageToUse;
       } else if (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000') {
-        imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${product.image}`;
+        imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${imageToUse}`;
       }
     } else {
-      imageSrc = product.image; // StaticImageData
+      imageSrc = imageToUse; // StaticImageData
     }
   }
 
@@ -36,7 +39,7 @@ function Card({ product }: CardProps) {
         transition-transform duration-300 hover:scale-105
         "
     >
-      <Link href={href} prefetch className="inline-block">
+      <Link href={href || '#'} prefetch className="inline-block">
         {/* Imagen normal */}
         <div className="w-full aspect-4/3 overflow-hidden rounded-md bg-gray-50 relative">
           <Image
@@ -62,8 +65,8 @@ function Card({ product }: CardProps) {
         </div>
 
       </Link>
-      <div className="mt-[-35px]">
-        <AddCartButton product={product} />
+      <div className="mt-[-35px] justify-end">
+        <AddCartButton product={product} variant="icon"/>
       </div>
     </div>
   );

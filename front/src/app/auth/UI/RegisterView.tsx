@@ -45,9 +45,9 @@ function RegisterView() {
                 }}
             >
                 <p className="text-4xl md:text-5xl text-shadow-2xs
-       text-shadow-amber-600 font-extrabold
+       text-shadow-gray-600 font-extrabold
         text-black mt-2 drop-shadow-md
-        bg-orange-400/50 rounded-2xl p-1 backdrop-blur-sm">
+        bg-gray-400/50 rounded-2xl p-1 backdrop-blur-sm">
                     Crear una cuenta
                 </p>
 
@@ -78,7 +78,14 @@ function RegisterView() {
                     validateOnMount={true}
                     onSubmit={async (values, { resetForm }) => {
                         const { confirmPassword, ...payload } = values;
-                        await register(payload);
+                        const result = await register(payload);
+                        
+                        // Si el backend devuelve una contraseña temporal, mostrarla
+                        if (result?.temporaryPassword || result?.password) {
+                            const tempPassword = result.temporaryPassword || result.password;
+                            alert(`✅ Registro exitoso!\n\n🔑 Tu contraseña temporal es:\n${tempPassword}\n\n⚠️ Guarda esta contraseña. También fue enviada a tu email.`);
+                        }
+                        
                         resetForm();
                         router.push("/auth/login");
                     }}

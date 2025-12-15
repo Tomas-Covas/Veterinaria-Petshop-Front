@@ -73,7 +73,7 @@ export default function NewPetModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      {/* Achicamos el modal: max-w-sm y menos padding */}
+
       <div className="absolute inset-0 bg-cyan-700/40 backdrop-blur-sm" />
       <div className="relative bg-orange-200 p-6 rounded-2xl w-full max-w-md mx-4 shadow-lg z-10">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -197,7 +197,7 @@ export default function NewPetModal({
               type="date"
               required
               value={form.fecha_nacimiento}
-              onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value })}
+              onChange={(e) => setForm({ ...form, fecha_nacimiento: e.target.value})}
               className="w-full border border-cyan-700 p-2 rounded-2xl focus:ring-2
                  focus:ring-orange-500 focus:border-orange-500"
             />

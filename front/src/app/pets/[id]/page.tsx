@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import img from "@/src/assets/dogCat.jpg";
+import img from "@/src/assets/avatar.jpg"
 import EditPetModal from "../../components/EditPetModal/EditPetModal";
 import NewAppointmentModal from "../../components/NewAppointmetModal/NewAppointmentModal";
 import { useAuth } from "@/src/context/AuthContext";
@@ -15,19 +15,24 @@ import {
   updatePetImage,
 } from "../../services/pet.services";
 import Link from "next/link";
+import { IPet, IAppointment } from "@/src/types";
+import ConfirmModal from "../../components/ConfirmCancel/ConfirmModal";
 
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { userData } = useAuth();
-  const [pet, setPet] = useState<Pet | null>(null);
+  const [pet, setPet] = useState<IPet | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [openAppointment, setOpenAppointment] = useState(false);
 
   useEffect(() => {
+    console.log("ID desde useParams:", id);
+
     const fetchPet = async () => {
       try {
         const res = await fetch(`${APIURL}/pets/${id}`, {
@@ -44,6 +49,20 @@ export default function PetDetailPage() {
     };
     if (id) fetchPet();
   }, [id]);
+
+  const refreshPet = async () => {
+    try {
+      const res = await fetch(`${APIURL}/pets/${id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error al obtener la mascota");
+      const { data } = await res.json();
+      setPet(data);
+    } catch (err: any) {
+      toast.error("Error actualizando los turnos");
+    }
+  };
+
 
   const handleDeletePet = async (id: string) => {
     try {
@@ -79,7 +98,7 @@ export default function PetDetailPage() {
   }
 
   const getPetAge = () => {
-    const start = new Date(pet.fecha_nacimiento).getTime();
+    const start = new Date(pet.fecha_nacimiento + "T00:00:00").getTime();
     const end = pet.fecha_fallecimiento
       ? new Date(pet.fecha_fallecimiento).getTime()
       : Date.now();
@@ -87,66 +106,41 @@ export default function PetDetailPage() {
   };
 
   // Filtrar solo turnos futuros
-  const upcomingAppointments = pet.appointments.filter((appt) => {
+  const upcomingAppointments = pet.appointments.filter((appt: IAppointment) => {
     const apptDate = new Date(`${appt.date}T${appt.time}`);
-    return apptDate >= new Date();
+    const todayMinusOne = new Date();
+    todayMinusOne.setDate(todayMinusOne.getDate() - 1);
+    return apptDate >= todayMinusOne;
   });
 
   return (
-    <div className="pt-20">
-      <div>
-        <Link
-          href={"/dashboard"}
-          className="text-orange-400 pt-3 text-lg font-bold ml-5 hover:text-orange-600"
-        >
-          Volver al Dashboard
-        </Link>
-      </div>
+    <div className="pt-23 flex flex-col justify-center items-center">
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-4 ">
+      <Link
+        href={"/dashboard"}
+        className="text-orange-400 pt-3 text-lg font-bold self-start md:ml-30 ml-15 hover:text-orange-600"
+      >
+        Volver a Mascotas
+      </Link>
+
+      <div className="flex flex-col md:flex-row md:items-stretch items-center gap-4">
+
         {/* Columna izquierda: info mascota */}
-        <div className="bg-linear-to-br from-orange-100 via-orange-200 to-orange-300 rounded-lg shadow-md p-6 border border-amber-600">
+        <div className="bg-linear-to-br from-orange-100 via-orange-200 w-full to-orange-300
+         rounded-lg shadow-md p-6 border border-amber-600">
           <h1 className="text-3xl font-bold flex justify-center text-gray-900 mb-4">
             {pet.nombre}
           </h1>
 
-          <div className="flex justify-evenly">
-            <div>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Especie:</span> {pet.especie}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Raza:</span>{" "}
-                {pet.breed || "No especificada"}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Sexo:</span> {pet.sexo}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Tamaño:</span> {pet.tamano}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Esterilizado:</span>{" "}
-                {pet.esterilizado}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Estado:</span> {pet.status}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Edad:</span> {getPetAge()} años
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-semibold">Fecha de nacimiento:</span>{" "}
-                {new Date(pet.fecha_nacimiento).toLocaleDateString("es-ES")}
-              </p>
-            </div>
-            <div className="relative w-[200px] h-[50px]">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-evenly  gap-6">
+
+            <div className="relative w-[200px] h-[50px] self-start">
               <Image
                 src={pet.image || avatar}
                 width={200}
                 height={200}
                 alt="mascota"
-                className="rounded-full bg-gray-400 object-cover"
+                className="rounded-full bg-gray-400 object-cover "
               />
               <label
                 htmlFor="pet-image-upload"
@@ -195,16 +189,60 @@ export default function PetDetailPage() {
                 }}
               />
             </div>
+            <div>
+              <p className="text-gray-700 mb-2 mt-25 md:mt-0">
+                <span className="font-semibold">Especie:</span> {pet.especie}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Raza:</span>{" "}
+                {pet.breed || "No especificada"}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Sexo:</span> {pet.sexo}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Tamaño:</span> {pet.tamano}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Esterilizado:</span>{" "}
+                {pet.esterilizado}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Estado:</span> {pet.status}
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Edad:</span> {getPetAge()} años
+              </p>
+              <p className="text-gray-700 mb-2">
+                <span className="font-semibold">Fecha de nacimiento:</span>{" "}
+                {new Date(pet.fecha_nacimiento + "T00:00:00").toLocaleDateString("es-ES")}
+              </p>
+            </div>
+
           </div>
 
           {/* Botones */}
           <div className="flex mb-4 space-x-4 mt-6">
             <button
-              onClick={() => handleDeletePet(pet.id)}
+              onClick={() => setShowConfirm(true)}
               className="flex-1 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
             >
               Eliminar Mascota
             </button>
+
+            {showConfirm && (
+              <ConfirmModal
+                message="¿Seguro que quieres eliminar a la mascota?"
+                onConfirm={async () => {
+                  await handleDeletePet(pet.id);
+                  setShowConfirm(false);
+                }}
+                onCancel={() => setShowConfirm(false)}
+              />
+            )}
+
+
+
             <button
               onClick={() => setOpenEdit(true)}
               className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -236,6 +274,7 @@ export default function PetDetailPage() {
           <button
             onClick={() => setOpenAppointment(true)}
             className="rounded-md bg-linear-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 hover:text-black px-4 py-2 transition-colors duration-200 whitespace-nowrap text-sm lg:text-base font-medium w-full"
+            disabled={!userData?.user?.id}
           >
             Agendar Turno
           </button>
@@ -244,22 +283,13 @@ export default function PetDetailPage() {
             onClose={() => setOpenAppointment(false)}
             userId={userData!.user.id}
             petId={id}
-            onSuccess={(newAppointment) => {
-              toast.success("Turno agendado correctamente");
-              setPet((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      appointments: [...prev.appointments, newAppointment],
-                    }
-                  : prev
-              );
-            }}
+            onSuccess={refreshPet}
           />
         </div>
 
         {/* Columna derecha: turnos futuros */}
-        <div className="bg-linear-to-br from-orange-100 via-orange-200 to-orange-300 rounded-lg shadow-md p-6 border border-amber-600">
+        <div className="bg-linear-to-br from-orange-100 via-orange-200 w-full  to-orange-300
+         rounded-lg shadow-md p-6 border border-amber-600">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Próximos Turnos
           </h2>
@@ -289,18 +319,18 @@ export default function PetDetailPage() {
                     const res = await fetch(
                       `${APIURL}/appointments/${appt.id}`,
                       {
-                        method: "DELETE",
+                        method: "PUT",
                         credentials: "include",
                       }
                     );
                     if (!res.ok) throw new Error("Error al cancelar el turno");
                     toast.success("Turno cancelado");
-                    setPet((prev) =>
+                    setPet((prev: IPet | null) =>
                       prev
                         ? {
                             ...prev,
                             appointments: prev.appointments.filter(
-                              (a) => a.id !== appt.id
+                              (a: any) => a.id !== appt.id
                             ),
                           }
                         : prev
@@ -333,27 +363,30 @@ export default function PetDetailPage() {
                       </div>
                     </div>
                     <button
-                      onClick={handleCancel}
+                      onClick={() => setShowConfirm(true)}
                       className="px-3 py-1 text-sm bg-red-100 text-red-600 
-                                        rounded hover:bg-red-500 hover:text-black cursor-pointer"
+                      rounded hover:bg-red-500 hover:text-black cursor-pointer"
                     >
                       Cancelar
                     </button>
+
+                    {showConfirm && (
+                      <ConfirmModal
+                        message="¿Seguro que querés cancelar este turno?"
+                        onConfirm={async () => {
+                          await handleCancel();
+                          setShowConfirm(false);
+                        }}
+                        onCancel={() => setShowConfirm(false)}
+                      />
+                    )}
                   </div>
                 );
               })
           )}
         </div>
       </div>
-      {userData?.user?.id && (
-        <NewAppointmentModal
-          open={openAppointment}
-          onClose={() => setOpenAppointment(false)}
-          userId={userData.user.id}
-          petId={id}
-          onSuccess={() => toast.success("Turno agendado correctamente")}
-        />
-      )}
     </div>
+
   );
 }

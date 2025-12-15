@@ -10,6 +10,9 @@ interface Props {
 }
 
 const OrderList: React.FC<Props> = ({ orders }) => {
+  console.log('📋 OrderList recibió orders:', orders);
+  console.log('📊 Cantidad de orders:', orders?.length);
+  
   if (!orders || orders.length === 0) {
     return (
       <p className="text-gray-500 text-center py-8">

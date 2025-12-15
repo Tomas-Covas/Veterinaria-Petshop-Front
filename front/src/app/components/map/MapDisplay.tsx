@@ -24,19 +24,15 @@ export default function MapDisplay() {
       setIsLoading(true);
 
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL;
         if (!backendUrl) {
-          throw new Error("BACKEND_URL no definida en el frontend");
+          throw new Error("NEXT_PUBLIC_API_URL no definida en el frontend");
         }
 
-        const response = await fetch(
-          `${backendUrl}/api/directions/local`
-        );
+        const response = await fetch(`${backendUrl}/api/directions/local`);
 
         if (!response.ok) {
-          throw new Error(
-            `Backend respondió ${response.status}`
-          );
+          throw new Error(`Backend respondió ${response.status}`);
         }
 
         const data = await response.json();
@@ -46,10 +42,7 @@ export default function MapDisplay() {
           lat: data.lat,
         });
       } catch (error) {
-        console.error(
-          "No se pudo cargar la ubicación del local:",
-          error
-        );
+        console.error("No se pudo cargar la ubicación del local:", error);
       } finally {
         setIsLoading(false);
       }
@@ -62,13 +55,10 @@ export default function MapDisplay() {
   useEffect(() => {
     if (map.current || !mapContainer.current || !coords) return;
 
-    const maptilerKey =
-      process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+    const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
 
     if (!maptilerKey) {
-      console.error(
-        "Falta NEXT_PUBLIC_MAPTILER_API_KEY"
-      );
+      console.error("Falta NEXT_PUBLIC_MAPTILER_API_KEY");
       return;
     }
 
@@ -86,17 +76,12 @@ export default function MapDisplay() {
       new maptilersdk.Marker({ color: "#FF0000" })
         .setLngLat([coords.long, coords.lat])
         .setPopup(
-          new maptilersdk.Popup().setHTML(
-            "<strong>Nuestra ubicación</strong>"
-          )
+          new maptilersdk.Popup().setHTML("<strong>Nuestra ubicación</strong>")
         )
         .addTo(map.current!);
 
       // Geolocalización + ruta
-      obtenerUbicacionYCalcularRuta(
-        coords.long,
-        coords.lat
-      );
+      obtenerUbicacionYCalcularRuta(coords.long, coords.lat);
     });
 
     return () => {
@@ -105,7 +90,7 @@ export default function MapDisplay() {
     };
   }, [coords]);
 
-//   /  3. GEOLOCALIZACIÓN */
+  //   /  3. GEOLOCALIZACIÓN */
   const obtenerUbicacionYCalcularRuta = (
     localLong: number,
     localLat: number
@@ -120,43 +105,49 @@ export default function MapDisplay() {
         const clientLong = position.coords.longitude;
         const clientLat = position.coords.latitude;
 
-        const clientCoords: [number, number] = [
-          clientLong,
-          clientLat,
-        ];
+        const clientCoords: [number, number] = [clientLong, clientLat];
 
         if (map.current) {
           // Marcador cliente
           new maptilersdk.Marker({ color: "#00AA00" })
             .setLngLat(clientCoords)
             .setPopup(
-              new maptilersdk.Popup().setHTML(
-                "<strong>Tu posición</strong>"
-              )
+              new maptilersdk.Popup().setHTML("<strong>Tu posición</strong>")
             )
             .addTo(map.current);
 
           // Ajustar vista
-          const bounds =
-            new maptilersdk.LngLatBounds(
-              clientCoords,
-              [localLong, localLat]
-            );
+          const bounds = new maptilersdk.LngLatBounds(clientCoords, [
+            localLong,
+            localLat,
+          ]);
 
           map.current.fitBounds(bounds, {
             padding: 50,
           });
         }
 
-        llamarBackendYDibujarRuta(
-          clientLong,
-          clientLat
-        );
+        llamarBackendYDibujarRuta(clientLong, clientLat);
       },
       (error) => {
-        console.error(
-          "Error al obtener ubicación:",
-          error
+        let errorMessage = "Error desconocido";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Permiso de ubicación denegado";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Ubicación no disponible";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Tiempo de espera agotado";
+            break;
+          default:
+            errorMessage = error.message || "Error desconocido";
+        }
+        console.warn(
+          "Error al obtener ubicación del cliente:",
+          errorMessage,
+          error.code
         );
       },
       {
@@ -167,21 +158,17 @@ export default function MapDisplay() {
     );
   };
 
-  
-    //  4. PROXY BACKEND → RUTA
-  
+  //  4. PROXY BACKEND → RUTA
+
   const llamarBackendYDibujarRuta = async (
     clientLong: number,
     clientLat: number
   ) => {
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL;
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 
       if (!backendUrl) {
-        throw new Error(
-          "BACKEND_URL no definida"
-        );
+        throw new Error("API_URL no definida");
       }
 
       const response = await fetch(
@@ -189,27 +176,25 @@ export default function MapDisplay() {
       );
 
       if (!response.ok) {
-        throw new Error(
-          `Backend respondió ${response.status}`
-        );
+        // Si el backend no tiene el endpoint, solo log sin lanzar error
+        if (response.status === 503 || response.status === 404) {
+          console.warn(
+            `⚠️ Endpoint de direcciones no disponible (${response.status}). Mostrando solo ubicación.`
+          );
+          return;
+        }
+        throw new Error(`Backend respondió ${response.status}`);
       }
 
       const data = await response.json();
 
-      if (
-        data.routes &&
-        data.routes.length > 0 &&
-        map.current
-      ) {
-        const routeGeometry =
-          data.routes[0].geometry;
+      if (data.routes && data.routes.length > 0 && map.current) {
+        const routeGeometry = data.routes[0].geometry;
 
         if (map.current.getSource("route")) {
-          (
-            map.current.getSource(
-              "route"
-            ) as maptilersdk.GeoJSONSource
-          ).setData(routeGeometry);
+          (map.current.getSource("route") as maptilersdk.GeoJSONSource).setData(
+            routeGeometry
+          );
         } else {
           map.current.addSource("route", {
             type: "geojson",
@@ -233,14 +218,11 @@ export default function MapDisplay() {
         }
       }
     } catch (error) {
-      console.error(
-        "Error al trazar la ruta:",
-        error
-      );
+      console.error("Error al trazar la ruta:", error);
     }
   };
 
-//   / 5. RENDER/
+  //   / 5. RENDER/
   if (isLoading) {
     return (
       <div className="h-[200px] flex items-center justify-center text-gray-500">
@@ -257,10 +239,5 @@ export default function MapDisplay() {
     );
   }
 
-  return (
-    <div
-      ref={mapContainer}
-      className="w-full h-[140px]"
-    />
-  );
+  return <div ref={mapContainer} className="w-full h-[140px]" />;
 }

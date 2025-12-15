@@ -6,7 +6,9 @@ export interface ICreateVeterinarian {
   matricula: string;
   description: string;
   phone: string;
-  time: string; // El backend espera ISO 8601
+  time: string; // Fecha ISO (ej: "2025-12-01")
+  horario_atencion?: string; // DateTime ISO 8601 (ej: "2025-12-11T09:00:00Z")
+  isActive?: boolean;
 }
 
 export interface IUpdateVeterinarian {
@@ -221,15 +223,26 @@ export const updateVeterinarianProfile = async (
   token: string
 ) => {
   try {
+    console.log('🔐 Actualizando perfil con:', {
+      url: `${API_URL}/veterinarians/${id}/profile`,
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'No token'
+    });
+    
+    const headers: HeadersInit = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    
+    console.log('📋 Headers siendo enviados:', headers);
+    
     const response = await fetch(`${API_URL}/veterinarians/${id}/profile`, {
       method: "PATCH",
       credentials: "include",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // NO incluir Content-Type para que el browser lo setee automáticamente con boundary
-      },
+      headers,
       body: formData,
     });
+    
+    console.log('📡 Respuesta status:', response.status);
 
     if (!response.ok) {
       const error = await response.json();

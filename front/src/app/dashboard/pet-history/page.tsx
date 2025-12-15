@@ -10,6 +10,8 @@ export default function PetMedicalHistoryPage() {
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [medicalHistory, setMedicalHistory] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [loadingRecord, setLoadingRecord] = useState(false);
 
   const handlePetSelect = async (pet: Pet) => {
     setSelectedPet(pet);
@@ -29,6 +31,87 @@ export default function PetMedicalHistoryPage() {
   const handleClearSelection = () => {
     setSelectedPet(null);
     setMedicalHistory(null);
+    setSelectedRecord(null);
+  };
+
+  const handleViewRecord = async (appointmentId: string) => {
+    if (!selectedPet) return;
+    
+    setLoadingRecord(true);
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      console.log('📋 Buscando registro médico para appointment:', appointmentId);
+      console.log('🐾 Pet ID:', selectedPet.id);
+      console.log('📅 Appointments de la mascota:', selectedPet.appointments);
+      
+      // Obtener todos los registros médicos de la mascota
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/medical-records-pet/pet/${selectedPet.id}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        console.error('❌ Error al obtener registros médicos:', response.status);
+        return;
+      }
+      
+      const result = await response.json();
+      console.log('✅ Registros médicos obtenidos:', result);
+      
+      // Extraer el array de registros
+      const records = result.data || result.records || result.medicalRecords || result || [];
+      console.log('📋 Total de registros:', Array.isArray(records) ? records.length : 0);
+      
+      if (!Array.isArray(records) || records.length === 0) {
+        console.log('⚠️ No hay registros médicos para esta mascota');
+        return;
+      }
+      
+      // Buscar el registro que corresponde al appointment
+      const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
+      console.log('🔎 Buscando registro para appointment:', appointment);
+      console.log('📋 Registros disponibles:', records);
+      
+      // Si solo hay 1 registro y 1 appointment, hacer match directo
+      if (records.length === 1) {
+        console.log('✅ Solo hay 1 registro, mostrándolo');
+        setSelectedRecord(records[0]);
+      } else if (appointment) {
+        // Intentar hacer match por veterinario y fecha
+        const record = records.find((r: any) => {
+          // Match por veterinario
+          const vetMatch = r.veterinarian?.id === appointment.veterinarian?.id || 
+                          r.veterinarianId === appointment.veterinarian?.id;
+          
+          // Match por fecha aproximada (mismo día)
+          const recordDate = r.consultationDate || r.createdAt;
+          const appointmentDate = appointment.date;
+          const dateMatch = recordDate && appointmentDate && 
+                           recordDate.split('T')[0] === appointmentDate.split('T')[0];
+          
+          return vetMatch && dateMatch;
+        });
+        
+        if (record) {
+          console.log('✅ Registro médico encontrado por veterinario y fecha:', record);
+          setSelectedRecord(record);
+        } else {
+          console.log('⚠️ No se encontró registro específico, mostrando el primero');
+          setSelectedRecord(records[0]);
+        }
+      } else {
+        console.log('💡 Mostrando el primer registro como fallback');
+        setSelectedRecord(records[0]);
+      }
+    } catch (error) {
+      console.error('❌ Error al obtener registro médico:', error);
+    } finally {
+      setLoadingRecord(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -80,17 +163,59 @@ export default function PetMedicalHistoryPage() {
         {selectedPet && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             {/* Header con info de la mascota */}
-            <div className="bg-gradient-to-r from-orange-400 to-orange-600 p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-linear-to-r from-orange-400 to-orange-600 p-6">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-2xl font-bold text-orange-600">
-                    {selectedPet.name.charAt(0)}
+                  <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold text-orange-600 overflow-hidden">
+                    {((selectedPet as any).image || selectedPet.image) ? (
+                      <img 
+                        src={(selectedPet as any).image || selectedPet.image} 
+                        alt={(selectedPet as any).nombre || selectedPet.name || 'Mascota'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{((selectedPet as any).nombre || selectedPet.name || 'P').charAt(0).toUpperCase()}</span>
+                    )}
                   </div>
                   <div className="text-white">
-                    <h2 className="text-2xl font-bold">{selectedPet.name}</h2>
-                    <p className="text-orange-100">
-                      {selectedPet.species} • {selectedPet.breed} • {selectedPet.age} años
-                    </p>
+                    <h2 className="text-3xl font-bold mb-1">{(selectedPet as any).nombre || selectedPet.name || 'Mascota'}</h2>
+                    <div className="flex flex-wrap gap-2 text-orange-100">
+                      <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                        {(selectedPet as any).especie || selectedPet.species || 'N/A'}
+                      </span>
+                      <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                        {selectedPet.breed || 'Raza no especificada'}
+                      </span>
+                      {selectedPet.age && (
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                          {selectedPet.age} años
+                        </span>
+                      )}
+                      {(selectedPet as any).sexo && (
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                          {(selectedPet as any).sexo === 'MACHO' ? '♂ Macho' : '♀ Hembra'}
+                        </span>
+                      )}
+                      {(selectedPet as any).tamano && (
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                          Tamaño: {(selectedPet as any).tamano.toLowerCase()}
+                        </span>
+                      )}
+                      {(selectedPet as any).esterilizado && (
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                          {(selectedPet as any).esterilizado === 'SI' ? '✓ Esterilizado' : 'No esterilizado'}
+                        </span>
+                      )}
+                    </div>
+                    {(selectedPet as any).fecha_nacimiento && (
+                      <p className="text-orange-100 text-sm mt-2">
+                        📅 Fecha de nacimiento: {new Date((selectedPet as any).fecha_nacimiento).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button
@@ -120,15 +245,18 @@ export default function PetMedicalHistoryPage() {
                       {selectedPet.appointments.map((appointment, index) => (
                         <div
                           key={appointment.id || index}
-                          className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-orange-300 transition-colors"
+                          onClick={() => handleViewRecord(appointment.id)}
+                          className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-orange-300 transition-colors cursor-pointer hover:shadow-md"
                         >
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <h4 className="text-lg font-semibold text-gray-900">
-                                {appointment.service}
+                                {appointment.service || 'Consulta veterinaria'}
                               </h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                Veterinario: {appointment.veterinarian}
+                                Veterinario: {typeof appointment.veterinarian === 'string' 
+                                  ? appointment.veterinarian 
+                                  : (appointment.veterinarian?.name || 'No especificado')}
                               </p>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
@@ -251,6 +379,106 @@ export default function PetMedicalHistoryPage() {
             <p className="text-gray-600 text-lg">
               Busca una mascota para ver su historial médico completo
             </p>
+          </div>
+        )}
+
+        {/* Modal de detalle del registro médico */}
+        {selectedRecord && (
+          <div className="fixed inset-0 bg-linear-to-br from-amber-900/40 via-orange-900/40 to-amber-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Header del modal */}
+              <div className="sticky top-0 bg-linear-to-r from-orange-400 to-orange-600 text-white p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Detalle del Registro Médico</h2>
+                <button
+                  onClick={() => setSelectedRecord(null)}
+                  className="text-white hover:bg-orange-500 rounded-full p-2 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Contenido del modal */}
+              <div className="p-6 space-y-6">
+                {loadingRecord ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Cargando registro médico...</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Diagnóstico */}
+                    {selectedRecord.diagnosis && (
+                      <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">🩺 Diagnóstico</h3>
+                        <p className="text-gray-700">{selectedRecord.diagnosis}</p>
+                      </div>
+                    )}
+
+                    {/* Tratamiento */}
+                    {selectedRecord.treatment && (
+                      <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">💊 Tratamiento</h3>
+                        <p className="text-gray-700">{selectedRecord.treatment}</p>
+                      </div>
+                    )}
+
+                    {/* Medicaciones */}
+                    {selectedRecord.medications && (
+                      <div className="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">💉 Medicaciones</h3>
+                        <p className="text-gray-700">{selectedRecord.medications}</p>
+                      </div>
+                    )}
+
+                    {/* Observaciones */}
+                    {selectedRecord.observations && (
+                      <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">📋 Observaciones</h3>
+                        <p className="text-gray-700">{selectedRecord.observations}</p>
+                      </div>
+                    )}
+
+                    {/* Vacunaciones */}
+                    {selectedRecord.vaccinations && (
+                      <div className="bg-indigo-50 rounded-lg p-4 border-l-4 border-indigo-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">💉 Vacunaciones</h3>
+                        <p className="text-gray-700">{selectedRecord.vaccinations}</p>
+                      </div>
+                    )}
+
+                    {/* Datos vitales */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedRecord.weight && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h3 className="font-semibold text-gray-900 mb-1">⚖️ Peso</h3>
+                          <p className="text-2xl font-bold text-gray-700">{selectedRecord.weight} kg</p>
+                        </div>
+                      )}
+                      {selectedRecord.temperature && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h3 className="font-semibold text-gray-900 mb-1">🌡️ Temperatura</h3>
+                          <p className="text-2xl font-bold text-gray-700">{selectedRecord.temperature}°C</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Próxima cita */}
+                    {selectedRecord.nextAppointment && (
+                      <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500">
+                        <h3 className="font-semibold text-gray-900 mb-2">📅 Próxima Cita</h3>
+                        <p className="text-gray-700">{new Date(selectedRecord.nextAppointment).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

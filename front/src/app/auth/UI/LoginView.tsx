@@ -54,9 +54,9 @@ function LoginView() {
                 }}>
 
                 <p className="text-4xl md:text-5xl text-shadow-2xs
-       text-shadow-amber-600 font-extrabold
+       text-shadow-gray-600 font-extrabold
         text-black mt-2 drop-shadow-md
-         bg-orange-400/50 rounded-2xl p-1 backdrop-blur-sm">Ingresá</p>
+         bg-gray-400/50 rounded-2xl p-1 backdrop-blur-sm">Ingresá</p>
 
                 <p className="border-2 border-cyan-700 p-2 mt-2
                 rounded-3xl bg-white  text-lg font-medium">¿No tienes cuenta?
@@ -87,7 +87,6 @@ function LoginView() {
                                     country: response.country || '',
                                     address: response.address || '',
                                     city: response.city || '',
-                                    /* role: response.role || 'user', */
                                     role: response.role,
                                     isDeleted: response.isDeleted || false,
                                     deletedAt: response.deletedAt || null,
@@ -103,7 +102,9 @@ function LoginView() {
                             
                             // Guardar datos del usuario en localStorage para recuperación
                             localStorage.setItem('userData', JSON.stringify(formatted.user));
-                            console.log('💾 Datos de usuario guardados en localStorage');
+                            localStorage.setItem('requirePasswordChange', response.requirePasswordChange ? 'true' : 'false');
+                            document.cookie = `role=${response.role}; path=/`;
+
                             
                             // Delay para que React actualice el estado
                             await new Promise(resolve => setTimeout(resolve, 200));

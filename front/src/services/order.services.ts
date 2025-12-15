@@ -1,5 +1,39 @@
 const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+export const calculateShipping = async (postalCode: string, items?: Array<{productId: string, quantity: number}>, token?: string) => {
+    try {
+        const body: any = { postalCode };
+        
+        // Solo incluir items si se proporcionan
+        if (items && items.length > 0) {
+            body.items = items;
+        }
+        
+        const response = await fetch(`${APIURL}/sale-orders/calculate-shipping`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: token })
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error al calcular envío:', errorText);
+            throw new Error(`Error al calcular envío: ${response.status}`);
+        }
+
+        const result = await response.json();
+        // El backend puede devolver: { shippingCost, zone, deliveryTime }
+        return result;
+    } catch (error: any) {
+        console.error('Error en calculateShipping:', error);
+        throw error;
+    }
+};
+
 export const createOrder = async (items: Array<{productId: string | number, quantity: number}>, userId: string, token: string) => {
     try {
         console.log('Creando orden en:', `${APIURL}/sale-orders`)
@@ -48,7 +82,8 @@ export const createOrder = async (items: Array<{productId: string | number, quan
 
 export const getAllOrders = async (token:string) => {
     try { 
-        const res = await fetch(`${APIURL}/users/orders`, {
+        console.log('📦 Obteniendo todas las órdenes desde:', `${APIURL}/sale-orders`);
+        const res = await fetch(`${APIURL}/sale-orders`, {
             method: 'GET',
             cache: 'no-cache',
             credentials: 'include',
@@ -57,16 +92,27 @@ export const getAllOrders = async (token:string) => {
                 ...(token && { Authorization: token })
             }
         });
-      const orders = await res.json();
-      return orders  ;
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.warn('⚠️ Error al obtener órdenes (backend):', res.status, errorText);
+            throw new Error(`Error al obtener órdenes: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        console.log('✅ Datos recibidos:', data);
+        
+        // El backend puede devolver array directamente o envuelto en un objeto
+        const orders = Array.isArray(data) ? data : data.data || [];
+        console.log('📊 Órdenes procesadas:', orders.length, 'órdenes');
+        return orders;
     } catch (error:any) {
-        throw new Error(error);
-        
-        
+        console.warn('⚠️ No se pudieron cargar órdenes desde el backend:', error.message);
+        throw error;
     }
-}
+};
 
-export const getUserOrders = async (userId: string, token: string) => {
+export const getUserOrders = async (userId: string/* , token: string */) => {
     try { 
         const res = await fetch(`${APIURL}/sale-orders/history/${userId}`, {
             method: 'GET',
@@ -74,10 +120,11 @@ export const getUserOrders = async (userId: string, token: string) => {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` })
+                /* ...(token && { Authorization: `Bearer ${token}` }) */
             }
         });
-        
+        console.log("📦 Órdenes recibidas:", res);
+
         if (!res.ok) {
             console.error('Error al obtener órdenes del usuario:', res.status);
             return [];
@@ -85,11 +132,7 @@ export const getUserOrders = async (userId: string, token: string) => {
         
         const response = await res.json();
         
-        // El backend puede devolver un objeto con data o directamente el array
-        const orders = response.data || response.orders || response;
-        
-        // Asegurarse de que sea un array
-        return Array.isArray(orders) ? orders : [];
+        return response
     } catch (error: any) {
         console.error('Error en getUserOrders:', error);
         return [];
@@ -376,7 +419,7 @@ export const createCheckout = async (userId: string, token: string) => {
         
         // Llamar al endpoint de checkout que convierte el carrito en orden
         // El backend requiere success_url, failure_url y pending_url por separado
-        const response = await fetch(`${APIURL}/sale-orders/checkout`, {
+        const response = await fetch(`${APIURL}/sale-orders/checkout/${userId}`, {
             method: "POST",
             credentials: 'include',
             headers: {
@@ -386,7 +429,7 @@ export const createCheckout = async (userId: string, token: string) => {
                 success_url: `${baseUrl}/payment-result?status=success`,
                 failure_url: `${baseUrl}/payment-result?status=failure`,
                 pending_url: `${baseUrl}/payment-result?status=pending`,
-                auto_return: "approved" // ⭐ IMPORTANTE: Fuerza redirección automática
+                auto_return: "all" // ⭐ Redirige inmediatamente sin esperar
             })
         });
         
@@ -422,6 +465,50 @@ export const createCheckout = async (userId: string, token: string) => {
             stack: error.stack,
             error: error
         });
+        throw error;
+    }
+};
+
+// Checkout con Stripe
+export const checkoutStripe = async (userId: string, token: string) => {
+    try {
+        const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL || 'http://localhost:3002';
+        
+        console.log('🔵 Iniciando checkout con Stripe para userId:', userId);
+        console.log('🌐 URLs de retorno basadas en:', ngrokUrl);
+        
+        const response = await fetch(`${APIURL}/sale-orders/checkout-stripe/${userId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: token })
+            },
+            body: JSON.stringify({
+                success_url: `${ngrokUrl}/checkout/success`,
+                cancel_url: `${ngrokUrl}/checkout/cancel`,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error en checkout Stripe:', errorText);
+            throw new Error(`Error al crear checkout de Stripe: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Respuesta de Stripe checkout:', data);
+        
+        if (data.checkoutUrl) {
+            // Redirigir al usuario a la página de pago de Stripe
+            window.location.href = data.checkoutUrl;
+        } else {
+            throw new Error('No se recibió URL de checkout de Stripe');
+        }
+        
+        return data;
+    } catch (error: any) {
+        console.error('💥 Error en checkoutStripe:', error);
         throw error;
     }
 };

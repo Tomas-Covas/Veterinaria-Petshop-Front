@@ -136,9 +136,6 @@ export default function NewAppointmentModal({ open, onClose, userId, petId, onSu
             status: true,
         }
 
-        console.log('📝 Creando turno con payload:', payload);
-        console.log('🔗 URL del endpoint:', `${APIURL}/appointments/NewAppointment`);
-
         try {
             const res = await fetch(`${APIURL}/appointments/NewAppointment`, {
                 method: 'POST',
@@ -151,10 +148,7 @@ export default function NewAppointmentModal({ open, onClose, userId, petId, onSu
                 const error = await res.json();
                 throw new Error(error.message || 'Error al agendar el turno');
             }
-            
-            const result = await res.json();
-            console.log('✅ Turno creado:', result);
-            
+
             toast.success('Turno agendado correctamente');
             onSuccess();
             onClose();

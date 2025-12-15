@@ -51,7 +51,7 @@ export default function EditPetModal({ open, onClose, pet, onSave }: Props) {
         esterilizado: pet?.esterilizado ?? 'SI',
         status: pet?.status ?? 'VIVO',
         fecha_nacimiento: pet?.fecha_nacimiento ?? '',
-        fecha_fallecimiento: pet?.fecha_fallecimiento ?? '',
+        fecha_fallecimiento: pet?.fecha_fallecimiento ?? null,
         breed: pet?.breed ?? ''
     });
 

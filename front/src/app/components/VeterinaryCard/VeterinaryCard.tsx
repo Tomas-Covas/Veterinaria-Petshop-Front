@@ -6,15 +6,16 @@ import avatar from "@/src/assets/avatar.jpg"
 
 interface VeterinaryCardProps {
     veterinary: IVeterinary;
+    disableLink?: boolean; // Nueva prop para desactivar el link
 }
 
-function VeterinaryCard({ veterinary }: VeterinaryCardProps) {
-  const href = veterinary.id ? `/veterinarians/${veterinary.id}` : undefined;
+function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps) {
+  const href = !disableLink && veterinary.id ? `/veterinarians/${veterinary.id}` : undefined;
 
   const content = (
-    <div className="w-full h-full bg-linear-to-br from-white via-amber-50 to-amber-100 
-    p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer
-    flex flex-col">
+    <div className={`w-full h-full bg-linear-to-br from-white via-amber-50 to-amber-100 
+    p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ${!disableLink ? 'hover:scale-105 cursor-pointer' : ''}
+    flex flex-col`}>
       {/* Imagen circular */}
       <div className="w-48 h-48 mx-auto overflow-hidden rounded-full bg-gray-200 relative shrink-0">
         <Image

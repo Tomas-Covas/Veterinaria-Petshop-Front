@@ -237,7 +237,7 @@ export default function OurTeamClient({ initialVets }: OurTeamClientProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {vets.map((vet) => (
             <div key={vet.id} className="relative h-full min-h-[450px]">
-              <VeterinaryCard veterinary={vet} />
+              <VeterinaryCard veterinary={vet} disableLink={true} />
               {isAdmin() && (
                 <button
                   onClick={() => handleDelete(vet.id)}

@@ -103,7 +103,6 @@ const OrderCard: React.FC<Props> = ({ order }) => {
             />
             <div>
               <p className="font-medium">{item.product.name}</p>
-              <p>{item.product.description}</p>
               <p className='flex justify-between'>Precio unidad: ${item.unitPrice} Cantidad: {item.quantity}</p>
               <p>Subtotal: ${parseFloat(item.unitPrice) * item.quantity}</p>
             </div>
