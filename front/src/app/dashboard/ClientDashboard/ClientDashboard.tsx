@@ -97,7 +97,7 @@ export default function ClientDashboard() {
     const fetchOrders = async () => {
       try {
         const response = await getUserOrders(userData.user.id);
-        setOrders(response);
+        setOrders(response.data || []);
       } catch (error) {
         console.error("Error fetching orders:", error);
         setOrders([]);
@@ -135,8 +135,13 @@ export default function ClientDashboard() {
   //Cuentas para paginacion de ordenes
   const indexOfLastOrder = currentPageOrder * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders?.slice(indexOfFirstOrder, indexOfLastOrder) || [];
-  const totalPagesOrders = orders ? Math.ceil(orders.length / ordersPerPage) : 1;
+  const currentOrders = Array.isArray(orders)
+    ? orders.slice(indexOfFirstOrder, indexOfLastOrder)
+    : [];
+  const totalPagesOrders = Array.isArray(orders)
+    ? Math.ceil(orders.length / ordersPerPage)
+    : 1;
+
 
   const router = useRouter()
 
