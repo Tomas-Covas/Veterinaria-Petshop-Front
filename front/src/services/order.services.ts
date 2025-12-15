@@ -1,5 +1,39 @@
 const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+export const calculateShipping = async (postalCode: string, items?: Array<{productId: string, quantity: number}>, token?: string) => {
+    try {
+        const body: any = { postalCode };
+        
+        // Solo incluir items si se proporcionan
+        if (items && items.length > 0) {
+            body.items = items;
+        }
+        
+        const response = await fetch(`${APIURL}/sale-orders/calculate-shipping`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: token })
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error al calcular envío:', errorText);
+            throw new Error(`Error al calcular envío: ${response.status}`);
+        }
+
+        const result = await response.json();
+        // El backend puede devolver: { shippingCost, zone, deliveryTime }
+        return result;
+    } catch (error: any) {
+        console.error('Error en calculateShipping:', error);
+        throw error;
+    }
+};
+
 export const createOrder = async (items: Array<{productId: string | number, quantity: number}>, userId: string, token: string) => {
     try {
         console.log('Creando orden en:', `${APIURL}/sale-orders`)

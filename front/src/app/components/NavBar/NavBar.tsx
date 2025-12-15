@@ -11,6 +11,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { PATHROUTES } from "../../helpers/pathRoutes";
 import { useRole } from "@/src/hooks/useRole";
 import MessagesButton from "../MessagesButton/MessagesButton";
+import LocationButton from "../LocationButton/LocationButton";
 import ConfirmModal from "../ConfirmCancel/ConfirmModal";
 
 export default function Navbar() {
@@ -115,6 +116,9 @@ export default function Navbar() {
 
         {/* Botón Cerrar Sesión y Carrito - Desktop */}
         <div className="hidden md:flex items-center gap-3 shrink-0">
+          {/* Botón de ubicación */}
+          <LocationButton />
+          
           {/* Botón de mensajes */}
           <MessagesButton />
           

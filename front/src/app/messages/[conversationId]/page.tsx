@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
-import { getMessages, sendMessage } from "@/src/services/messages.services";
+import { getMessages, sendMessage, markAsRead } from "@/src/services/messages.services";
+import { useMessages } from "@/src/context/MessagesContext";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import avatar from "@/src/assets/avatarHueso.png";
@@ -54,6 +55,7 @@ export default function ChatPage() {
     const params = useParams();
     const conversationId = params.conversationId as string;
     const { userData } = useAuth();
+    const { refreshUnreadCount } = useMessages();
     const router = useRouter();
     
     const [messages, setMessages] = useState<Message[]>([]);
@@ -63,6 +65,8 @@ export default function ChatPage() {
     const [otherUser, setOtherUser] = useState<any>(null);
     const [showQuickMessages, setShowQuickMessages] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const previousMessagesCount = useRef(0);
+    const isInitialLoad = useRef(true);
 
     // Obtener mensajes rápidos según el rol del usuario
     const userRole = userData?.user?.role || 'client';
@@ -82,17 +86,48 @@ export default function ChatPage() {
     }, [conversationId, userData?.user?.id]);
 
     useEffect(() => {
-        scrollToBottom();
+        // Solo hacer scroll automático si hay mensajes nuevos (no en la carga inicial)
+        if (!isInitialLoad.current && messages.length > previousMessagesCount.current) {
+            scrollToBottom();
+        }
+        
+        if (isInitialLoad.current && messages.length > 0) {
+            isInitialLoad.current = false;
+        }
+        
+        previousMessagesCount.current = messages.length;
     }, [messages]);
 
     const loadMessages = async () => {
         try {
             const data = await getMessages(conversationId);
-            setMessages(data.messages || []);
+            const messagesArray = Array.isArray(data) ? data : (data.messages || []);
+            setMessages(messagesArray);
+            
+            // Marcar como leídos los mensajes que no son míos y no están leídos
+            const unreadMessages = messagesArray.filter(
+                (msg: Message) => msg.senderId !== userData?.user?.id && !msg.isRead
+            );
+            
+            if (unreadMessages.length > 0) {
+                // Marcar cada mensaje como leído
+                unreadMessages.forEach(async (msg: Message) => {
+                    try {
+                        await markAsRead(msg.id);
+                    } catch (error) {
+                        console.error('Error al marcar mensaje como leído:', error);
+                    }
+                });
+                
+                // Actualizar el contador de no leídos inmediatamente
+                setTimeout(() => {
+                    refreshUnreadCount();
+                }, 500);
+            }
             
             // Identificar al otro usuario
-            if (data.messages && data.messages.length > 0) {
-                const firstMessage = data.messages[0];
+            if (messagesArray && messagesArray.length > 0) {
+                const firstMessage = messagesArray[0];
                 if (firstMessage.sender && firstMessage.senderId !== userData?.user?.id) {
                     setOtherUser(firstMessage.sender);
                 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/src/context/AuthContext'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import CompleteTurnModal, { MedicalRecordData } from '@/src/app/components/CompleteTurnModal/CompleteTurnModal'
 import { addMedicalRecord } from '@/src/app/services/pet.services'
 import { getAppointmentsByVetId, Appointment } from '@/src/services/appointment.services'
@@ -244,13 +245,31 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
       <div className="pt-6 pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
           
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Mi Calendario de Turnos
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Gestiona tus citas y consultas veterinarias
-            </p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Mi Calendario de Turnos
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Gestiona tus citas y consultas veterinarias
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/dashboard/messages"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="text-xl">💬</span>
+                <span>Mensajería</span>
+              </Link>
+              <Link
+                href="/dashboard/controlled-medications"
+                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="text-xl">🔐</span>
+                <span>Medicamentos Controlados</span>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
