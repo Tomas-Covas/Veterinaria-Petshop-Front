@@ -16,6 +16,7 @@ import {
   addToCartBackend,
   createCheckout,
   calculateShipping,
+  getCart,
 } from "@/src/services/order.services";
 import { toast } from "sonner";
 import Image, { StaticImageData } from "next/image";
@@ -23,7 +24,8 @@ import { XMarkIcon } from "@heroicons/react/16/solid";
 import MercadoPagoWallet from "../components/MercadoPagoWallet/MercadoPagoWallet";
 import fallbackImage from "@/src/assets/avatar.jpg";
 import { useShipping } from "@/src/context/ShippingContext";
-import { loadStripe } from "@stripe/stripe-js";
+import DeliveryMethodSelector from "../components/DeliveryMethodSelector/DeliveryMethodSelector";
+import PaymentButtons from "../components/PaymentButtons/PaymentButtons";
 
 function CartPage() {
   const [open, setOpen] = useState(true);
@@ -34,6 +36,7 @@ function CartPage() {
   const [postalCodeInput, setPostalCodeInput] = useState("");
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
+  const [deliveryMethod, setDeliveryMethod] = useState<'shipping' | 'pickup'>('shipping');
 
   const { shippingData, updatePostalCode } = useShipping();
 
@@ -56,95 +59,6 @@ function CartPage() {
   const getLogin = () => {
     router.push("/auth/login?redirect=/cart");
   };
-
-  // Cargar carrito después de definir userData - SOLO UNA VEZ
-  /*   useEffect(() => {
-      const syncCart = async () => {
-        if (!userData?.user?.id) {
-          return;
-        }
-  
-        if (hasSyncedRef.current) {
-          console.log("⏭️ Ya se sincronizó anteriormente, saltando...");
-          return;
-        }
-  
-        // Marcar INMEDIATAMENTE como sincronizado para evitar ejecuciones múltiples
-        hasSyncedRef.current = true;
-  
-        // Primero verificar si hay items en localStorage
-        const localCart = localStorage.getItem("cart");
-        console.log("💾 localStorage cart:", localCart ? "SÍ" : "NO");
-  
-        if (localCart) {
-          try {
-            const localItems: IProduct[] = JSON.parse(localCart);
-  
-            if (localItems.length > 0) {
-              console.log(
-                "🔄 Sincronizando",
-                localItems.length,
-                "items del localStorage al backend..."
-              );
-  
-              // Limpiar localStorage ANTES de sincronizar para evitar loops
-              localStorage.removeItem("cart");
-  
-              let syncCount = 0;
-              for (const item of localItems) {
-                try {
-                  console.log(
-                    `  ➕ Agregando: ${item.name} (qty: ${item.quantity || 1})`
-                  );
-                  await addToCartBackend(
-                    String(userData.user.id),
-                    item.id,
-                    item.quantity || 1,
-                    userData.token || ""
-                  );
-                  syncCount++;
-                } catch (err: any) {
-                  if (
-                    err.message?.includes("ya está en el carrito") ||
-                    err.message?.includes("already")
-                  ) {
-                    console.log(
-                      `  ⏭️ ${item.name} ya está en el carrito del backend`
-                    );
-                    syncCount++;
-                  } else {
-                    console.error(
-                      "❌ Error al sincronizar item:",
-                      item.name,
-                      err.message
-                    );
-                  }
-                }
-              }
-  
-              // Recargar carrito del backend
-              await loadCartFromBackend();
-  
-              if (syncCount > 0) {
-                toast.success(`Carrito sincronizado: ${syncCount} productos`);
-              }
-            } else {
-              // localStorage vacío, solo cargar del backend
-              localStorage.removeItem("cart");
-              await loadCartFromBackend();
-            }
-          } catch (err) {
-            console.error("💥 Error al sincronizar carrito:", err);
-            toast.error("Error al sincronizar el carrito");
-          }
-        } else {
-          console.log("📥 Cargando carrito del backend...");
-          await loadCartFromBackend();
-        }
-      };
-  
-      syncCart();
-    }, [userData?.user?.id, loadCartFromBackend]); */
 
   useEffect(() => {
     const syncCart = async () => {
@@ -253,7 +167,7 @@ function CartPage() {
         toast.success(
           `✅ ¡Orden #${data?.id?.slice(0, 8)} creada exitosamente! Total: $${data?.total
           }. Redirigiendo al historial...`,
-          { autoClose: 3000 }
+          { duration: 3000 }
         );
         setTimeout(() => {
           setOpen(false);
@@ -280,7 +194,6 @@ function CartPage() {
       setIsCheckingOut(false);
     }
   };
-  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
   const handleStripeCheckout = async () => {
     if (!userData?.user?.id) {
@@ -295,9 +208,6 @@ function CartPage() {
 
     setIsCheckingOut(true);
     try {
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error("No se pudo cargar Stripe");
-
       // Llamar a la API del backend para crear una sesión de checkout
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/sale-orders/checkout-stripe/${userData.user.id}`,
@@ -498,13 +408,14 @@ function CartPage() {
       <Dialog open={open} onClose={setOpen} className="relative z-10">
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="pointer-events-none fixed top-26 bottom-4 right-14 flex max-w-full pl-4 sm:pl-8">
+            <div className="pointer-events-none fixed top-26 bottom-4 right-2 xs:right-4 sm:right-8 md:right-14 flex max-w-full pl-2 xs:pl-4 sm:pl-8">
               <DialogPanel
                 transition
                 className="pointer-events-auto w-screen max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl transform transition duration-500 ease-in-out data-closed:translate-x-full sm:duration-700"
               >
-                <div className="flex h-full w-full border-amber-200 border-2 rounded-2xl flex-col overflow-y-auto bg-white shadow-xl">
-                  <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+                <div className="flex h-full w-full border-amber-200 border-2 rounded-2xl flex-col bg-white shadow-xl">
+                  {/* Header fijo del carrito */}
+                  <div className="px-4 py-4 sm:px-6 border-b border-gray-200">
                     <div className="flex items-start justify-between">
                       <DialogTitle className="text-lg font-medium text-gray-900">
                         Tu carrito
@@ -524,10 +435,12 @@ function CartPage() {
                         </button>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="mt-8">
-                      <div className="flow-root border-amber-200">
-                        <ul role="list" className="-my-6">
+                  {/* Contenido con scroll */}
+                  <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+                    <div className="flow-root border-amber-200">
+                      <ul role="list" className="-my-6">
                           {items.length === 0 ? (
                             <li className="py-6 text-gray-600">
                               Tu carrito está vacío
@@ -559,29 +472,29 @@ function CartPage() {
                               return (
                                 <li
                                   key={item.id}
-                                  className={`flex py-6 px-4 rounded-lg ${index % 2 === 0 ? "bg-amber-50" : "bg-white"
+                                  className={`flex py-3 sm:py-6 px-2 sm:px-4 rounded-lg ${index % 2 === 0 ? "bg-amber-50" : "bg-white"
                                     }`}
                                 >
-                                  <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
+                                  <div className="size-16 sm:size-24 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
                                     <Image
                                       src={imageSrc}
                                       alt={item.name}
                                       width={96}
                                       height={96}
                                       loading="lazy"
-                                      className="object-cover"
+                                      className="object-cover w-full h-full"
                                     />
                                   </div>
 
-                                  <div className="ml-4 flex flex-1 flex-col">
+                                  <div className="ml-2 sm:ml-4 flex flex-1 flex-col min-w-0">
                                     <div>
-                                      <div className="flex justify-between text-base font-medium text-gray-900">
-                                        <h3>
+                                      <div className="flex justify-between text-sm sm:text-base font-medium text-gray-900">
+                                        <h3 className="truncate pr-2">
                                           <a href={`/product/${item.id}`}>
                                             {item.name}
                                           </a>
                                         </h3>
-                                        <p className="ml-4">
+                                        <p className="ml-2 shrink-0 text-xs sm:text-base">
                                           $
                                           {(
                                             Number(item.price) *
@@ -589,7 +502,7 @@ function CartPage() {
                                           ).toLocaleString()}
                                         </p>
                                       </div>
-                                      <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                                      <p className="mt-1 text-xs sm:text-sm text-gray-500 line-clamp-2">
                                         {item.description}
                                       </p>
                                       <p className="mt-1 text-xs text-gray-400">
@@ -597,8 +510,8 @@ function CartPage() {
                                         {Number(item.price).toLocaleString()}
                                       </p>
                                     </div>
-                                    <div className="flex flex-1 items-end justify-between text-sm">
-                                      <div className="flex items-center gap-2">
+                                    <div className="flex flex-1 items-end justify-between text-sm mt-2">
+                                      <div className="flex items-center gap-1 sm:gap-2">
                                         <button
                                           onClick={() =>
                                             handleUpdateQuantity(
@@ -606,12 +519,12 @@ function CartPage() {
                                               (item.quantity || 1) - 1
                                             )
                                           }
-                                          className="w-8 h-8 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold text-gray-700"
+                                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold text-gray-700 text-sm"
                                           disabled={(item.quantity || 1) <= 1}
                                         >
                                           −
                                         </button>
-                                        <span className="w-12 text-center font-medium">
+                                        <span className="w-8 sm:w-12 text-center font-medium text-xs sm:text-sm">
                                           {item.quantity || 1}
                                         </span>
                                         <button
@@ -621,7 +534,7 @@ function CartPage() {
                                               (item.quantity || 1) + 1
                                             )
                                           }
-                                          className="w-8 h-8 rounded-md bg-amber-200 hover:bg-amber-300 flex items-center justify-center font-bold text-gray-700"
+                                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-amber-200 hover:bg-amber-300 flex items-center justify-center font-bold text-gray-700 text-sm"
                                         >
                                           +
                                         </button>
@@ -632,7 +545,7 @@ function CartPage() {
                                         onClick={() =>
                                           handleRemoveItem(item.id)
                                         }
-                                        className="font-medium text-red-600 rounded-md px-2 py-1 hover:bg-red-600 hover:text-white transition-colors duration-200"
+                                        className="font-medium text-red-600 rounded-md px-1 sm:px-2 py-1 hover:bg-red-600 hover:text-white transition-colors duration-200 text-xs sm:text-sm"
                                       >
                                         Quitar
                                       </button>
@@ -644,10 +557,16 @@ function CartPage() {
                           )}
                         </ul>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
+                    {/* Selector de método de entrega */}
+                    {items.length > 0 && (
+                      <DeliveryMethodSelector
+                        deliveryMethod={deliveryMethod}
+                        onMethodChange={setDeliveryMethod}
+                        shippingCost={shippingCost}
+                      />
+                    )}
+
                     {/* Resumen de costos */}
                     <div className="space-y-3 mb-4">
                       <div className="flex justify-between text-base text-gray-900">
@@ -657,8 +576,8 @@ function CartPage() {
                         </p>
                       </div>
 
-                      {/* Mostrar código postal y costo de envío */}
-                      {shippingData.postalCode && (
+                      {/* Mostrar código postal y costo de envío solo si eligió envío a domicilio */}
+                      {deliveryMethod === 'shipping' && shippingData.postalCode && (
                         <div className="flex justify-between text-sm text-gray-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
                           <div className="flex items-center gap-2">
                             <svg
@@ -721,28 +640,51 @@ function CartPage() {
                         </div>
                       )}
 
+                      {/* Mostrar costo de envío */}
+                      {deliveryMethod === 'shipping' && (
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <p>Envío</p>
+                          <p className="font-medium">
+                            {loadingShipping ? (
+                              <span className="text-xs">Calculando...</span>
+                            ) : shippingCost !== null ? (
+                              shippingCost === 0 ? "GRATIS" : `$${shippingCost.toLocaleString()}`
+                            ) : (
+                              <span className="text-xs text-amber-600">A calcular</span>
+                            )}
+                          </p>
+                        </div>
+                      )}
+
+                      {deliveryMethod === 'pickup' && (
+                        <div className="flex justify-between text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                          <p className="font-medium">Retiro en tienda</p>
+                          <p className="font-semibold">GRATIS</p>
+                        </div>
+                      )}
+
                       {/* Total */}
                       <div className="flex justify-between text-lg font-bold text-gray-900 pt-3 border-t border-gray-200">
                         <p>Total</p>
                         <p className="text-orange-600">
                           $
                           {(
-                            Number(getTotal()) + (shippingCost || 0)
+                            Number(getTotal()) + (deliveryMethod === 'shipping' ? (shippingCost || 0) : 0)
                           ).toLocaleString()}
                         </p>
                       </div>
 
-                      {/* Info de envío gratis */}
-                      {shippingCost !== null && shippingCost > 0 && (
+                      {/* Info de envío */}
+                      {deliveryMethod === 'shipping' && shippingCost !== null && shippingCost > 0 && (
                         <p className="text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
                           🚚 Costo de envío calculado según tu ubicación
                         </p>
                       )}
                     </div>
 
-                    {/* Formulario de código postal */}
-                    {items.length > 0 && !shippingData.postalCode && (
-                      <div className="mt-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-200">
+                    {/* Formulario de código postal - solo si eligió envío */}
+                    {items.length > 0 && deliveryMethod === 'shipping' && !shippingData.postalCode && (
+                      <div className="mt-6 bg-linear-to-r from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-200">
                         <div className="flex items-center gap-2 mb-3">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -795,8 +737,8 @@ function CartPage() {
                       </div>
                     )}
 
-                    {/* Botón para cambiar código postal si ya existe uno */}
-                    {items.length > 0 && shippingData.postalCode && (
+                    {/* Botón para cambiar código postal si ya existe uno y eligió envío */}
+                    {items.length > 0 && deliveryMethod === 'shipping' && shippingData.postalCode && (
                       <div className="mt-4">
                         <button
                           onClick={() => {
@@ -819,130 +761,18 @@ function CartPage() {
                       </div>
                     )}
 
-                    <div>
-                      <button
-                        onClick={!userData ? getLogin : handleCheckout}
-                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-transparent bg-amber-300 hover:bg-amber-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={items.length === 0 || isCheckingOut}
-                      >
-                        {isCheckingOut ? (
-                          <>
-                            <svg
-                              className="animate-spin h-5 w-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Procesando...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.95 17.4l-4.95-4.95-4.95 4.95L6 16.35l4.95-4.95L6 6.45 7.05 5.4l4.95 4.95 4.95-4.95L18 6.45l-4.95 4.95 4.95 4.95-1.05 1.05z" />
-                            </svg>
-                            {!userData
-                              ? "Inicia sesión para continuar"
-                              : "Pagar con MercadoPago"}
-                          </>
-                        )}
-                      </button>
+                    {/* Botones de pago */}
+                    <PaymentButtons
+                      isCheckingOut={isCheckingOut}
+                      itemsLength={items.length}
+                      userData={userData}
+                      totalAmount={getTotal()}
+                      onMercadoPagoCheckout={handleCheckout}
+                      onStripeCheckout={handleStripeCheckout}
+                      onLogin={getLogin}
+                    />
 
-                      <button
-                        onClick={handleStripeCheckout}
-                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-transparent bg-blue-300 hover:bg-blue-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-                        disabled={items.length === 0 || isCheckingOut}
-                      >
-                        {isCheckingOut ? (
-                          <>
-                            <svg
-                              className="animate-spin h-5 w-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Procesando...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.95 17.4l-4.95-4.95-4.95 4.95L6 16.35l4.95-4.95L6 6.45 7.05 5.4l4.95 4.95 4.95-4.95L18 6.45l-4.95 4.95 4.95 4.95-1.05 1.05z" />
-                            </svg>
-                            {!userData
-                              ? "Inicia sesión para continuar"
-                              : "Pagar con Stripe"}
-                          </>
-                        )}
-                      </button>
-
-                      {/* Información sobre conversión de moneda para Stripe */}
-                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                        <div className="flex items-start">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <div>
-                            <p className="text-xs font-medium text-blue-700">
-                              Información sobre pago con Stripe
-                            </p>
-                            <p className="text-xs text-blue-600 mt-1">
-                              Los pagos con Stripe se procesan en USD. Monto
-                              aproximado: ${(getTotal() / 1436).toFixed(2)} USD.
-                              Tu banco podría aplicar tasas de conversión
-                              adicionales.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="relative mt-6 mb-6">
+                    <div className="relative mt-6 mb-4">
                       <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-300"></div>
                       </div>
@@ -951,7 +781,7 @@ function CartPage() {
                       </div>
                     </div>
 
-                    <div className="flex justify-center text-center text-sm text-gray-500">
+                    <div className="flex justify-center text-center text-sm text-gray-500 mb-4">
                       <button
                         type="button"
                         onClick={handleClearCart}

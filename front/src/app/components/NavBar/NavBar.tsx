@@ -254,6 +254,29 @@ export default function Navbar() {
               🛒 Mi Carrito {itemsCount > 0 && `(${itemsCount})`}
             </Link>
           )}
+
+          {/* Botón de Login/Logout en mobile */}
+          <div className="border-t border-gray-300 pt-4">
+            {userData && userData.user ? (
+              <button
+                onClick={() => {
+                  setShowConfirm(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left text-red-600 hover:text-red-700 transition py-2 text-base font-medium"
+              >
+                🚪 Cerrar Sesión
+              </button>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="block text-orange-500 hover:text-orange-600 transition py-2 text-base font-semibold"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🔑 Iniciar Sesión
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </header>
