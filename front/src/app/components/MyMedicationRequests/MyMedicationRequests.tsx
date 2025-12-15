@@ -1,0 +1,258 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import {
+  getMyMedicationRequests,
+  deleteMyMedicationRequest,
+  MedicationRequest,
+  getStatusColor,
+  getUrgencyColor,
+  formatDate,
+} from '@/src/services/controlled-medications.services';
+
+interface MyMedicationRequestsProps {
+  veterinarianId: string;
+  refreshTrigger?: number;
+}
+
+export default function MyMedicationRequests({
+  veterinarianId,
+  refreshTrigger,
+}: MyMedicationRequestsProps) {
+  const [requests, setRequests] = useState<MedicationRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('todos');
+
+  useEffect(() => {
+    loadRequests();
+  }, [veterinarianId, refreshTrigger]);
+
+  const loadRequests = async () => {
+    try {
+      setLoading(true);
+      const data = await getMyMedicationRequests(veterinarianId);
+      setRequests(data.requests);
+    } catch (error) {
+      console.error('Error cargando solicitudes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (requestIndex: number) => {
+    if (!confirm('¿Estás seguro de eliminar esta solicitud?')) return;
+
+    try {
+      await deleteMyMedicationRequest(veterinarianId, requestIndex);
+      loadRequests();
+    } catch (error) {
+      console.error('Error eliminando solicitud:', error);
+    }
+  };
+
+  const filteredRequests = requests.filter((req) => {
+    if (filter === 'todos') return true;
+    return req.estado === filter;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          📋 Mis Solicitudes de Medicamentos
+        </h2>
+        <p className="text-gray-600 text-sm">
+          Total de solicitudes: {requests.length}
+        </p>
+      </div>
+
+      {/* Filtros */}
+      <div className="mb-6 flex gap-2 flex-wrap">
+        <button
+          onClick={() => setFilter('todos')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'todos'
+              ? 'bg-orange-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Todos ({requests.length})
+        </button>
+        <button
+          onClick={() => setFilter('pendiente')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'pendiente'
+              ? 'bg-yellow-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Pendientes ({requests.filter((r) => r.estado === 'pendiente').length})
+        </button>
+        <button
+          onClick={() => setFilter('aprobado')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'aprobado'
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Aprobados ({requests.filter((r) => r.estado === 'aprobado').length})
+        </button>
+        <button
+          onClick={() => setFilter('rechazado')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === 'rechazado'
+              ? 'bg-red-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Rechazados ({requests.filter((r) => r.estado === 'rechazado').length})
+        </button>
+      </div>
+
+      {/* Tabla */}
+      {filteredRequests.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500 text-lg">
+            {filter === 'todos'
+              ? '📭 No tienes solicitudes aún'
+              : `📭 No tienes solicitudes en estado "${filter}"`}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Medicamento
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cantidad
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Urgencia
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fecha Solicitud
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredRequests.map((request, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {request.nombre}
+                      </p>
+                      {request.justificacion && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {request.justificacion.substring(0, 50)}...
+                        </p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-gray-900">
+                      {request.cantidad}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getUrgencyColor(
+                        request.urgencia
+                      )}`}
+                    >
+                      {request.urgencia.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(
+                        request.estado
+                      )}`}
+                    >
+                      {request.estado.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(request.fechaSolicitud)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          alert(
+                            `Medicamento: ${request.nombre}\n` +
+                            `Cantidad: ${request.cantidad}\n` +
+                            `Urgencia: ${request.urgencia}\n` +
+                            `Estado: ${request.estado}\n` +
+                            `Justificación: ${request.justificacion || 'N/A'}\n` +
+                            `Comentario Admin: ${request.comentarioAdmin || 'N/A'}`
+                          );
+                        }}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        👁️ Ver
+                      </button>
+                      {request.estado === 'pendiente' && (
+                        <button
+                          onClick={() => handleDelete(index)}
+                          className="text-red-600 hover:text-red-900 ml-2"
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Información de respuesta del admin */}
+      {filteredRequests.some((r) => r.comentarioAdmin) && (
+        <div className="mt-6 space-y-3">
+          <h3 className="font-semibold text-gray-800">💬 Respuestas del Administrador:</h3>
+          {filteredRequests
+            .filter((r) => r.comentarioAdmin)
+            .map((request, index) => (
+              <div
+                key={index}
+                className={`p-4 rounded-lg border-2 ${
+                  request.estado === 'aprobado'
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <p className="font-semibold text-sm">
+                  {request.nombre} - {request.estado.toUpperCase()}
+                </p>
+                <p className="text-sm mt-1">{request.comentarioAdmin}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Respondido: {request.fechaRespuesta ? formatDate(request.fechaRespuesta) : 'N/A'}
+                </p>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}

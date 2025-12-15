@@ -163,9 +163,9 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando chat...</p>
                 </div>
             </div>
@@ -173,7 +173,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="min-h-screen pt-20 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen pt-20 bg-gradient-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto h-[calc(100vh-5rem)] flex flex-col">
                 {/* Header del chat */}
                 <div className="bg-white shadow-md p-4 flex items-center gap-3">
@@ -229,7 +229,7 @@ export default function ChatPage() {
                                         <div
                                             className={`rounded-2xl px-4 py-2 ${
                                                 isOwn
-                                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                                                    ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white'
                                                     : 'bg-white text-gray-800 shadow-sm'
                                             }`}
                                         >
@@ -263,7 +263,7 @@ export default function ChatPage() {
                                             setNewMessage(msg.text);
                                             setShowQuickMessages(false);
                                         }}
-                                        className="text-left px-3 py-2 bg-white hover:bg-orange-50 rounded-lg text-sm border border-gray-200 hover:border-orange-300 transition-all"
+                                        className="text-left px-3 py-2 bg-white hover:bg-purple-50 rounded-lg text-sm border border-gray-200 hover:border-purple-300 transition-all"
                                     >
                                         <span className="mr-1">{msg.icon}</span>
                                         <span className="text-gray-700">{msg.text}</span>
@@ -291,12 +291,12 @@ export default function ChatPage() {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 placeholder="Escribe un mensaje..."
                                 disabled={sending}
-                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full focus:border-orange-500 focus:outline-none transition disabled:opacity-50"
+                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full focus:border-purple-500 focus:outline-none transition disabled:opacity-50"
                             />
                             <button
                                 type="submit"
                                 disabled={!newMessage.trim() || sending}
-                                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-3 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white p-3 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {sending ? (
                                     <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

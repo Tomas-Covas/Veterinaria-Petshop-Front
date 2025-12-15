@@ -22,8 +22,8 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+    if (!newPassword || newPassword.trim() === '') {
+      alert('La contraseña no puede estar vacía');
       return;
     }
 

@@ -99,21 +99,21 @@ export default function VetConversationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Cargando conversación...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Cargando chat...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-6 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen pt-20 bg-gradient-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-purple-500 to-violet-500 p-4 flex items-center gap-3">
                         <button
                             onClick={() => router.push('/dashboard/messages')}
                             className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
@@ -160,11 +160,11 @@ export default function VetConversationPage() {
                                     <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`max-w-[70%] rounded-lg p-3 ${
                                             isMine 
-                                                ? 'bg-blue-500 text-white' 
+                                                ? 'bg-purple-500 text-white' 
                                                 : 'bg-gray-100 text-gray-900'
                                         }`}>
                                             <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                                            <p className={`text-xs mt-1 ${isMine ? 'text-blue-100' : 'text-gray-500'}`}>
+                                            <p className={`text-xs mt-1 ${isMine ? 'text-purple-100' : 'text-gray-500'}`}>
                                                 {new Date(message.createdAt).toLocaleTimeString('es-ES', {
                                                     hour: '2-digit',
                                                     minute: '2-digit'
@@ -197,7 +197,7 @@ export default function VetConversationPage() {
                                     <button
                                         key={idx}
                                         onClick={() => handleQuickMessage(msg)}
-                                        className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors"
+                                        className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded transition-colors"
                                     >
                                         {msg}
                                     </button>
@@ -208,7 +208,7 @@ export default function VetConversationPage() {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setShowQuickMessages(!showQuickMessages)}
-                                className="p-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                className="p-3 text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
                                 title="Mensajes rápidos"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,14 +222,14 @@ export default function VetConversationPage() {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                                 placeholder="Escribe un mensaje..."
-                                className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 disabled={sending}
                             />
 
                             <button
                                 onClick={handleSend}
                                 disabled={!newMessage.trim() || sending}
-                                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-semibold"
+                                className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-semibold"
                             >
                                 {sending ? 'Enviando...' : 'Enviar'}
                             </button>
