@@ -132,10 +132,10 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
         const response = await res.json();
         
         // El backend devuelve {message: string, data: Array}
-        const orders = response.data || response.orders || response.saleOrders || response;
+        const orders = response.data/*  || response.orders || response.saleOrders || response; */
         
         // Asegurarse de que sea un array
-        return Array.isArray(orders) ? orders : [];
+        return orders
     } catch (error: any) {
         console.error('Error en getUserOrders:', error);
         return [];

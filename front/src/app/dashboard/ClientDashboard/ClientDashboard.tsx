@@ -89,7 +89,7 @@ export default function ClientDashboard() {
     };
 
     fetchOrders();
-  }, [userData.user.id]);
+  }, [userData!.user.id]);
 
 
   useEffect(() => {

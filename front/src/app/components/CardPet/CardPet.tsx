@@ -5,7 +5,6 @@ import Image from 'next/image'
 import avatar from "@/src/assets/avatarHueso.png"
 
 const CardPet: React.FC<IPet> = (pet) => {
-  console.log("PET EN CARD:", pet);
 
   const getPetAge = () => {
     const start = new Date(pet.fecha_nacimiento).getTime()
