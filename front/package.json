@@ -13,6 +13,7 @@
     "@heroicons/react": "^2.2.0",
     "@maptiler/sdk": "^3.9.0",
     "@mercadopago/sdk-js": "^0.0.3",
+    "@stripe/stripe-js": "^8.5.3",
     "country-state-city": "^3.2.1",
     "flowbite": "^4.0.1",
     "formik": "^2.4.9",
@@ -24,6 +25,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.5.1",
     "sonner": "^2.0.7",
+    "uuid": "^13.0.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {
