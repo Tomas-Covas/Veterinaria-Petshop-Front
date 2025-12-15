@@ -468,3 +468,47 @@ export const createCheckout = async (userId: string, token: string) => {
         throw error;
     }
 };
+
+// Checkout con Stripe
+export const checkoutStripe = async (userId: string, token: string) => {
+    try {
+        const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL || 'http://localhost:3002';
+        
+        console.log('🔵 Iniciando checkout con Stripe para userId:', userId);
+        console.log('🌐 URLs de retorno basadas en:', ngrokUrl);
+        
+        const response = await fetch(`${APIURL}/sale-orders/checkout-stripe/${userId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: token })
+            },
+            body: JSON.stringify({
+                success_url: `${ngrokUrl}/checkout/success`,
+                cancel_url: `${ngrokUrl}/checkout/cancel`,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error en checkout Stripe:', errorText);
+            throw new Error(`Error al crear checkout de Stripe: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Respuesta de Stripe checkout:', data);
+        
+        if (data.checkoutUrl) {
+            // Redirigir al usuario a la página de pago de Stripe
+            window.location.href = data.checkoutUrl;
+        } else {
+            throw new Error('No se recibió URL de checkout de Stripe');
+        }
+        
+        return data;
+    } catch (error: any) {
+        console.error('💥 Error en checkoutStripe:', error);
+        throw error;
+    }
+};
