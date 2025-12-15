@@ -128,7 +128,7 @@ export default function LocationButton() {
   return (
     <>
       {/* Botón de ubicación con dirección */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <button
           onClick={() => setShowModal(true)}
           className="relative p-2 rounded-full hover:bg-gray-200 transition-colors duration-200"

@@ -123,7 +123,8 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
                 /* ...(token && { Authorization: `Bearer ${token}` }) */
             }
         });
-        
+        console.log("📦 Órdenes recibidas:", res);
+
         if (!res.ok) {
             console.error('Error al obtener órdenes del usuario:', res.status);
             return [];
@@ -131,11 +132,7 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
         
         const response = await res.json();
         
-        // El backend devuelve {message: string, data: Array}
-        const orders = response.data/*  || response.orders || response.saleOrders || response; */
-        
-        // Asegurarse de que sea un array
-        return orders
+        return response
     } catch (error: any) {
         console.error('Error en getUserOrders:', error);
         return [];
