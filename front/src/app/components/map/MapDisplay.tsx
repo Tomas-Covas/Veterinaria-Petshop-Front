@@ -130,7 +130,25 @@ export default function MapDisplay() {
         llamarBackendYDibujarRuta(clientLong, clientLat);
       },
       (error) => {
-        console.error("Error al obtener ubicación:", error);
+        let errorMessage = "Error desconocido";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Permiso de ubicación denegado";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Ubicación no disponible";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Tiempo de espera agotado";
+            break;
+          default:
+            errorMessage = error.message || "Error desconocido";
+        }
+        console.warn(
+          "Error al obtener ubicación del cliente:",
+          errorMessage,
+          error.code
+        );
       },
       {
         enableHighAccuracy: true,
@@ -158,6 +176,13 @@ export default function MapDisplay() {
       );
 
       if (!response.ok) {
+        // Si el backend no tiene el endpoint, solo log sin lanzar error
+        if (response.status === 503 || response.status === 404) {
+          console.warn(
+            `⚠️ Endpoint de direcciones no disponible (${response.status}). Mostrando solo ubicación.`
+          );
+          return;
+        }
         throw new Error(`Backend respondió ${response.status}`);
       }
 

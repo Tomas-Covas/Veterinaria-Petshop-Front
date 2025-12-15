@@ -6,6 +6,11 @@ import { IProduct } from "@/src/types";
 import VeterinarianManagement from "./VeterinarianManagement";
 import OrderHistory from "./OrderHistory";
 import StoreManagement from "./StoreManagement";
+import Analytics from "./Analytics";
+import AdminMedicationRequests from "@/src/app/components/AdminMedicationRequests/AdminMedicationRequests";
+import dynamic from 'next/dynamic';
+
+const GeneralMedicationsPage = dynamic(() => import('../general-medications/page'), { ssr: false });
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -73,7 +78,7 @@ export default function AdminDashboard() {
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [activeTab, setActiveTab] = useState<'appointments' | 'orders' | 'store'>('appointments');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'appointments' | 'orders' | 'store' | 'medications' | 'general-medications'>('analytics');
 
   useEffect(() => {
     if (userData?.token) {
@@ -89,13 +94,18 @@ export default function AdminDashboard() {
       const response = await fetch(`${API_URL}/appointments/AllAppointments`, {
         credentials: 'include',
         headers: {
-          ...(userData?.token && { Authorization: `Bearer ${userData.token}` }),
+          'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAppointments(Array.isArray(data) ? data : data.data || []);
+        console.log('📅 Turnos recibidos:', data);
+        const appointmentsArray = Array.isArray(data) ? data : data.data || [];
+        console.log('📊 Total de turnos:', appointmentsArray.length);
+        setAppointments(appointmentsArray);
+      } else {
+        console.error('❌ Error al cargar turnos:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error al cargar turnos:', error);
@@ -110,13 +120,15 @@ export default function AdminDashboard() {
       const response = await fetch(`${API_URL}/sale-orders`, {
         credentials: 'include',
         headers: {
-          ...(userData?.token && { Authorization: `Bearer ${userData.token}` }),
+          'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('🛒 Órdenes recibidas:', data);
         const ordersArray = Array.isArray(data) ? data : data.data || [];
+        console.log('📊 Total de órdenes:', ordersArray.length);
         setOrders(ordersArray);
       }
     } catch (error) {
@@ -132,13 +144,18 @@ export default function AdminDashboard() {
       const response = await fetch(`${API_URL}/products`, {
         credentials: 'include',
         headers: {
-          ...(userData?.token && { Authorization: `Bearer ${userData.token}` }),
+          'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setProducts(Array.isArray(data) ? data : data.data || []);
+        console.log('📦 Productos recibidos:', data);
+        const productsArray = Array.isArray(data) ? data : data.data || [];
+        console.log('📊 Total de productos:', productsArray.length);
+        setProducts(productsArray);
+      } else {
+        console.error('❌ Error al cargar productos:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error al cargar productos:', error);
@@ -158,6 +175,16 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="mb-6 border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`${
+                activeTab === 'analytics'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all`}
+            >
+              📊 Analytics
+            </button>
             <button
               onClick={() => setActiveTab('appointments')}
               className={`${
@@ -188,10 +215,34 @@ export default function AdminDashboard() {
             >
               🏪 Administración de Store
             </button>
+            <button
+              onClick={() => setActiveTab('medications')}
+              className={`${
+                activeTab === 'medications'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all`}
+            >
+              🔐 Medicamentos Controlados
+            </button>
+            <button
+              onClick={() => setActiveTab('general-medications')}
+              className={`${
+                activeTab === 'general-medications'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all`}
+            >
+              💊 Medicamentos Generales
+            </button>
           </nav>
         </div>
 
         {/* Content */}
+        {activeTab === 'analytics' && (
+          <Analytics />
+        )}
+
         {activeTab === 'appointments' && (
           <VeterinarianManagement 
             appointments={appointments} 
@@ -213,6 +264,14 @@ export default function AdminDashboard() {
             onProductsChange={loadProducts}
             userToken={userData?.token}
           />
+        )}
+
+        {activeTab === 'medications' && (
+          <AdminMedicationRequests />
+        )}
+
+        {activeTab === 'general-medications' && (
+          <GeneralMedicationsPage />
         )}
       </div>
     </div>

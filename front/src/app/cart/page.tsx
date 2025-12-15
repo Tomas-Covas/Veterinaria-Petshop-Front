@@ -15,14 +15,15 @@ import { useAuth } from "@/src/context/AuthContext";
 import {
   addToCartBackend,
   createCheckout,
+  calculateShipping,
 } from "@/src/services/order.services";
 import { toast } from "sonner";
 import Image, { StaticImageData } from "next/image";
 import { XMarkIcon } from "@heroicons/react/16/solid";
 import MercadoPagoWallet from "../components/MercadoPagoWallet/MercadoPagoWallet";
-import { loadStripe } from "@stripe/stripe-js";
 import fallbackImage from "@/src/assets/avatar.jpg";
 import { useShipping } from "@/src/context/ShippingContext";
+import { loadStripe } from "@stripe/stripe-js";
 
 function CartPage() {
   const [open, setOpen] = useState(true);
@@ -31,8 +32,11 @@ function CartPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const hasSyncedRef = useRef(false);
   const [postalCodeInput, setPostalCodeInput] = useState("");
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const [loadingShipping, setLoadingShipping] = useState(false);
 
   const { shippingData, updatePostalCode } = useShipping();
+
   const {
     cartItems,
     removeFromCart,
@@ -53,6 +57,7 @@ function CartPage() {
     router.push("/auth/login?redirect=/cart");
   };
 
+  // Cargar carrito después de definir userData - SOLO UNA VEZ
   useEffect(() => {
     const syncCart = async () => {
       if (!userData?.user?.id) {
@@ -64,6 +69,10 @@ function CartPage() {
         return;
       }
 
+      // Marcar INMEDIATAMENTE como sincronizado para evitar ejecuciones múltiples
+      hasSyncedRef.current = true;
+
+      // Primero verificar si hay items en localStorage
       const localCart = localStorage.getItem("cart");
       console.log("💾 localStorage cart:", localCart ? "SÍ" : "NO");
 
@@ -72,6 +81,15 @@ function CartPage() {
           const localItems: IProduct[] = JSON.parse(localCart);
 
           if (localItems.length > 0) {
+            console.log(
+              "🔄 Sincronizando",
+              localItems.length,
+              "items del localStorage al backend..."
+            );
+
+            // Limpiar localStorage ANTES de sincronizar para evitar loops
+            localStorage.removeItem("cart");
+
             let syncCount = 0;
             for (const item of localItems) {
               try {
@@ -104,10 +122,16 @@ function CartPage() {
               }
             }
 
-            hasSyncedRef.current = true;
+            // Recargar carrito del backend
             await loadCartFromBackend();
+
+            if (syncCount > 0) {
+              toast.success(`Carrito sincronizado: ${syncCount} productos`);
+            }
+          } else {
+            // localStorage vacío, solo cargar del backend
             localStorage.removeItem("cart");
-            toast.success(`Carrito sincronizado: ${syncCount} productos`);
+            await loadCartFromBackend();
           }
         } catch (err) {
           console.error("💥 Error al sincronizar carrito:", err);
@@ -116,12 +140,11 @@ function CartPage() {
       } else {
         console.log("📥 Cargando carrito del backend...");
         await loadCartFromBackend();
-        hasSyncedRef.current = true;
       }
     };
 
     syncCart();
-  }, [userData?.user?.id]);
+  }, [userData?.user?.id, loadCartFromBackend]);
 
   const handleCheckout = async () => {
     if (!userData?.user?.id) {
@@ -198,22 +221,7 @@ function CartPage() {
           "El carrito está vacío. Agrega productos antes de continuar."
         );
       } else if (errorMessage.includes("Insufficient stock")) {
-        const productMatch = errorMessage.match(/product "([^"]+)"/);
-        const availableMatch = errorMessage.match(/Available: (\d+)/);
-        const requestedMatch = errorMessage.match(/requested: (\d+)/);
-
-        if (productMatch && availableMatch && requestedMatch) {
-          const productName = productMatch[1];
-          const available = availableMatch[1];
-          const requested = requestedMatch[1];
-          toast.error(
-            `"${productName}" no tiene stock suficiente. Disponible: ${available}, solicitado: ${requested}. Por favor ajusta la cantidad.`
-          );
-        } else {
-          toast.error(
-            "Uno o más productos no tienen stock suficiente. Por favor verifica las cantidades."
-          );
-        }
+        toast.error("Uno o más productos no tienen stock suficiente.");
       } else {
         toast.error(errorMessage || "Error al procesar el pago");
       }
@@ -279,14 +287,106 @@ function CartPage() {
     }
   }, [shippingData.postalCode]);
 
+  const handleCalculateShipping = async (postalCode: string) => {
+    if (!postalCode.trim() || items.length === 0) return;
+
+    setLoadingShipping(true);
+    try {
+      const itemsForShipping = items.map((item) => ({
+        productId: String(item.id),
+        quantity: item.quantity || 1,
+      }));
+
+      // Intentar primero con geolocalización
+      let result = null;
+
+      try {
+        if ("geolocation" in navigator) {
+          console.log("📍 Intentando obtener ubicación del usuario...");
+          const position = await new Promise<GeolocationPosition>(
+            (resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                timeout: 5000,
+                maximumAge: 300000,
+              });
+            }
+          );
+
+          const { latitude, longitude } = position.coords;
+          console.log("✅ Ubicación obtenida:", { latitude, longitude });
+
+          const response = await fetch(
+            `${
+              process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+            }/sale-orders/calculate-shipping`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+                ...(userData?.token && { Authorization: userData.token }),
+              },
+              body: JSON.stringify({
+                latitude,
+                longitude,
+                items: itemsForShipping,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            result = await response.json();
+            console.log("✅ Cálculo con coordenadas exitoso:", result);
+          } else {
+            throw new Error("Falló el cálculo con coordenadas");
+          }
+        }
+      } catch (geoError: any) {
+        console.warn("⚠️ No se pudo usar geolocalización:", geoError.message);
+      }
+
+      // Si falló la geolocalización, usar código postal
+      if (!result) {
+        console.log("🚚 Calculando envío con código postal:", postalCode);
+        result = await calculateShipping(
+          postalCode,
+          itemsForShipping,
+          userData?.token
+        );
+        console.log("✅ Resultado del cálculo:", result);
+      }
+
+      if (result && typeof result.shippingCost === "number") {
+        setShippingCost(result.shippingCost);
+      } else if (result && typeof result.cost === "number") {
+        setShippingCost(result.cost);
+      } else {
+        setShippingCost(0);
+      }
+    } catch (error: any) {
+      console.error("❌ Error al calcular envío:", error);
+      setShippingCost(null);
+    } finally {
+      setLoadingShipping(false);
+    }
+  };
+
   const handleSavePostalCode = () => {
     if (!postalCodeInput.trim()) {
       toast.error("Ingresa un código postal válido");
       return;
     }
     updatePostalCode(postalCodeInput);
+    handleCalculateShipping(postalCodeInput);
     toast.success("Código postal guardado");
   };
+
+  // Recalcular envío cuando cambian los items del carrito
+  useEffect(() => {
+    if (shippingData.postalCode && items.length > 0) {
+      handleCalculateShipping(shippingData.postalCode);
+    }
+  }, [items.length]);
 
   const handleUpdateQuantity = async (
     productId: number | string,
@@ -500,12 +600,100 @@ function CartPage() {
                   </div>
 
                   <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
-                    <div className="flex justify-between text-base font-medium text-gray-900">
-                      <p>Subtotal</p>
-                      <p>${Number(getTotal()).toLocaleString()}</p>
+                    {/* Resumen de costos */}
+                    <div className="space-y-3 mb-4">
+                      <div className="flex justify-between text-base text-gray-900">
+                        <p>Subtotal</p>
+                        <p className="font-medium">
+                          ${Number(getTotal()).toLocaleString()}
+                        </p>
+                      </div>
+
+                      {/* Mostrar código postal y costo de envío */}
+                      {shippingData.postalCode && (
+                        <div className="flex justify-between text-sm text-gray-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-green-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            <span>Envío a: {shippingData.postalCode}</span>
+                          </div>
+                          {loadingShipping ? (
+                            <div className="flex items-center gap-1">
+                              <svg
+                                className="animate-spin h-4 w-4 text-green-600"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              <span className="text-xs">Calculando...</span>
+                            </div>
+                          ) : shippingCost !== null ? (
+                            <span className="font-medium text-green-700">
+                              {shippingCost === 0
+                                ? "GRATIS"
+                                : `$${shippingCost.toLocaleString()}`}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-amber-600">
+                              A calcular
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Total */}
+                      <div className="flex justify-between text-lg font-bold text-gray-900 pt-3 border-t border-gray-200">
+                        <p>Total</p>
+                        <p className="text-orange-600">
+                          $
+                          {(
+                            Number(getTotal()) + (shippingCost || 0)
+                          ).toLocaleString()}
+                        </p>
+                      </div>
+
+                      {/* Info de envío gratis */}
+                      {shippingCost !== null && shippingCost > 0 && (
+                        <p className="text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+                          🚚 Costo de envío calculado según tu ubicación
+                        </p>
+                      )}
                     </div>
 
-                    {items.length > 0 && (
+                    {/* Formulario de código postal */}
+                    {items.length > 0 && !shippingData.postalCode && (
                       <div className="mt-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-200">
                         <div className="flex items-center gap-2 mb-3">
                           <svg
@@ -553,29 +741,33 @@ function CartPage() {
                           </button>
                         </div>
 
-                        {shippingData.postalCode && (
-                          <div className="mt-2 flex items-center gap-1 text-xs text-green-700">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            <span>CP guardado: {shippingData.postalCode}</span>
-                          </div>
-                        )}
-
                         <p className="mt-2 text-xs text-blue-700">
-                          💡 Tu código postal se guardará para futuras compras
+                          💡 Ingresá tu código postal para calcular el envío
                         </p>
+                      </div>
+                    )}
+
+                    {/* Botón para cambiar código postal si ya existe uno */}
+                    {items.length > 0 && shippingData.postalCode && (
+                      <div className="mt-4">
+                        <button
+                          onClick={() => {
+                            const newPostal = prompt(
+                              "Ingresá tu nuevo código postal:",
+                              shippingData.postalCode
+                            );
+                            if (newPostal && newPostal.trim()) {
+                              updatePostalCode(newPostal.trim());
+                              setPostalCodeInput(newPostal.trim());
+                              handleCalculateShipping(newPostal.trim());
+                              toast.success("Código postal actualizado");
+                            }
+                          }}
+                          disabled={loadingShipping}
+                          className="text-sm text-blue-600 hover:text-blue-800 underline disabled:opacity-50"
+                        >
+                          Cambiar código postal
+                        </button>
                       </div>
                     )}
 

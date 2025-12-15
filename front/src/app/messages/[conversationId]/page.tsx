@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
-import { getMessages, sendMessage } from "@/src/services/messages.services";
+import { getMessages, sendMessage, markAsRead } from "@/src/services/messages.services";
+import { useMessages } from "@/src/context/MessagesContext";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import avatar from "@/src/assets/avatarHueso.png";
@@ -54,6 +55,7 @@ export default function ChatPage() {
     const params = useParams();
     const conversationId = params.conversationId as string;
     const { userData } = useAuth();
+    const { refreshUnreadCount } = useMessages();
     const router = useRouter();
     
     const [messages, setMessages] = useState<Message[]>([]);
@@ -63,6 +65,8 @@ export default function ChatPage() {
     const [otherUser, setOtherUser] = useState<any>(null);
     const [showQuickMessages, setShowQuickMessages] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const previousMessagesCount = useRef(0);
+    const isInitialLoad = useRef(true);
 
     // Obtener mensajes rápidos según el rol del usuario
     const userRole = userData?.user?.role || 'client';
@@ -82,17 +86,48 @@ export default function ChatPage() {
     }, [conversationId, userData?.user?.id]);
 
     useEffect(() => {
-        scrollToBottom();
+        // Solo hacer scroll automático si hay mensajes nuevos (no en la carga inicial)
+        if (!isInitialLoad.current && messages.length > previousMessagesCount.current) {
+            scrollToBottom();
+        }
+        
+        if (isInitialLoad.current && messages.length > 0) {
+            isInitialLoad.current = false;
+        }
+        
+        previousMessagesCount.current = messages.length;
     }, [messages]);
 
     const loadMessages = async () => {
         try {
             const data = await getMessages(conversationId);
-            setMessages(data.messages || []);
+            const messagesArray = Array.isArray(data) ? data : (data.messages || []);
+            setMessages(messagesArray);
+            
+            // Marcar como leídos los mensajes que no son míos y no están leídos
+            const unreadMessages = messagesArray.filter(
+                (msg: Message) => msg.senderId !== userData?.user?.id && !msg.isRead
+            );
+            
+            if (unreadMessages.length > 0) {
+                // Marcar cada mensaje como leído
+                unreadMessages.forEach(async (msg: Message) => {
+                    try {
+                        await markAsRead(msg.id);
+                    } catch (error) {
+                        console.error('Error al marcar mensaje como leído:', error);
+                    }
+                });
+                
+                // Actualizar el contador de no leídos inmediatamente
+                setTimeout(() => {
+                    refreshUnreadCount();
+                }, 500);
+            }
             
             // Identificar al otro usuario
-            if (data.messages && data.messages.length > 0) {
-                const firstMessage = data.messages[0];
+            if (messagesArray && messagesArray.length > 0) {
+                const firstMessage = messagesArray[0];
                 if (firstMessage.sender && firstMessage.senderId !== userData?.user?.id) {
                     setOtherUser(firstMessage.sender);
                 }
@@ -128,9 +163,9 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando chat...</p>
                 </div>
             </div>
@@ -138,7 +173,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="min-h-screen pt-20 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen pt-20 bg-gradient-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto h-[calc(100vh-5rem)] flex flex-col">
                 {/* Header del chat */}
                 <div className="bg-white shadow-md p-4 flex items-center gap-3">
@@ -194,7 +229,7 @@ export default function ChatPage() {
                                         <div
                                             className={`rounded-2xl px-4 py-2 ${
                                                 isOwn
-                                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                                                    ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white'
                                                     : 'bg-white text-gray-800 shadow-sm'
                                             }`}
                                         >
@@ -228,7 +263,7 @@ export default function ChatPage() {
                                             setNewMessage(msg.text);
                                             setShowQuickMessages(false);
                                         }}
-                                        className="text-left px-3 py-2 bg-white hover:bg-orange-50 rounded-lg text-sm border border-gray-200 hover:border-orange-300 transition-all"
+                                        className="text-left px-3 py-2 bg-white hover:bg-purple-50 rounded-lg text-sm border border-gray-200 hover:border-purple-300 transition-all"
                                     >
                                         <span className="mr-1">{msg.icon}</span>
                                         <span className="text-gray-700">{msg.text}</span>
@@ -256,12 +291,12 @@ export default function ChatPage() {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 placeholder="Escribe un mensaje..."
                                 disabled={sending}
-                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full focus:border-orange-500 focus:outline-none transition disabled:opacity-50"
+                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full focus:border-purple-500 focus:outline-none transition disabled:opacity-50"
                             />
                             <button
                                 type="submit"
                                 disabled={!newMessage.trim() || sending}
-                                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-3 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white p-3 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {sending ? (
                                     <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

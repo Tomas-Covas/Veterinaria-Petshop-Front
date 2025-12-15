@@ -16,7 +16,6 @@ import {
 } from "../../services/pet.services";
 import Link from "next/link";
 import { IPet, IAppointment } from "@/src/types";
-import { showConfirmToast } from "../../components/ConfirmCancel/ConfirmToast";
 import ConfirmModal from "../../components/ConfirmCancel/ConfirmModal";
 
 const APIURL = process.env.NEXT_PUBLIC_API_URL;

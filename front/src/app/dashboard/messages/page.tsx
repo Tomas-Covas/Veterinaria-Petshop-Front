@@ -6,22 +6,28 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import avatar from "@/src/assets/avatarHueso.png";
 
-export default function MessagesPage() {
+export default function VetMessagesPage() {
     const { conversations, loadConversations } = useMessages();
     const { userData } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log('📬 MessagesPage montada');
+        console.log('📬 VetMessagesPage montada');
         console.log('👤 userData:', userData?.user);
         console.log('🆔 userId:', userData?.user?.id);
         console.log('🎭 role:', userData?.user?.role);
         
+        // Verificar que sea veterinario
+        if (userData?.user?.role !== 'veterinarian') {
+            console.log('❌ No es veterinario, redirigiendo');
+            router.push('/dashboard');
+            return;
+        }
+        
         if (userData?.user?.id) {
-            console.log('✅ Usuario encontrado, cargando conversaciones...');
+            console.log('✅ Veterinario encontrado, cargando conversaciones...');
             
-            // Veterinarios también pueden usar mensajería
             loadConversations()
                 .then(() => {
                     console.log('✅ Conversaciones cargadas exitosamente');
@@ -37,9 +43,9 @@ export default function MessagesPage() {
             console.log('⏳ Esperando userData...');
             setLoading(false);
         }
-    }, [userData?.user?.id]);
+    }, [userData?.user?.id, userData?.user?.role]);
 
-    // Si no hay usuario después de cargar, mostrar mensaje
+    // Si no hay usuario después de cargar
     if (!userData?.user?.id) {
         return (
             <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
@@ -83,12 +89,12 @@ export default function MessagesPage() {
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                     </svg>
-                                    Mensajes
+                                    Mensajes Veterinario
                                 </h1>
-                                <p className="text-white/90 mt-2">Tus conversaciones con veterinarios y administradores</p>
+                                <p className="text-white/90 mt-2">Tus conversaciones con pacientes, veterinarios y administradores</p>
                             </div>
                             <button
-                                onClick={() => router.push('/messages/new')}
+                                onClick={() => router.push('/dashboard/messages/new')}
                                 className="bg-white text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-full font-semibold shadow-lg transition-all flex items-center gap-2"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,7 +113,13 @@ export default function MessagesPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                 </svg>
                                 <p className="text-gray-500 text-lg">No tienes conversaciones aún</p>
-                                <p className="text-gray-400 text-sm mt-2">Cuando inicies una conversación aparecerá aquí</p>
+                                <p className="text-gray-400 text-sm mt-2">Cuando inicies una conversación con un paciente o administrador aparecerá aquí</p>
+                                    <button
+                                    onClick={() => router.push('/dashboard/messages/new')}
+                                    className="mt-6 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-all shadow-lg"
+                                >
+                                    Iniciar nueva conversación
+                                </button>
                             </div>
                         ) : (
                             conversations.map((conversation) => {
@@ -117,7 +129,7 @@ export default function MessagesPage() {
                                 return (
                                     <div
                                         key={conversation.id}
-                                        onClick={() => router.push(`/messages/${conversation.id}`)}
+                                        onClick={() => router.push(`/dashboard/messages/${conversation.id}`)}
                                         className={`p-4 hover:bg-purple-50 cursor-pointer transition-colors ${isUnread ? 'bg-violet-50' : ''}`}
                                     >
                                         <div className="flex items-center gap-4">
@@ -141,6 +153,7 @@ export default function MessagesPage() {
                                                     <h3 className={`font-semibold text-gray-900 truncate ${isUnread ? 'text-purple-600' : ''}`}>
                                                         {otherUser?.role === 'veterinarian' && '👨‍⚕️ '}
                                                         {otherUser?.role === 'admin' && '🛡️ '}
+                                                        {otherUser?.role === 'user' && '🐾 '}
                                                         {otherUser?.name || 'Usuario'}
                                                     </h3>
                                                     {conversation.lastMessageAt && (
@@ -174,6 +187,19 @@ export default function MessagesPage() {
                             })
                         )}
                     </div>
+                </div>
+
+                {/* Botón volver */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-2 mx-auto"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Volver al Dashboard
+                    </button>
                 </div>
             </div>
         </div>

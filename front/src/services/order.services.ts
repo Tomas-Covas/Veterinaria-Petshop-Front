@@ -1,5 +1,39 @@
 const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+export const calculateShipping = async (postalCode: string, items?: Array<{productId: string, quantity: number}>, token?: string) => {
+    try {
+        const body: any = { postalCode };
+        
+        // Solo incluir items si se proporcionan
+        if (items && items.length > 0) {
+            body.items = items;
+        }
+        
+        const response = await fetch(`${APIURL}/sale-orders/calculate-shipping`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: token })
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error al calcular envío:', errorText);
+            throw new Error(`Error al calcular envío: ${response.status}`);
+        }
+
+        const result = await response.json();
+        // El backend puede devolver: { shippingCost, zone, deliveryTime }
+        return result;
+    } catch (error: any) {
+        console.error('Error en calculateShipping:', error);
+        throw error;
+    }
+};
+
 export const createOrder = async (items: Array<{productId: string | number, quantity: number}>, userId: string, token: string) => {
     try {
         console.log('Creando orden en:', `${APIURL}/sale-orders`)
@@ -48,7 +82,8 @@ export const createOrder = async (items: Array<{productId: string | number, quan
 
 export const getAllOrders = async (token:string) => {
     try { 
-        const res = await fetch(`${APIURL}/users/orders`, {
+        console.log('📦 Obteniendo todas las órdenes desde:', `${APIURL}/sale-orders`);
+        const res = await fetch(`${APIURL}/sale-orders`, {
             method: 'GET',
             cache: 'no-cache',
             credentials: 'include',
@@ -57,14 +92,25 @@ export const getAllOrders = async (token:string) => {
                 ...(token && { Authorization: token })
             }
         });
-      const orders = await res.json();
-      return orders  ;
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.warn('⚠️ Error al obtener órdenes (backend):', res.status, errorText);
+            throw new Error(`Error al obtener órdenes: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        console.log('✅ Datos recibidos:', data);
+        
+        // El backend puede devolver array directamente o envuelto en un objeto
+        const orders = Array.isArray(data) ? data : data.data || [];
+        console.log('📊 Órdenes procesadas:', orders.length, 'órdenes');
+        return orders;
     } catch (error:any) {
-        throw new Error(error);
-        
-        
+        console.warn('⚠️ No se pudieron cargar órdenes desde el backend:', error.message);
+        throw error;
     }
-}
+};
 
 export const getUserOrders = async (userId: string, token: string) => {
     try { 

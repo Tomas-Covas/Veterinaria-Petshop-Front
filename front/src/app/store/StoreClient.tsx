@@ -116,9 +116,9 @@ export default function StoreClient({ initialProducts, categories }: StoreClient
   const allFilteredProducts = productsToFilter
     .filter(product => {
       // Filtro de búsqueda
-      const matchesSearch = searchQuery === '' ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = !searchQuery || 
+        (product.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description || '').toLowerCase().includes(searchQuery.toLowerCase());
 
       // Filtro de precio
       const min = minPrice ? parseFloat(minPrice) : 0;
@@ -130,7 +130,10 @@ export default function StoreClient({ initialProducts, categories }: StoreClient
     .sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
-      return a.name.localeCompare(b.name);
+      // Manejar nombres null
+      const nameA = a.name || 'Sin nombre';
+      const nameB = b.name || 'Sin nombre';
+      return nameA.localeCompare(nameB);
     });
 
   // Paginación

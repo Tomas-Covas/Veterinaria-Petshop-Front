@@ -105,6 +105,33 @@ export const getAppointmentsByVetId = async (
 };
 
 /**
+ * Obtener TODOS los turnos del sistema (para analytics)
+ * @param token Token de autenticación
+ */
+export const getAllAppointments = async (token: string): Promise<Appointment[]> => {
+  try {
+    const response = await fetch(`${API_URL}/appointments/AllAppointments`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.data || result || [];
+  } catch (error) {
+    console.error('❌ Error en getAllAppointments:', error);
+    throw error;
+  }
+};
+
+/**
  * Crear un nuevo turno
  * @param appointmentData Datos del turno a crear
  * @param token Token de autenticación
