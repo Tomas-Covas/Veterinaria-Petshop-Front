@@ -3,20 +3,30 @@ const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 // Obtener todas las conversaciones del usuario
 export const getConversations = async () => {
     try {
-        const response = await fetch(`${APIURL}/conversations`, {
+        const response = await fetch(`${APIURL}/chat/conversations`, {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
 
         if (!response.ok) {
+            // Si es 404, el backend no tiene el endpoint todavía
+            if (response.status === 404) {
+                console.log('ℹ️ Endpoint de conversaciones no disponible aún');
+                return [];
+            }
             throw new Error('Error al obtener conversaciones');
         }
 
         return await response.json();
     } catch (error: any) {
+        // Si es error de red (backend no está corriendo), retornar array vacío silenciosamente
+        if (error.message.includes('fetch') || error.name === 'TypeError') {
+            console.log('ℹ️ Backend no disponible - conversaciones vacías');
+            return [];
+        }
         console.error('Error en getConversations:', error);
         throw error;
     }
@@ -25,12 +35,12 @@ export const getConversations = async () => {
 // Obtener mensajes de una conversación
 export const getMessages = async (conversationId: string, page = 1, limit = 50) => {
     try {
-        const response = await fetch(`${APIURL}/conversations/${conversationId}/messages?page=${page}&limit=${limit}`, {
+        const response = await fetch(`${APIURL}/chat/conversations/${conversationId}/messages?page=${page}&limit=${limit}`, {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
 
         if (!response.ok) {
@@ -47,12 +57,12 @@ export const getMessages = async (conversationId: string, page = 1, limit = 50) 
 // Enviar un mensaje
 export const sendMessage = async (conversationId: string, content: string) => {
     try {
-        const response = await fetch(`${APIURL}/conversations/${conversationId}/messages`, {
+        const response = await fetch(`${APIURL}/chat/conversations/${conversationId}/messages`, {
             method: 'POST',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ content }),
         });
 
@@ -70,12 +80,12 @@ export const sendMessage = async (conversationId: string, content: string) => {
 // Crear nueva conversación
 export const createConversation = async (participantId: string) => {
     try {
-        const response = await fetch(`${APIURL}/conversations`, {
+        const response = await fetch(`${APIURL}/chat/conversations`, {
             method: 'POST',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ participantId }),
         });
 
@@ -93,38 +103,46 @@ export const createConversation = async (participantId: string) => {
 // Obtener cantidad de mensajes sin leer
 export const getUnreadCount = async () => {
     try {
-        const response = await fetch(`${APIURL}/conversations/unread-count`, {
+        const response = await fetch(`${APIURL}/chat/conversations/unread-count`, {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
 
         if (!response.ok) {
+            // Si es 404, el backend no tiene el endpoint todavía
+            if (response.status === 404) {
+                return { count: 0 };
+            }
             throw new Error('Error al obtener mensajes sin leer');
         }
 
         return await response.json();
     } catch (error: any) {
+        // Si es error de red (backend no está corriendo), retornar 0 silenciosamente
+        if (error.message.includes('fetch') || error.name === 'TypeError') {
+            return { count: 0 };
+        }
         console.error('Error en getUnreadCount:', error);
         throw error;
     }
 };
 
-// Marcar mensaje como leído
-export const markAsRead = async (messageId: string) => {
+// Marcar conversación como leída
+export const markAsRead = async (conversationId: string) => {
     try {
-        const response = await fetch(`${APIURL}/messages/${messageId}/read`, {
+        const response = await fetch(`${APIURL}/chat/conversations/${conversationId}/read`, {
             method: 'PATCH',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
 
         if (!response.ok) {
-            throw new Error('Error al marcar mensaje como leído');
+            throw new Error('Error al marcar conversación como leída');
         }
 
         return await response.json();

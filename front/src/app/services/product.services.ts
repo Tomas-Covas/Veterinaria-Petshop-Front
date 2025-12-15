@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 // Mapeo de imágenes por categoría para productos sin imagen
-const getCategoryImage = (categoryId: number | string | undefined, name: string) => {
+const getCategoryImage = (categoryId: number | string | undefined, name: string | null) => {
     // Intentar determinar la categoría por el nombre si no hay categoryId
-    const productName = name.toLowerCase();
+    const productName = (name || '').toLowerCase();
     
     if (productName.includes('alimento') || productName.includes('balanceado') || 
         productName.includes('comida') || productName.includes('chow') || 
