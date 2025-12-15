@@ -1,6 +1,7 @@
 'use client';
 
 import { Formik, Form, Field } from 'formik';
+import { DIAGNOSIS_OPTIONS } from '@/src/types/diagnosis';
 
 interface CompleteTurnModalProps {
   isOpen: boolean;
@@ -134,13 +135,21 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
                   Diagnóstico <span className="text-red-500">*</span>
                 </label>
                 <Field
-                  as="textarea"
+                  as="select"
                   name="diagnosis"
-                  rows={3}
                   required
-                  placeholder="Describe el diagnóstico de la consulta..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
+                >
+                  <option value="">Selecciona un diagnóstico</option>
+                  {DIAGNOSIS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Field>
+                <p className="text-xs text-gray-500 mt-1">
+                  Selecciona el diagnóstico principal de la consulta. Estos diagnósticos están disponibles automáticamente desde el backend.
+                </p>
               </div>
 
               {/* Tratamiento */}

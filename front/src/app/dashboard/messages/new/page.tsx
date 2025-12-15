@@ -123,9 +123,9 @@ export default function NewVetConversationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando usuarios...</p>
                 </div>
             </div>
@@ -133,11 +133,11 @@ export default function NewVetConversationPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6">
+                    <div className="bg-gradient-to-r from-purple-500 to-violet-500 p-6">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => router.push('/dashboard/messages')}

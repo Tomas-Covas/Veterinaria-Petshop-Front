@@ -19,6 +19,10 @@ export default function StoreManagement({ products, loading, onProductsChange, u
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showCritical, setShowCritical] = useState(true);
+  const [showLow, setShowLow] = useState(true);
+  const [showMedium, setShowMedium] = useState(false);
+  const [showOk, setShowOk] = useState(false);
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
@@ -41,6 +45,12 @@ export default function StoreManagement({ products, loading, onProductsChange, u
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Categorizar productos por nivel de stock
+  const criticalProducts = filteredProducts.filter(p => p.stock <= 5);
+  const lowProducts = filteredProducts.filter(p => p.stock > 5 && p.stock < 12);
+  const mediumProducts = filteredProducts.filter(p => p.stock >= 12 && p.stock < 20);
+  const okProducts = filteredProducts.filter(p => p.stock >= 20);
 
   const handleCreateProduct = async () => {
     if (!formData.name || !formData.price || !formData.stock || !formData.mainImage) {
@@ -267,10 +277,32 @@ export default function StoreManagement({ products, loading, onProductsChange, u
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredProducts
-              .sort((a, b) => a.stock - b.stock)
-              .map((product) => (
+          <div className="space-y-6">
+            {/* Productos Críticos (0-5) */}
+            {criticalProducts.length > 0 && (
+              <div className="bg-white rounded-xl shadow-lg border-2 border-red-300">
+                <button
+                  onClick={() => setShowCritical(!showCritical)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-red-50 transition-colors rounded-t-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🚨</span>
+                    <h3 className="text-lg font-bold text-red-700">
+                      Stock Crítico ({criticalProducts.length})
+                    </h3>
+                  </div>
+                  <svg 
+                    className={`w-6 h-6 text-red-700 transition-transform ${showCritical ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showCritical && (
+                  <div className="p-4 space-y-3 border-t border-red-200">
+                    {criticalProducts.map((product) => (
               <div key={product.id} className={`bg-linear-to-r from-white ${
                 product.stock <= 5 ? 'to-red-100 border-2 border-red-600 shadow-lg' :
                 product.stock <= 12 ? 'to-red-50 border-2 border-red-400 shadow-lg' :
@@ -389,7 +421,458 @@ export default function StoreManagement({ products, loading, onProductsChange, u
                   </div>
                 </div>
               </div>
-            ))}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Productos Stock Bajo (6-11) */}
+            {lowProducts.length > 0 && (
+              <div className="bg-white rounded-xl shadow-lg border-2 border-orange-300">
+                <button
+                  onClick={() => setShowLow(!showLow)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-orange-50 transition-colors rounded-t-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">⚠️</span>
+                    <h3 className="text-lg font-bold text-orange-700">
+                      Stock Bajo ({lowProducts.length})
+                    </h3>
+                  </div>
+                  <svg 
+                    className={`w-6 h-6 text-orange-700 transition-transform ${showLow ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showLow && (
+                  <div className="p-4 space-y-3 border-t border-orange-200">
+                    {lowProducts.map((product) => (
+              <div key={product.id} className={`bg-linear-to-r from-white ${
+                product.stock <= 5 ? 'to-red-100 border-2 border-red-600 shadow-lg' :
+                product.stock <= 12 ? 'to-red-50 border-2 border-red-400 shadow-lg' :
+                product.stock < 20 ? 'to-yellow-50 border-2 border-yellow-400 shadow-md' :
+                'to-green-50 border border-green-300'
+              } rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-4 hover:border-orange-400`}>
+                {/* Alerta de stock según rangos */}
+                {product.stock >= 20 && (
+                  <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">✅</span>
+                    <span className="font-bold">¡Stock OK!</span>
+                  </div>
+                )}
+                {product.stock >= 12 && product.stock < 20 && (
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">⚠️</span>
+                    <span className="font-bold">¡Quedan pocas unidades!</span>
+                  </div>
+                )}
+                {product.stock >= 6 && product.stock < 12 && (
+                  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🚨</span>
+                    <span className="font-bold">¡Necesita reposición urgente!</span>
+                  </div>
+                )}
+                {product.stock > 0 && product.stock < 6 && (
+                  <div className="bg-red-200 border-l-4 border-red-700 text-red-900 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">❌</span>
+                    <span className="font-bold">¡CRÍTICO! - Stock muy bajo</span>
+                  </div>
+                )}
+                {product.stock === 0 && (
+                  <div className="bg-red-300 border-l-4 border-red-800 text-red-950 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🛑</span>
+                    <span className="font-bold">¡SIN STOCK! - Reponer inmediatamente</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4">
+                  {/* Imagen y nombre del producto */}
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="shrink-0 w-20 h-20 bg-white rounded-lg overflow-hidden border-2 border-amber-200">
+                      <img
+                        src={getImageSrc(product.imgUrl || product.image)}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 uppercase">Producto</p>
+                      <p className="font-bold text-gray-900 truncate">{product.name}</p>
+                      <p className="text-sm text-gray-600 truncate">{product.description}</p>
+                    </div>
+                  </div>
+
+                  {/* ID del producto */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">ID</p>
+                    <p className="text-sm font-mono text-gray-700">
+                      {typeof product.id === 'string' ? product.id.slice(0, 8) : product.id}
+                    </p>
+                  </div>
+
+                  {/* Stock */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">Stock</p>
+                    <p className={`text-lg font-bold ${
+                      product.stock >= 20 ? 'text-green-600' :
+                      product.stock >= 12 ? 'text-yellow-600' :
+                      product.stock >= 6 ? 'text-orange-600' :
+                      product.stock > 0 ? 'text-red-600' :
+                      'text-red-800'
+                    }`}>
+                      {product.stock}
+                    </p>
+                  </div>
+
+                  {/* Precio */}
+                  <div className="text-right border-l border-gray-200 pl-4 shrink-0">
+                    <p className="text-xs text-gray-500 uppercase">Precio</p>
+                    <p className="text-xl font-bold text-amber-600">
+                      ${typeof product.price === 'number' ? product.price.toLocaleString('es-AR', { minimumFractionDigits: 2 }) : product.price}
+                    </p>
+                  </div>
+
+                  {/* Estado del stock */}
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap shrink-0 ${
+                    product.stock >= 20 ? 'bg-green-100 text-green-800' :
+                    product.stock >= 12 ? 'bg-yellow-100 text-yellow-800' :
+                    product.stock >= 6 ? 'bg-orange-100 text-orange-800' :
+                    product.stock > 0 ? 'bg-red-100 text-red-800' :
+                    'bg-red-200 text-red-900'
+                  }`}>
+                    {product.stock >= 20 ? 'Stock OK' :
+                     product.stock >= 12 ? 'Stock Medio' :
+                     product.stock >= 6 ? 'Reponer' :
+                     product.stock > 0 ? 'Crítico' :
+                     'Sin Stock'}
+                  </span>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 shrink-0 border-l border-gray-200 pl-4">
+                    <button
+                      onClick={() => openEditModal(product)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Editar producto"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Eliminar producto"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Productos Stock Medio (12-19) */}
+            {mediumProducts.length > 0 && (
+              <div className="bg-white rounded-xl shadow-lg border-2 border-yellow-300">
+                <button
+                  onClick={() => setShowMedium(!showMedium)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-yellow-50 transition-colors rounded-t-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📦</span>
+                    <h3 className="text-lg font-bold text-yellow-700">
+                      Stock Medio ({mediumProducts.length})
+                    </h3>
+                  </div>
+                  <svg 
+                    className={`w-6 h-6 text-yellow-700 transition-transform ${showMedium ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showMedium && (
+                  <div className="p-4 space-y-3 border-t border-yellow-200">
+                    {mediumProducts.map((product) => (
+              <div key={product.id} className={`bg-linear-to-r from-white ${
+                product.stock <= 5 ? 'to-red-100 border-2 border-red-600 shadow-lg' :
+                product.stock <= 12 ? 'to-red-50 border-2 border-red-400 shadow-lg' :
+                product.stock < 20 ? 'to-yellow-50 border-2 border-yellow-400 shadow-md' :
+                'to-green-50 border border-green-300'
+              } rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-4 hover:border-orange-400`}>
+                {/* Alerta de stock según rangos */}
+                {product.stock >= 20 && (
+                  <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">✅</span>
+                    <span className="font-bold">¡Stock OK!</span>
+                  </div>
+                )}
+                {product.stock >= 12 && product.stock < 20 && (
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">⚠️</span>
+                    <span className="font-bold">¡Quedan pocas unidades!</span>
+                  </div>
+                )}
+                {product.stock >= 6 && product.stock < 12 && (
+                  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🚨</span>
+                    <span className="font-bold">¡Necesita reposición urgente!</span>
+                  </div>
+                )}
+                {product.stock > 0 && product.stock < 6 && (
+                  <div className="bg-red-200 border-l-4 border-red-700 text-red-900 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">❌</span>
+                    <span className="font-bold">¡CRÍTICO! - Stock muy bajo</span>
+                  </div>
+                )}
+                {product.stock === 0 && (
+                  <div className="bg-red-300 border-l-4 border-red-800 text-red-950 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🛑</span>
+                    <span className="font-bold">¡SIN STOCK! - Reponer inmediatamente</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4">
+                  {/* Imagen y nombre del producto */}
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="shrink-0 w-20 h-20 bg-white rounded-lg overflow-hidden border-2 border-amber-200">
+                      <img
+                        src={getImageSrc(product.imgUrl || product.image)}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 uppercase">Producto</p>
+                      <p className="font-bold text-gray-900 truncate">{product.name}</p>
+                      <p className="text-sm text-gray-600 truncate">{product.description}</p>
+                    </div>
+                  </div>
+
+                  {/* ID del producto */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">ID</p>
+                    <p className="text-sm font-mono text-gray-700">
+                      {typeof product.id === 'string' ? product.id.slice(0, 8) : product.id}
+                    </p>
+                  </div>
+
+                  {/* Stock */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">Stock</p>
+                    <p className={`text-lg font-bold ${
+                      product.stock >= 20 ? 'text-green-600' :
+                      product.stock >= 12 ? 'text-yellow-600' :
+                      product.stock >= 6 ? 'text-orange-600' :
+                      product.stock > 0 ? 'text-red-600' :
+                      'text-red-800'
+                    }`}>
+                      {product.stock}
+                    </p>
+                  </div>
+
+                  {/* Precio */}
+                  <div className="text-right border-l border-gray-200 pl-4 shrink-0">
+                    <p className="text-xs text-gray-500 uppercase">Precio</p>
+                    <p className="text-xl font-bold text-amber-600">
+                      ${typeof product.price === 'number' ? product.price.toLocaleString('es-AR', { minimumFractionDigits: 2 }) : product.price}
+                    </p>
+                  </div>
+
+                  {/* Estado del stock */}
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap shrink-0 ${
+                    product.stock >= 20 ? 'bg-green-100 text-green-800' :
+                    product.stock >= 12 ? 'bg-yellow-100 text-yellow-800' :
+                    product.stock >= 6 ? 'bg-orange-100 text-orange-800' :
+                    product.stock > 0 ? 'bg-red-100 text-red-800' :
+                    'bg-red-200 text-red-900'
+                  }`}>
+                    {product.stock >= 20 ? 'Stock OK' :
+                     product.stock >= 12 ? 'Stock Medio' :
+                     product.stock >= 6 ? 'Reponer' :
+                     product.stock > 0 ? 'Crítico' :
+                     'Sin Stock'}
+                  </span>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 shrink-0 border-l border-gray-200 pl-4">
+                    <button
+                      onClick={() => openEditModal(product)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Editar producto"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Eliminar producto"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Productos Stock OK (20+) */}
+            {okProducts.length > 0 && (
+              <div className="bg-white rounded-xl shadow-lg border-2 border-green-300">
+                <button
+                  onClick={() => setShowOk(!showOk)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-green-50 transition-colors rounded-t-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✅</span>
+                    <h3 className="text-lg font-bold text-green-700">
+                      Stock OK ({okProducts.length})
+                    </h3>
+                  </div>
+                  <svg 
+                    className={`w-6 h-6 text-green-700 transition-transform ${showOk ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showOk && (
+                  <div className="p-4 space-y-3 border-t border-green-200">
+                    {okProducts.map((product) => (
+              <div key={product.id} className={`bg-linear-to-r from-white ${
+                product.stock <= 5 ? 'to-red-100 border-2 border-red-600 shadow-lg' :
+                product.stock <= 12 ? 'to-red-50 border-2 border-red-400 shadow-lg' :
+                product.stock < 20 ? 'to-yellow-50 border-2 border-yellow-400 shadow-md' :
+                'to-green-50 border border-green-300'
+              } rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-4 hover:border-orange-400`}>
+                {/* Alerta de stock según rangos */}
+                {product.stock >= 20 && (
+                  <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">✅</span>
+                    <span className="font-bold">¡Stock OK!</span>
+                  </div>
+                )}
+                {product.stock >= 12 && product.stock < 20 && (
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">⚠️</span>
+                    <span className="font-bold">¡Quedan pocas unidades!</span>
+                  </div>
+                )}
+                {product.stock >= 6 && product.stock < 12 && (
+                  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🚨</span>
+                    <span className="font-bold">¡Necesita reposición urgente!</span>
+                  </div>
+                )}
+                {product.stock > 0 && product.stock < 6 && (
+                  <div className="bg-red-200 border-l-4 border-red-700 text-red-900 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">❌</span>
+                    <span className="font-bold">¡CRÍTICO! - Stock muy bajo</span>
+                  </div>
+                )}
+                {product.stock === 0 && (
+                  <div className="bg-red-300 border-l-4 border-red-800 text-red-950 p-3 mb-4 rounded-r-lg flex items-center gap-2">
+                    <span className="text-xl">🛑</span>
+                    <span className="font-bold">¡SIN STOCK! - Reponer inmediatamente</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4">
+                  {/* Imagen y nombre del producto */}
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="shrink-0 w-20 h-20 bg-white rounded-lg overflow-hidden border-2 border-amber-200">
+                      <img
+                        src={getImageSrc(product.imgUrl || product.image)}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 uppercase">Producto</p>
+                      <p className="font-bold text-gray-900 truncate">{product.name}</p>
+                      <p className="text-sm text-gray-600 truncate">{product.description}</p>
+                    </div>
+                  </div>
+
+                  {/* ID del producto */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">ID</p>
+                    <p className="text-sm font-mono text-gray-700">
+                      {typeof product.id === 'string' ? product.id.slice(0, 8) : product.id}
+                    </p>
+                  </div>
+
+                  {/* Stock */}
+                  <div className="shrink-0 border-l border-gray-200 pl-4">
+                    <p className="text-xs text-gray-500 uppercase">Stock</p>
+                    <p className={`text-lg font-bold ${
+                      product.stock >= 20 ? 'text-green-600' :
+                      product.stock >= 12 ? 'text-yellow-600' :
+                      product.stock >= 6 ? 'text-orange-600' :
+                      product.stock > 0 ? 'text-red-600' :
+                      'text-red-800'
+                    }`}>
+                      {product.stock}
+                    </p>
+                  </div>
+
+                  {/* Precio */}
+                  <div className="text-right border-l border-gray-200 pl-4 shrink-0">
+                    <p className="text-xs text-gray-500 uppercase">Precio</p>
+                    <p className="text-xl font-bold text-amber-600">
+                      ${typeof product.price === 'number' ? product.price.toLocaleString('es-AR', { minimumFractionDigits: 2 }) : product.price}
+                    </p>
+                  </div>
+
+                  {/* Estado del stock */}
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap shrink-0 ${
+                    product.stock >= 20 ? 'bg-green-100 text-green-800' :
+                    product.stock >= 12 ? 'bg-yellow-100 text-yellow-800' :
+                    product.stock >= 6 ? 'bg-orange-100 text-orange-800' :
+                    product.stock > 0 ? 'bg-red-100 text-red-800' :
+                    'bg-red-200 text-red-900'
+                  }`}>
+                    {product.stock >= 20 ? 'Stock OK' :
+                     product.stock >= 12 ? 'Stock Medio' :
+                     product.stock >= 6 ? 'Reponer' :
+                     product.stock > 0 ? 'Crítico' :
+                     'Sin Stock'}
+                  </span>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 shrink-0 border-l border-gray-200 pl-4">
+                    <button
+                      onClick={() => openEditModal(product)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Editar producto"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                      title="Eliminar producto"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

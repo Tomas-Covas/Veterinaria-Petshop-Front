@@ -42,12 +42,12 @@ export default function MessagesPage() {
     // Si no hay usuario después de cargar, mostrar mensaje
     if (!userData?.user?.id) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
                     <p className="text-gray-600">Debes iniciar sesión para ver tus mensajes</p>
                     <button
                         onClick={() => router.push('/auth/login')}
-                        className="mt-4 bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+                        className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600"
                     >
                         Iniciar Sesión
                     </button>
@@ -58,9 +58,9 @@ export default function MessagesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando mensajes...</p>
                 </div>
             </div>
@@ -72,11 +72,11 @@ export default function MessagesPage() {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-6">
+                    <div className="bg-gradient-to-r from-purple-500 to-violet-500 p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function MessagesPage() {
                             </div>
                             <button
                                 onClick={() => router.push('/messages/new')}
-                                className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-full font-semibold shadow-lg transition-all flex items-center gap-2"
+                                className="bg-white text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-full font-semibold shadow-lg transition-all flex items-center gap-2"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -118,7 +118,7 @@ export default function MessagesPage() {
                                     <div
                                         key={conversation.id}
                                         onClick={() => router.push(`/messages/${conversation.id}`)}
-                                        className={`p-4 hover:bg-orange-50 cursor-pointer transition-colors ${isUnread ? 'bg-amber-50' : ''}`}
+                                        className={`p-4 hover:bg-purple-50 cursor-pointer transition-colors ${isUnread ? 'bg-violet-50' : ''}`}
                                     >
                                         <div className="flex items-center gap-4">
                                             {/* Avatar */}
@@ -138,7 +138,7 @@ export default function MessagesPage() {
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <h3 className={`font-semibold text-gray-900 truncate ${isUnread ? 'text-orange-600' : ''}`}>
+                                                    <h3 className={`font-semibold text-gray-900 truncate ${isUnread ? 'text-purple-600' : ''}`}>
                                                         {otherUser?.role === 'veterinarian' && '👨‍⚕️ '}
                                                         {otherUser?.role === 'admin' && '🛡️ '}
                                                         {otherUser?.name || 'Usuario'}

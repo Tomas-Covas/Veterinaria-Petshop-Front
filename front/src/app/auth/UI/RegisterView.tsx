@@ -78,7 +78,14 @@ function RegisterView() {
                     validateOnMount={true}
                     onSubmit={async (values, { resetForm }) => {
                         const { confirmPassword, ...payload } = values;
-                        await register(payload);
+                        const result = await register(payload);
+                        
+                        // Si el backend devuelve una contraseña temporal, mostrarla
+                        if (result?.temporaryPassword || result?.password) {
+                            const tempPassword = result.temporaryPassword || result.password;
+                            alert(`✅ Registro exitoso!\n\n🔑 Tu contraseña temporal es:\n${tempPassword}\n\n⚠️ Guarda esta contraseña. También fue enviada a tu email.`);
+                        }
+                        
                         resetForm();
                         router.push("/auth/login");
                     }}
