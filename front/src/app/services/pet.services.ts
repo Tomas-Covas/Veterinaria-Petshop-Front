@@ -35,6 +35,7 @@ export interface NewPetData {
 export const createPet = async (petData: NewPetData, userId: string): Promise<IPet | null> => {
 
   try {
+    console.log("📦 Enviando mascota:", petData);
     petData.ownerId = userId
     const response = await fetch(`${API_URL}/pets/NewPet`, {
       method: 'POST',
@@ -53,11 +54,20 @@ export const createPet = async (petData: NewPetData, userId: string): Promise<IP
     const result = await response.json();
 
     return result.data || result;
+
   } catch (error) {
     toast.error('No se pudo crear la mascota, intente nuevamente')
     return null;
   }
 };
+
+export const getUserPets = async (userId: string) => {
+  const res = await fetch(`${API_URL}/users/${userId}/pets`);
+  if (!res.ok) throw new Error("Error al obtener mascotas");
+  const result = await res.json();
+  return result as IPet[];
+};
+
 
 export const deletePet = async (id: string) => {
   try {

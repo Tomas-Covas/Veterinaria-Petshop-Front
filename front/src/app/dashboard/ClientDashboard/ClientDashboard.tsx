@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/src/context/AuthContext";
-import { createPet, NewPetData } from "@/src/app/services/pet.services";
+import { createPet, getUserPets, NewPetData } from "@/src/app/services/pet.services";
 import { IPet, Order } from "@/src/types";
 import CardPet from "../../components/CardPet/CardPet";
 import NewPetModal from "../../components/NewPetModal/NewPetModal";
@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { updateUserProfile } from "@/src/services/user.services";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getAllOrders, getUserOrders } from "@/src/services/order.services";
+import { getUserOrders } from "@/src/services/order.services";
 
 export default function ClientDashboard() {
   const { userData, setUserData, activeTab, setActiveTab } = useAuth();
@@ -68,17 +68,35 @@ export default function ClientDashboard() {
   const handleCreatePet = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingPet(true);
-    const newPet = await createPet(newPetForm, userData!.user!.id); // tu lógica
-    setPets((prev) => [...prev, newPet as IPet]);
-    setCreatingPet(false);
-    setShowNewPetModal(false);
-    window.location.reload();
+
+    try {
+      const newPet = await createPet(newPetForm, userData!.user!.id);
+
+      if (!newPet) {
+        toast.error("No se pudo crear la mascota");
+        return;
+      }
+
+      setPets((prev) => [...prev, newPet]);
+
+      toast.success("Mascota creada correctamente");
+      setShowNewPetModal(false);
+      window.location.reload()
+    } catch (error) {
+      toast.error("Error al crear mascota");
+      console.error("❌ Error al crear mascota:", error);
+
+    } finally {
+      setCreatingPet(false);
+    }
   };
 
   useEffect(() => {
+    if (!userData?.user?.id) return;
+
     const fetchOrders = async () => {
       try {
-        const response = await getUserOrders(userData!.user.id);
+        const response = await getUserOrders(userData.user.id);
         setOrders(response);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -89,20 +107,30 @@ export default function ClientDashboard() {
     };
 
     fetchOrders();
-  }, [userData!.user.id]);
-
+  }, [userData?.user?.id]);
 
   useEffect(() => {
-    if (userData?.user?.pets) {
-      setPets(userData.user.pets);
-    }
-  }, [userData]);
+    if (!userData?.user?.id) return;
+
+    const fetchPets = async () => {
+      try {
+        const data = await getUserPets(userData.user.id);
+        setPets(data);
+      } catch (err) {
+        console.error("Error fetching pets:", err);
+        setPets([]);
+      }
+    };
+
+    fetchPets();
+  }, [userData?.user?.id]);
+
 
   //Cuentas para paginacion de mascotas
   const indexOfLastPet = currentPage * petsPerPage;
   const indexOfFirstPet = indexOfLastPet - petsPerPage;
-  const currentPets = pets.slice(indexOfFirstPet, indexOfLastPet);
-  const totalPages = Math.ceil(pets.length / petsPerPage);
+  const currentPets = (pets || []).slice(indexOfFirstPet, indexOfLastPet);
+  const totalPages = Math.ceil((pets || []).length / petsPerPage);
 
   //Cuentas para paginacion de ordenes
   const indexOfLastOrder = currentPageOrder * ordersPerPage;
@@ -304,7 +332,7 @@ export default function ClientDashboard() {
             {/* MASCOTAS Y TURNOS */}
             {activeTab === "pets" && (
               <div className="md:col-span-2">
-                {pets.length === 0 ? (
+                {(pets || []).length === 0 ? (
                   <p className="text-gray-500 text-center py-8">
                     No tienes mascotas registradas
                   </p>
@@ -563,7 +591,7 @@ export default function ClientDashboard() {
                       Mascotas registradas
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {pets.length}
+                      {(pets || []).length}
                     </p>
                   </div>
                   {/* TODO: fijarse por que devuelve mas de los que hay */}
