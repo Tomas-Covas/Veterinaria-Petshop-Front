@@ -58,93 +58,145 @@ function CartPage() {
   };
 
   // Cargar carrito después de definir userData - SOLO UNA VEZ
-  useEffect(() => {
-    const syncCart = async () => {
-      if (!userData?.user?.id) {
-        return;
-      }
-
-      if (hasSyncedRef.current) {
-        console.log("⏭️ Ya se sincronizó anteriormente, saltando...");
-        return;
-      }
-
-      // Marcar INMEDIATAMENTE como sincronizado para evitar ejecuciones múltiples
-      hasSyncedRef.current = true;
-
-      // Primero verificar si hay items en localStorage
-      const localCart = localStorage.getItem("cart");
-      console.log("💾 localStorage cart:", localCart ? "SÍ" : "NO");
-
-      if (localCart) {
-        try {
-          const localItems: IProduct[] = JSON.parse(localCart);
-
-          if (localItems.length > 0) {
-            console.log(
-              "🔄 Sincronizando",
-              localItems.length,
-              "items del localStorage al backend..."
-            );
-
-            // Limpiar localStorage ANTES de sincronizar para evitar loops
-            localStorage.removeItem("cart");
-
-            let syncCount = 0;
-            for (const item of localItems) {
-              try {
-                console.log(
-                  `  ➕ Agregando: ${item.name} (qty: ${item.quantity || 1})`
-                );
-                await addToCartBackend(
-                  String(userData.user.id),
-                  item.id,
-                  item.quantity || 1,
-                  userData.token || ""
-                );
-                syncCount++;
-              } catch (err: any) {
-                if (
-                  err.message?.includes("ya está en el carrito") ||
-                  err.message?.includes("already")
-                ) {
+  /*   useEffect(() => {
+      const syncCart = async () => {
+        if (!userData?.user?.id) {
+          return;
+        }
+  
+        if (hasSyncedRef.current) {
+          console.log("⏭️ Ya se sincronizó anteriormente, saltando...");
+          return;
+        }
+  
+        // Marcar INMEDIATAMENTE como sincronizado para evitar ejecuciones múltiples
+        hasSyncedRef.current = true;
+  
+        // Primero verificar si hay items en localStorage
+        const localCart = localStorage.getItem("cart");
+        console.log("💾 localStorage cart:", localCart ? "SÍ" : "NO");
+  
+        if (localCart) {
+          try {
+            const localItems: IProduct[] = JSON.parse(localCart);
+  
+            if (localItems.length > 0) {
+              console.log(
+                "🔄 Sincronizando",
+                localItems.length,
+                "items del localStorage al backend..."
+              );
+  
+              // Limpiar localStorage ANTES de sincronizar para evitar loops
+              localStorage.removeItem("cart");
+  
+              let syncCount = 0;
+              for (const item of localItems) {
+                try {
                   console.log(
-                    `  ⏭️ ${item.name} ya está en el carrito del backend`
+                    `  ➕ Agregando: ${item.name} (qty: ${item.quantity || 1})`
+                  );
+                  await addToCartBackend(
+                    String(userData.user.id),
+                    item.id,
+                    item.quantity || 1,
+                    userData.token || ""
                   );
                   syncCount++;
-                } else {
-                  console.error(
-                    "❌ Error al sincronizar item:",
-                    item.name,
-                    err.message
-                  );
+                } catch (err: any) {
+                  if (
+                    err.message?.includes("ya está en el carrito") ||
+                    err.message?.includes("already")
+                  ) {
+                    console.log(
+                      `  ⏭️ ${item.name} ya está en el carrito del backend`
+                    );
+                    syncCount++;
+                  } else {
+                    console.error(
+                      "❌ Error al sincronizar item:",
+                      item.name,
+                      err.message
+                    );
+                  }
                 }
               }
+  
+              // Recargar carrito del backend
+              await loadCartFromBackend();
+  
+              if (syncCount > 0) {
+                toast.success(`Carrito sincronizado: ${syncCount} productos`);
+              }
+            } else {
+              // localStorage vacío, solo cargar del backend
+              localStorage.removeItem("cart");
+              await loadCartFromBackend();
             }
-
-            // Recargar carrito del backend
-            await loadCartFromBackend();
-
-            if (syncCount > 0) {
-              toast.success(`Carrito sincronizado: ${syncCount} productos`);
-            }
-          } else {
-            // localStorage vacío, solo cargar del backend
-            localStorage.removeItem("cart");
-            await loadCartFromBackend();
+          } catch (err) {
+            console.error("💥 Error al sincronizar carrito:", err);
+            toast.error("Error al sincronizar el carrito");
           }
-        } catch (err) {
-          console.error("💥 Error al sincronizar carrito:", err);
-          toast.error("Error al sincronizar el carrito");
+        } else {
+          console.log("📥 Cargando carrito del backend...");
+          await loadCartFromBackend();
         }
-      } else {
-        console.log("📥 Cargando carrito del backend...");
+      };
+  
+      syncCart();
+    }, [userData?.user?.id, loadCartFromBackend]); */
+
+  useEffect(() => {
+    const syncCart = async () => {
+      if (!userData?.user?.id) return;
+
+      if (hasSyncedRef.current) return;
+      hasSyncedRef.current = true;
+
+      // 1. Obtener carrito del backend
+      const backendCart = await getCart(userData.user.id);
+      const backendItems = backendCart?.items || [];
+
+      console.log("🛒 Items en backend:", backendItems.length);
+
+      // ✅ Si el backend YA tiene productos → ignorar localStorage
+      if (backendItems.length > 0) {
+        console.log("✅ Backend tiene productos, ignorando localStorage");
+        localStorage.removeItem("cart");
         await loadCartFromBackend();
+        return;
       }
+
+      // 2. Si backend está vacío → sincronizar localStorage
+      const localCart = localStorage.getItem("cart");
+
+      if (localCart) {
+        const localItems = JSON.parse(localCart);
+
+        if (localItems.length > 0) {
+          console.log("🔄 Backend vacío → sincronizando localStorage → backend");
+
+          for (const item of localItems) {
+            await addToCartBackend(
+              String(userData.user.id),
+              item.id,
+              item.quantity || 1,
+              userData.token || ""
+            );
+          }
+        }
+
+        // limpiar localStorage después de sincronizar
+        localStorage.removeItem("cart");
+      }
+
+      // 3. Cargar carrito final desde backend
+      await loadCartFromBackend();
     };
 
     syncCart();
   }, [userData?.user?.id, loadCartFromBackend]);
+
 
   const handleCheckout = async () => {
     if (!userData?.user?.id) {
@@ -199,8 +251,7 @@ function CartPage() {
         );
         localStorage.removeItem("cart");
         toast.success(
-          `✅ ¡Orden #${data?.id?.slice(0, 8)} creada exitosamente! Total: $${
-            data?.total
+          `✅ ¡Orden #${data?.id?.slice(0, 8)} creada exitosamente! Total: $${data?.total
           }. Redirigiendo al historial...`,
           { autoClose: 3000 }
         );
@@ -316,8 +367,7 @@ function CartPage() {
           console.log("✅ Ubicación obtenida:", { latitude, longitude });
 
           const response = await fetch(
-            `${
-              process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
             }/sale-orders/calculate-shipping`,
             {
               method: "POST",
@@ -497,10 +547,9 @@ function CartPage() {
                                   ) {
                                     imageSrc = imageToUse;
                                   } else {
-                                    imageSrc = `${
-                                      process.env.NEXT_PUBLIC_API_URL ||
+                                    imageSrc = `${process.env.NEXT_PUBLIC_API_URL ||
                                       "http://localhost:3000"
-                                    }${imageToUse}`;
+                                      }${imageToUse}`;
                                   }
                                 } else {
                                   imageSrc = imageToUse;
@@ -510,9 +559,8 @@ function CartPage() {
                               return (
                                 <li
                                   key={item.id}
-                                  className={`flex py-6 px-4 rounded-lg ${
-                                    index % 2 === 0 ? "bg-amber-50" : "bg-white"
-                                  }`}
+                                  className={`flex py-6 px-4 rounded-lg ${index % 2 === 0 ? "bg-amber-50" : "bg-white"
+                                    }`}
                                 >
                                   <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
                                     <Image
