@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/src/context/AuthContext";
 import { createPet, NewPetData } from "@/src/app/services/pet.services";
-import { IPet } from "@/src/types";
+import { IPet, Order } from "@/src/types";
 import CardPet from "../../components/CardPet/CardPet";
 import NewPetModal from "../../components/NewPetModal/NewPetModal";
 import EditProfileModal from "../../components/EditProfileModal/EditProfileModal";
@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { updateUserProfile } from "@/src/services/user.services";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { getAllOrders, getUserOrders } from "@/src/services/order.services";
 
 export default function ClientDashboard() {
   const { userData, setUserData, activeTab, setActiveTab } = useAuth();
@@ -19,6 +20,8 @@ export default function ClientDashboard() {
   const [showNewPetModal, setShowNewPetModal] = useState(false);
   const [creatingPet, setCreatingPet] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   // Paginación para mascotas
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,6 +76,23 @@ export default function ClientDashboard() {
   };
 
   useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await getUserOrders(userData!.user.id);
+        setOrders(response);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrders([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, [userData.user.id]);
+
+
+  useEffect(() => {
     if (userData?.user?.pets) {
       setPets(userData.user.pets);
     }
@@ -87,8 +107,8 @@ export default function ClientDashboard() {
   //Cuentas para paginacion de ordenes
   const indexOfLastOrder = currentPageOrder * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = userData?.user.buyerSaleOrders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPagesOrders = Math.ceil(userData!.user!.buyerSaleOrders!.length / ordersPerPage);
+  const currentOrders = orders?.slice(indexOfFirstOrder, indexOfLastOrder) || [];
+  const totalPagesOrders = orders ? Math.ceil(orders.length / ordersPerPage) : 1;
 
   const router = useRouter()
 
@@ -426,99 +446,106 @@ export default function ClientDashboard() {
             {activeTab === "orders" && (
               <div className="md:col-span-2">
                 <h2 className="text-xl font-bold mb-4">Órdenes</h2>
-                {!userData.user.buyerSaleOrders ? (
+
+                {loadingOrders ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                   </div>
                 ) : (
                   <>
-                    {totalPagesOrders > 1 && (
-                      <p className="text-sm text-gray-600 mb-4">
-                        Mostrando{" "}
-                        <span className="font-semibold">
-                          {indexOfFirstOrder + 1}-
-                          {Math.min(indexOfLastOrder, userData.user.buyerSaleOrders.length)}
-                        </span>{" "}
-                        de{" "}
-                        <span className="font-semibold">
-                          {userData.user.buyerSaleOrders.length}
-                        </span>{" "}
-                        órdenes
-                      </p>
-                    )}
+                    {orders && orders.length > 0 ? (
+                      <>
+                        {totalPagesOrders > 1 && (
+                          <p className="text-sm text-gray-600 mb-4">
+                            Mostrando{" "}
+                            <span className="font-semibold">
+                              {indexOfFirstOrder + 1}-
+                              {Math.min(indexOfLastOrder, orders.length)}
+                            </span>{" "}
+                            de{" "}
+                            <span className="font-semibold">{orders.length}</span> órdenes
+                          </p>
+                        )}
 
-                    <OrderList orders={currentOrders!} />
-                    {totalPagesOrders > 1 && (
-                      <div className="mt-6 mb-6 flex justify-center">
-                        <div className="flex items-center gap-2">
+                        <OrderList orders={currentOrders} />
 
-                          {/* Botón Anterior */}
-                          <button
-                            onClick={() =>
-                              setCurrentPageOrder((prev) => Math.max(1, prev - 1))
-                            }
-                            disabled={currentPageOrder === 1}
-                            className="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Anterior
-                          </button>
-
-                          {/* Números */}
-                          <div className="flex gap-2">
-                            {Array.from({ length: totalPagesOrders }, (_, i) => i + 1).map(
-                              (page) => {
-                                if (
-                                  page === 1 ||
-                                  page === totalPagesOrders ||
-                                  (page >= currentPageOrder - 1 &&
-                                    page <= currentPageOrder + 1)
-                                ) {
-                                  return (
-                                    <button
-                                      key={page}
-                                      onClick={() => setCurrentPageOrder(page)}
-                                      className={`w-10 h-10 rounded-lg transition ${currentPageOrder === page
-                                        ? "bg-orange-600 text-white font-semibold"
-                                        : "bg-white border border-gray-300 hover:bg-gray-50"
-                                        }`}
-                                    >
-                                      {page}
-                                    </button>
-                                  );
-                                } else if (
-                                  page === currentPageOrder - 2 ||
-                                  page === currentPageOrder + 2
-                                ) {
-                                  return (
-                                    <span key={page} className="px-2">
-                                      ...
-                                    </span>
-                                  );
+                        {totalPagesOrders > 1 && (
+                          <div className="mt-6 mb-6 flex justify-center">
+                            <div className="flex items-center gap-2">
+                              {/* Botón Anterior */}
+                              <button
+                                onClick={() =>
+                                  setCurrentPageOrder((prev) => Math.max(1, prev - 1))
                                 }
-                                return null;
-                              }
-                            )}
-                          </div>
+                                disabled={currentPageOrder === 1}
+                                className="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Anterior
+                              </button>
 
-                          {/* Botón Siguiente */}
-                          <button
-                            onClick={() =>
-                              setCurrentPageOrder((prev) =>
-                                Math.min(totalPagesOrders, prev + 1)
-                              )
-                            }
-                            disabled={currentPageOrder === totalPagesOrders}
-                            className="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Siguiente
-                          </button>
-                        </div>
-                      </div>
+                              {/* Números */}
+                              <div className="flex gap-2">
+                                {Array.from({ length: totalPagesOrders }, (_, i) => i + 1).map(
+                                  (page) => {
+                                    if (
+                                      page === 1 ||
+                                      page === totalPagesOrders ||
+                                      (page >= currentPageOrder - 1 &&
+                                        page <= currentPageOrder + 1)
+                                    ) {
+                                      return (
+                                        <button
+                                          key={page}
+                                          onClick={() => setCurrentPageOrder(page)}
+                                          className={`w-10 h-10 rounded-lg transition ${currentPageOrder === page
+                                            ? "bg-orange-600 text-white font-semibold"
+                                            : "bg-white border border-gray-300 hover:bg-gray-50"
+                                            }`}
+                                        >
+                                          {page}
+                                        </button>
+                                      );
+                                    } else if (
+                                      page === currentPageOrder - 2 ||
+                                      page === currentPageOrder + 2
+                                    ) {
+                                      return (
+                                        <span key={page} className="px-2">
+                                          ...
+                                        </span>
+                                      );
+                                    }
+                                    return null;
+                                  }
+                                )}
+                              </div>
+
+                              {/* Botón Siguiente */}
+                              <button
+                                onClick={() =>
+                                  setCurrentPageOrder((prev) =>
+                                    Math.min(totalPagesOrders, prev + 1)
+                                  )
+                                }
+                                disabled={currentPageOrder === totalPagesOrders}
+                                className="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Siguiente
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-gray-500 text-center py-6">
+                        No tienes órdenes registradas.
+                      </p>
                     )}
                   </>
                 )}
               </div>
             )}
+
 
             {/* Sidebar derecha - Resumen rápido */}
             <div className="mt-8 md:mt-0">

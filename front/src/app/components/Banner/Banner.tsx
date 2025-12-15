@@ -21,7 +21,7 @@ function Banner() {
         <h1 className="text-3xl md:text-5xl font-extrabold mb-6 drop-shadow-lg">
           {title}
         </h1>
-        <p className="text-lg md:text-xl leading-relaxed font-medium opacity-90">
+        <p className="text-lg md:text-xl leading-relaxed opacity-90">
           {subTitle}
         </p>
       </div>

@@ -27,7 +27,7 @@ export default function Navbar() {
       <nav className="w-full mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-20">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center cursor-pointer z-50 shrink-0">
+        <Link href="/" className="flex items-center cursor-pointer mr-3 z-50 shrink-0">
           <Image
             src={Huellitas3}
             alt="Huellitas Pet"

@@ -112,7 +112,7 @@ export const getAllOrders = async (token:string) => {
     }
 };
 
-export const getUserOrders = async (userId: string, token: string) => {
+export const getUserOrders = async (userId: string/* , token: string */) => {
     try { 
         const res = await fetch(`${APIURL}/sale-orders/history/${userId}`, {
             method: 'GET',
@@ -120,7 +120,7 @@ export const getUserOrders = async (userId: string, token: string) => {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` })
+                /* ...(token && { Authorization: `Bearer ${token}` }) */
             }
         });
         
