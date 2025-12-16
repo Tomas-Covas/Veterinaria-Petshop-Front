@@ -541,6 +541,7 @@ export interface AddMedicalRecordData {
 }
 
 export interface MedicalRecordResponse {
+  success?: boolean;
   message: string;
   data?: {
     medicalRecordId: string;
