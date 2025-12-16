@@ -70,7 +70,8 @@ export default function Navbar() {
                 href="/admin/veterinarians"
                 className="hover:text-orange-500 transition whitespace-nowrap text-amber-600 font-semibold"
               >
-                🔧 Gestión Veterinarios
+                <span className="hidden lg:inline">🔧 Gestión Veterinarios</span>
+                <span className="lg:hidden">🔧 Veterinarios</span>
               </Link>
             )}
           </div>
@@ -83,7 +84,8 @@ export default function Navbar() {
                 <>Hola <span className="font-semibold">Doc. {userData.user.name.split(" ")[0]}</span></>
               ) : isAdmin() ? (
                 <Link href="/dashboard" className="font-semibold text-amber-600 hover:text-orange-500 transition">
-                  Panel de Administración
+                  <span className="hidden xl:inline">Panel de Administración</span>
+                  <span className="xl:hidden">Panel Admin</span>
                 </Link>
               ) : (
                 <>Hola <span className="font-semibold">{userData.user.name.split(" ")[0]}</span>, accedé a tu{" "}
@@ -97,7 +99,7 @@ export default function Navbar() {
 
           {/* Veterinario */}
           {isVeterinarian() && (
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-4 items-center ml-6">
               <Link href="/dashboard/vet-profile" className="text-orange-500 hover:text-orange-600 font-semibold">
                 Perfil
               </Link>
@@ -116,7 +118,7 @@ export default function Navbar() {
         {/* Desktop Right Buttons */}
         <div className="hidden md:flex items-center gap-3 shrink-0">
 
-          <LocationButton />
+          {!isAdmin() && <LocationButton />}
           <MessagesButton />
 
           {/* Login / Logout */}
@@ -156,24 +158,45 @@ export default function Navbar() {
 
           {/* Carrito */}
           {!isVeterinarian() && !isAdmin() && (
-            <div className="relative">
+            <div className="relative w-[60px] h-[60px] md:w-[90px] md:h-[90px]">
               <Link href="/cart">
                 <Image
                   src={perrocompras}
                   alt="cart"
                   width={70}
                   height={70}
-                  className="object-contain w-[60px] h-[60px] md:w-[90px] md:h-[90px]"
+                  className="object-contain w-full h-full"
                 />
               </Link>
 
               {itemsCount > 0 && (
-                <span className="absolute top-5 right-3 animate-bounce bg-amber-700
+                <span className="absolute top-[20px] right-[12px] md:top-[30px] md:right-[18px] animate-bounce bg-amber-700
                  text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {itemsCount}
                 </span>
               )}
             </div>
+          )}
+        </div>
+
+        {/* Mobile User Greeting - visible outside hamburger menu */}
+        <div className="md:hidden flex items-center gap-1 mr-auto ml-4 overflow-hidden">
+          {userData?.user?.name && (
+            <span className="text-gray-700 text-[10px] font-medium whitespace-nowrap">
+              {isVeterinarian() ? (
+                <>Hola <span className="font-semibold">Doc. {userData.user.name.split(" ")[0]}</span></>
+              ) : isAdmin() ? (
+                <Link href="/dashboard" className="font-semibold text-amber-600 hover:text-orange-500 transition">
+                  Panel de Administración
+                </Link>
+              ) : (
+                <>Hola <span className="font-semibold">{userData.user.name.split(" ")[0]}</span>, accedé a tu{" "}
+                  <Link href={PATHROUTES.PERFIL} className="text-orange-500 hover:text-orange-600 font-semibold">
+                    perfil
+                  </Link>
+                </>
+              )}
+            </span>
           )}
         </div>
 
@@ -211,27 +234,16 @@ export default function Navbar() {
               </Link>
             ))}
           
-          <LocationButton />
+          {!isAdmin() && <LocationButton />}
           <MessagesButton />
           <br></br>
-
-          {/* Perfil en mobile */}
-          {userData?.user?.name && (
-            <Link
-              href={PATHROUTES.PERFIL}
-              onClick={() => setIsMenuOpen(false)}
-              className="text-orange-500 hover:text-orange-600 font-semibold text-[16px]"
-            >
-              {userData.user.name.split(" ")[0]}
-            </Link>
-          )}
 
           {/* Admin */}
           {isAdmin() && (
             <Link
               href="/admin/veterinarians"
               onClick={() => setIsMenuOpen(false)}
-              className="block text-amber-600 hover:text-orange-500 transition py-2 text-base font-semibold"
+              className="block text-amber-600 hover:text-orange-500 transition py-2 text-sm font-semibold"
             >
               🔧 Gestión Veterinarios
             </Link>

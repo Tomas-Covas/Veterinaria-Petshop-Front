@@ -224,7 +224,7 @@ export default function VeterinarianManagement() {
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 via-orange-50 to-amber-100 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col min-[415px]:flex-row justify-between items-start min-[415px]:items-center gap-4 mb-8">
           <h1 className="text-4xl font-bold text-gray-900">
             Gestión de Veterinarios
           </h1>
@@ -240,7 +240,7 @@ export default function VeterinarianManagement() {
                 time: "",
               });
             }}
-            className="bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all"
+            className="bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all w-full min-[415px]:w-auto"
           >
             {showCreateForm ? "Cancelar" : "Crear Veterinario"}
           </button>
