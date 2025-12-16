@@ -97,7 +97,7 @@ export default function ClientDashboard() {
     const fetchOrders = async () => {
       try {
         const response = await getUserOrders(userData.user.id);
-        setOrders(response.data || []);
+        setOrders(response || []); //antes response.data
       } catch (error) {
         console.error("Error fetching orders:", error);
         setOrders([]);
