@@ -5,9 +5,17 @@ import { searchPets, Pet } from '@/src/app/services/pet.services';
 
 interface PetSearchBarProps {
   onSelectPet: (pet: Pet) => void;
+  filters?: {
+    especie?: string;
+    estado?: string;
+    tamano?: string;
+    esterilizado?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+  };
 }
 
-export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
+export default function PetSearchBar({ onSelectPet, filters }: PetSearchBarProps) {
   const [query, setQuery] = useState('');
   const [allPets, setAllPets] = useState<Pet[]>([]);
   const [filteredPets, setFilteredPets] = useState<Pet[]>([]);
@@ -39,19 +47,82 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
     loadAllPets();
   }, []);
 
+  // Re-aplicar filtros cuando cambien
+  useEffect(() => {
+    if (query.trim().length >= 0) {
+      handleSearch(query);
+    }
+  }, [filters]);
+
+  // Aplicar filtros adicionales
+  const applyFilters = (pets: Pet[]) => {
+    if (!filters) return pets;
+
+    return pets.filter((pet: any) => {
+      // Filtro por especie
+      if (filters.especie && filters.especie !== 'TODOS') {
+        if ((pet.especie || pet.species) !== filters.especie) return false;
+      }
+      
+      // Filtro por estado
+      if (filters.estado && filters.estado !== 'TODOS') {
+        if ((pet.status || pet.estado) !== filters.estado) return false;
+      }
+      
+      // Filtro por tamaño
+      if (filters.tamano && filters.tamano !== 'TODOS') {
+        if (pet.tamano !== filters.tamano) return false;
+      }
+      
+      // Filtro por esterilización
+      if (filters.esterilizado && filters.esterilizado !== 'TODOS') {
+        if (pet.esterilizado !== filters.esterilizado) return false;
+      }
+      
+      // Filtro por rango de fechas (últimas consultas)
+      if (filters.fechaDesde || filters.fechaHasta) {
+        const appointments = pet.appointments || [];
+        if (appointments.length === 0) return false;
+        
+        const sortedAppointments = [...appointments].sort((a: any, b: any) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        
+        const lastAppointmentDate = sortedAppointments[0]?.date;
+        if (!lastAppointmentDate) return false;
+        
+        const appointmentDate = new Date(lastAppointmentDate);
+        
+        if (filters.fechaDesde) {
+          const desde = new Date(filters.fechaDesde);
+          if (appointmentDate < desde) return false;
+        }
+        
+        if (filters.fechaHasta) {
+          const hasta = new Date(filters.fechaHasta);
+          hasta.setHours(23, 59, 59);
+          if (appointmentDate > hasta) return false;
+        }
+      }
+      
+      return true;
+    });
+  };
+
   const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
     setShowResults(true);
 
     // Si el query está vacío, mostrar todas las mascotas
     if (searchQuery.trim().length === 0) {
-      setFilteredPets(allPets);
+      const filtered = applyFilters(allPets);
+      setFilteredPets(filtered);
       return;
     }
 
-    // Filtrar mascotas localmente
+    // Filtrar mascotas localmente por búsqueda de texto
     const lowerQuery = searchQuery.toLowerCase();
-    const filtered = allPets.filter((pet: any) => 
+    const textFiltered = allPets.filter((pet: any) => 
       pet.nombre?.toLowerCase().includes(lowerQuery) ||
       pet.name?.toLowerCase().includes(lowerQuery) ||
       pet.breed?.toLowerCase().includes(lowerQuery) ||
@@ -59,6 +130,9 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
       pet.species?.toLowerCase().includes(lowerQuery) ||
       pet.id?.toLowerCase().includes(lowerQuery)
     );
+    
+    // Aplicar filtros adicionales
+    const filtered = applyFilters(textFiltered);
     
     setFilteredPets(filtered);
   };

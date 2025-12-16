@@ -113,7 +113,7 @@ export const getAllOrders = async (token:string) => {
 };
 
 export const getUserOrders = async (userId: string/* , token: string */) => {
-    try { 
+    try {
         const res = await fetch(`${APIURL}/sale-orders/history/${userId}`, {
             method: 'GET',
             cache: 'no-cache',
@@ -123,7 +123,6 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
                 /* ...(token && { Authorization: `Bearer ${token}` }) */
             }
         });
-        console.log("📦 Órdenes recibidas:", res);
 
         if (!res.ok) {
             console.error('Error al obtener órdenes del usuario:', res.status);
@@ -131,8 +130,7 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
         }
         
         const response = await res.json();
-        
-        return response
+        return response;
     } catch (error: any) {
         console.error('Error en getUserOrders:', error);
         return [];
