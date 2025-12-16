@@ -10,7 +10,7 @@ interface StripeCheckoutProps {
 }
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || "pk_test_51SdcJq3JQ6zBlJBrBsI5EsW2k947Np8MWHzGyy58v0VlxObQn0GdG2xok0bqSzxGEv08yDOYJBr0QGWQacSPXebB00W83D0Tzr"
+  process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
 );
 
 export default function StripeCheckout({
