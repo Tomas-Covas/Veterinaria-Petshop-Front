@@ -322,16 +322,17 @@ export default function OrderHistory({ orders, loading }: OrderHistoryProps) {
                 {isExpanded && (
                   <div className="divide-y divide-gray-100">
                     {group.orders.map((order) => (
-                      <div key={order.id} className="p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between gap-4">
-                          {/* Orden y Fecha */}
-                          <div className="flex items-center gap-4 min-w-0 flex-1">
-                            <div className="shrink-0">
-                              <p className="text-xs text-gray-500 uppercase">Orden</p>
-                              <p className="text-sm font-semibold text-gray-900">
+                      <div key={order.id} className="p-2 sm:p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
+                          {/* Primera fila en móvil: Orden, Cliente, Total y Estado */}
+                          <div className="flex flex-wrap lg:flex-nowrap items-start gap-3 lg:gap-4 flex-1">
+                            {/* Orden y Fecha */}
+                            <div className="min-w-[120px]">
+                              <p className="text-[10px] sm:text-xs text-gray-500 uppercase">Orden</p>
+                              <p className="text-xs sm:text-sm font-semibold text-gray-900">
                                 #{order.id?.substring(0, 8) || 'N/A'}
                               </p>
-                              <p className="text-xs text-gray-600">
+                              <p className="text-[10px] sm:text-xs text-gray-600">
                                 {order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-AR', {
                                   day: '2-digit',
                                   month: 'short',
@@ -342,28 +343,28 @@ export default function OrderHistory({ orders, loading }: OrderHistoryProps) {
                             </div>
                             
                             {/* Cliente */}
-                            <div className="shrink-0 border-l border-gray-200 pl-4">
-                              <p className="text-xs text-gray-500 uppercase">Cliente</p>
-                              <p className="text-sm font-medium text-gray-900">
+                            <div className="min-w-[140px] lg:border-l border-gray-200 lg:pl-4">
+                              <p className="text-[10px] sm:text-xs text-gray-500 uppercase">Cliente</p>
+                              <p className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[200px]">
                                 {order.buyer?.name || 'No especificado'}
                               </p>
                               {order.buyer?.email && (
-                                <p className="text-xs text-gray-500">{order.buyer.email}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[200px]">{order.buyer.email}</p>
                               )}
                             </div>
                             
                             {/* Productos */}
                             {order.items && order.items.length > 0 && (
-                              <div className="flex-1 min-w-0 border-l border-gray-200 pl-4">
-                                <p className="text-xs text-gray-500 uppercase mb-1">Productos</p>
+                              <div className="w-full lg:flex-1 lg:min-w-0 lg:border-l border-gray-200 lg:pl-4">
+                                <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Productos</p>
                                 <div className="flex flex-wrap gap-1">
                                   {order.items.slice(0, 2).map((item, index) => (
-                                    <span key={index} className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                                    <span key={index} className="text-[10px] sm:text-xs text-gray-700 bg-gray-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[150px]">
                                       {item.product?.name || 'Producto'} (x{item.quantity})
                                     </span>
                                   ))}
                                   {order.items.length > 2 && (
-                                    <span className="text-xs text-gray-500 italic px-2 py-1">
+                                    <span className="text-[10px] sm:text-xs text-gray-500 italic px-1.5 sm:px-2 py-0.5 sm:py-1">
                                       +{order.items.length - 2} más
                                     </span>
                                   )}
@@ -373,15 +374,15 @@ export default function OrderHistory({ orders, loading }: OrderHistoryProps) {
                           </div>
                           
                           {/* Total y Estado */}
-                          <div className="flex items-center gap-4 shrink-0">
-                            <div className="text-right border-l border-gray-200 pl-4">
-                              <p className="text-xs text-gray-500 uppercase">Total</p>
-                              <p className="text-xl font-bold text-amber-600">
+                          <div className="flex items-center justify-between lg:justify-end gap-3 lg:gap-4">
+                            <div className="text-left lg:text-right lg:border-l border-gray-200 lg:pl-4">
+                              <p className="text-[10px] sm:text-xs text-gray-500 uppercase">Total</p>
+                              <p className="text-base sm:text-lg lg:text-xl font-bold text-amber-600">
                                 ${order.total ? parseFloat(order.total).toLocaleString('es-AR', { minimumFractionDigits: 2 }) : '0.00'}
                               </p>
                             </div>
                             
-                            <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${getStatusColor(order.status || 'pending')}`}>
+                            <span className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full whitespace-nowrap ${getStatusColor(order.status || 'pending')}`}>
                               {order.status || 'Pendiente'}
                             </span>
                           </div>

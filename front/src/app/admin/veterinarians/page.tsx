@@ -224,7 +224,7 @@ export default function VeterinarianManagement() {
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 via-orange-50 to-amber-100 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col min-[415px]:flex-row justify-between items-start min-[415px]:items-center gap-4 mb-8">
           <h1 className="text-4xl font-bold text-gray-900">
             Gestión de Veterinarios
           </h1>
@@ -240,7 +240,7 @@ export default function VeterinarianManagement() {
                 time: "",
               });
             }}
-            className="bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all"
+            className="bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all w-full min-[415px]:w-auto"
           >
             {showCreateForm ? "Cancelar" : "Crear Veterinario"}
           </button>
@@ -623,7 +623,7 @@ export default function VeterinarianManagement() {
                 setShowPasswordModal(false);
                 setPasswordData(null);
               }}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+              className="w-full bg-linear-to-r from-amber-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
             >
               Entendido
             </button>
@@ -674,7 +674,7 @@ export default function VeterinarianManagement() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-md"
+                className="flex-1 bg-linear-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-md"
               >
                 Sí, Eliminar
               </button>
