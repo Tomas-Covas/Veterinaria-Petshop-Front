@@ -1,15 +1,15 @@
 import { IVeterinary } from "@/src/types";
-import ana from "../../assets/ana.jpg";
 import carlos from "../../assets/carlos.jpg"
+/* import ana from "../../assets/ana.jpg";
 import juan from "../../assets/juan.jpg"
 import laura from "../../assets/laura.jpg"
 import maria from "../../assets/maria.jpg"
-import roberto from "../../assets/roberto.jpg"
+import roberto from "../../assets/roberto.jpg" */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // Mock de veterinarios para desarrollo (fallback)
-const MOCK_VETERINARIANS: IVeterinary[] = [
+/* const MOCK_VETERINARIANS: IVeterinary[] = [
     {
         id: 1,
         name: "Dr. Carlos Mendoza",
@@ -64,7 +64,7 @@ const MOCK_VETERINARIANS: IVeterinary[] = [
         experience: 7,
         available: true
     }
-];
+]; */
 
 const getDefaultSpecialty = () => {
     const specialties = [
@@ -113,11 +113,11 @@ export const getAllVeterinarians = async (): Promise<IVeterinary[]> => {
         }
         
         console.log('⚠️ No se pudieron cargar veterinarios del backend, usando mock');
-        return MOCK_VETERINARIANS;
+        return []
     } catch (error) {
         console.error('Error al cargar veterinarios:', error);
         console.log('⚠️ Usando veterinarios mockeados como fallback');
-        return MOCK_VETERINARIANS;
+        return []
     }
 };
 
@@ -150,11 +150,23 @@ export const getVeterinaryById = async (id: string): Promise<IVeterinary> => {
     } catch (error) {
         console.error('Error al cargar veterinario por ID:', error);
         // Fallback al mock
-        const allVeterinarians = MOCK_VETERINARIANS;
-        const veterinary = allVeterinarians.find((vet) => vet.id === Number(id) || vet.id === id);
+        /* const allVeterinarians = MOCK_VETERINARIANS; */
+        /* const veterinary = allVeterinarians.find((vet) => vet.id === Number(id) || vet.id === id);
         if (!veterinary) {
             throw new Error('Veterinario no encontrado');
         }
-        return veterinary;
+        return veterinary; */
+        return {
+      id,
+      name: "Veterinario desconocido",
+      specialty: getDefaultSpecialty(),
+      description: "No se pudo cargar la información del veterinario",
+      image: carlos,
+      experience: getDefaultExperience(),
+      available: false,
+      email: "",
+      phone: "",
+      matricula: "",
+    };
     }
 };

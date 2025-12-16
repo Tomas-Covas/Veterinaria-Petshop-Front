@@ -53,7 +53,14 @@ export const getMedications = async (): Promise<Medication[]> => {
       throw new Error('Error al obtener medicamentos');
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Normalizar: si viene { data: [...] }
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+
+    return [];
+
   } catch (error) {
     console.error('Error en getMedications:', error);
     throw error;

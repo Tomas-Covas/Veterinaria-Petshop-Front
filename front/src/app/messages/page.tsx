@@ -42,7 +42,7 @@ export default function MessagesPage() {
     // Si no hay usuario después de cargar, mostrar mensaje
     if (!userData?.user?.id) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-linear-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
                     <p className="text-gray-600">Debes iniciar sesión para ver tus mensajes</p>
                     <button
@@ -58,7 +58,7 @@ export default function MessagesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
+            <div className="min-h-screen pt-24 flex items-center justify-center bg-linear-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando mensajes...</p>
@@ -72,11 +72,11 @@ export default function MessagesPage() {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-purple-50 to-violet-50">
+        <div className="min-h-screen pt-24 pb-12 bg-linear-to-br from-purple-50 to-violet-50">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-500 to-violet-500 p-6">
+                    <div className="bg-linear-to-r from-purple-500 to-violet-500 p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">

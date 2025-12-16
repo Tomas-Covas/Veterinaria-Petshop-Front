@@ -3,10 +3,8 @@
 import Carousel from '../app/components/Carousel/Carousel'
 import HomeCategories from '../app/components/HomeCategories/HomeCategories'
 import Delivery from '../app/components/Delivery/Delivery'
-import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const router = useRouter();
 
   return (
     <div className='pt-20 bg-orange-200'>
@@ -15,7 +13,7 @@ export default function Home() {
       <Carousel />
 
       {/* Banner de envío con código postal */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 py-8 px-4">
+      <div className="bg-linear-to-r from-blue-600 via-blue-500 to-blue-600 py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col items-center text-center gap-4">
             {/* Icono y texto principal */}

@@ -72,31 +72,15 @@ export default function CompleteTurnModal({
         getMedicationsCatalog(),
       ]);
 
-      // Normalizar a arrays con una aserción de tipo explícita
-      const generalArray = Array.isArray(general)
-        ? general
-        : (general as any)?.data || [];
-      const controlledData =
-        controlled?.medications ||
-        (controlled as any)?.data ||
-        controlled ||
-        [];
-      const controlledArray = Array.isArray(controlledData)
-        ? controlledData
-        : [];
-
-      console.log("✅ Medicamentos generales cargados:", generalArray.length);
-      console.log(
-        "✅ Medicamentos controlados cargados:",
-        controlledArray.length
-      );
-      console.log("📋 Estructura controlados:", controlledArray[0]);
-
+      // Normalizar a arrays
+      const generalArray = general; // siempre array
+      const controlledArray = controlled.medications; // siempre array
+      
       setGeneralMeds(generalArray);
       setControlledMeds(controlledArray);
     } catch (error) {
-      console.error("Error al cargar medicamentos:", error);
-      toast.error("Error al cargar medicamentos disponibles");
+      throw error
+      toast.error('Error al cargar medicamentos disponibles');
       setGeneralMeds([]);
       setControlledMeds([]);
     } finally {
@@ -152,8 +136,8 @@ export default function CompleteTurnModal({
   const handleSubmit = (values: MedicalRecordData) => {
     // Validar medicamentos si hay alguno seleccionado
     if (selectedMedications.length > 0) {
-      const invalidMeds = selectedMedications.filter(
-        (m) => !m.medicationId || !m.dosage || !m.duration || m.quantity <= 0
+      const invalidMeds = selectedMedications.filter(m =>
+        !m.medicationId || !m.dosage || !m.duration || m.quantity <= 0
       );
 
       if (invalidMeds.length > 0) {
@@ -162,8 +146,8 @@ export default function CompleteTurnModal({
       }
 
       // Validar stock
-      const insufficientStock = selectedMedications.filter(
-        (m) => m.currentStock !== undefined && m.quantity > m.currentStock
+      const insufficientStock = selectedMedications.filter(m =>
+        m.currentStock !== undefined && m.quantity > m.currentStock
       );
 
       if (insufficientStock.length > 0) {
@@ -177,9 +161,7 @@ export default function CompleteTurnModal({
     }
 
     // Limpiar currentStock antes de enviar (campo solo para validación frontend)
-    const medicationsToSend = selectedMedications.map(
-      ({ currentStock, ...med }) => med
-    );
+    const medicationsToSend = selectedMedications.map(({ currentStock, ...med }) => med);
 
     // Enviar medicationsUsed al backend
     onSubmit({ ...values, medicationsUsed: medicationsToSend });
@@ -188,10 +170,10 @@ export default function CompleteTurnModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-linear-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-400 to-orange-600 p-6 sticky top-0">
+        <div className="bg-linear-to-r from-orange-400 to-orange-600 p-6 sticky top-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">

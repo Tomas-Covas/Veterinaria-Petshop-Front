@@ -82,20 +82,6 @@ const OrderCard: React.FC<Props> = ({ order }) => {
 
       <h3 className="mt-3 font-semibold text-gray-800">Items:</h3>
       {order.items.map((item) => {
-        // Validar que la imagen sea una URL válida
-        /* const getValidImageUrl = () => {
-          const imgUrl = item.product.imgUrl;
-          if (!imgUrl || imgUrl === 'No image' || imgUrl === 'no image') {
-            return 'https://placehold.co/400x400/f59e0b/white?text=Sin+Imagen';
-          }
-          // Si es una URL válida (empieza con http:// o https://)
-          if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
-            return imgUrl;
-          }
-          // Si es una ruta relativa, no es válida para Image de Next.js
-          return 'https://placehold.co/400x400/f59e0b/white?text=Sin+Imagen';
-        }; */
-
         return (
           <div
             key={item.id}

@@ -64,24 +64,6 @@ export interface Appointment {
     }
 }
 
-/* export interface Pet {
-    id: string
-    nombre: string
-    especie: string
-    sexo: string
-    tamano: string
-    esterilizado: string
-    status: string
-    fecha_nacimiento: string
-    fecha_fallecimiento: string | null
-    breed: string
-    image: string | null
-    owner: Owner
-    mother: Pet | null
-    father: Pet | null
-    appointments: Appointment[]
-} */
-
 export interface UserProfile {
   id: string;
   name: string;
@@ -92,27 +74,33 @@ export interface UserProfile {
 }
 
 
-export interface Order {
-  id: string
-  total: number | string
-  status: 'ACTIVE' | 'delivered'
-  items: OrderItem[]
-  createdAt?: string
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+  imgUrl: string;
 }
 
 export interface OrderItem {
-  id: string
-  productName?: string
-  quantity: number
-  price?: number
-  unitPrice?: string | number
-  product?: {
-    id: string
-    name: string
-    price: number | string
-    stock: number
-    imgUrl: string
-  }
+  id: string;
+  quantity: number;
+  unitPrice: string;
+  product: Product;
+}
+
+export interface Order {
+  id: string;
+  total: string;
+  status: 'ACTIVE' | 'PENDING' | 'PAID' | 'CANCELLED';
+  paymentMethod: string | null;
+  notes: string | null;
+  createdAt: string;
+  expiresAt: string;
+  mercadoPagoId: string | null;
+  mercadoPagoStatus: string | null;
+  items: OrderItem[];
 }
 
 export interface IPetCreate {
@@ -217,11 +205,14 @@ export interface ICategoryBasic {
 }
 
 export interface IVeterinary {
-    id: number;
+    id: string;
     name: string;
     specialty: string;
     description: string;
     image: string | StaticImageData;
     experience: number; // años de experiencia
     available: boolean;
+    phone: string;
+    email: string;
+    matricula: string;
 }

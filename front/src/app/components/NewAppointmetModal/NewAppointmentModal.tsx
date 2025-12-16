@@ -148,9 +148,9 @@ export default function NewAppointmentModal({ open, onClose, userId, petId, onSu
                 const error = await res.json();
                 throw new Error(error.message || 'Error al agendar el turno');
             }
-
+            const newAppointment = await res.json();
             toast.success('Turno agendado correctamente');
-            onSuccess();
+            onSuccess(newAppointment);
             onClose();
         } catch (err: any) {
             console.error('❌ Error al crear turno:', err);
@@ -167,7 +167,7 @@ export default function NewAppointmentModal({ open, onClose, userId, petId, onSu
     const slots = generateTimeSlots(startHour, endHour)
 
 return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-linear-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50">
         <div className="absolute inset-0 bg-cyan-700/40 backdrop-blur-sm" />
         <div className="relative bg-orange-200 p-6 rounded-2xl w-full max-w-4xl mx-4 shadow-lg z-10">
             <h2 className="text-xl font-bold mb-4">Agendar Turno</h2>

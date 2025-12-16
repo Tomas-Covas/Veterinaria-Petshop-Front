@@ -100,7 +100,7 @@ export default function ControlledMedicationsPage() {
   return (
     <div className="container mx-auto px-4 pt-24 pb-8 space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white shadow-lg">
+      <div className="bg-linear-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white shadow-lg">
         <h1 className="text-3xl font-bold mb-2">🔐 Medicamentos Controlados</h1>
         <p className="text-white/90">
           Sistema de solicitud y gestión de medicamentos controlados

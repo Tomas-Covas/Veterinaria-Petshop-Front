@@ -218,7 +218,7 @@ export default function GeneralMedicationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50">
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-linear-to-br from-indigo-50 to-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando medicamentos...</p>
@@ -272,7 +272,7 @@ export default function GeneralMedicationsPage() {
           <div className="flex gap-4 mb-6">
             <button
               onClick={() => setShowUseForm(!showUseForm)}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
+              className="flex-1 bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
             >
               <span className="text-xl">💉</span>
               Registrar Uso
@@ -287,7 +287,7 @@ export default function GeneralMedicationsPage() {
             </button>
             <button
               onClick={() => setShowRequestForm(!showRequestForm)}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
+              className="flex-1 bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
             >
               <span className="text-xl">📦</span>
               Solicitar Reposición

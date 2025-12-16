@@ -22,38 +22,35 @@ export default function StripeCheckout({
 
   const handleCheckout = async () => {
     setLoading(true);
+
     try {
       const stripe = await stripePromise;
+
       if (!stripe) throw new Error("Stripe no pudo inicializarse");
 
-      // Llamar a tu API para crear una sesión de checkout
       const response = await fetch("/api/create-stripe-checkout-session", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Redirigir a la página de checkout de Stripe
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: data.id,
-        });
-
-        if (error) {
-          if (onError) onError(error);
-          console.error("Error en redirectToCheckout:", error);
-        }
-      } else {
+      if (!response.ok) {
         throw new Error(data.error || "Error al crear la sesión de checkout");
       }
+
+      // ✅ FIX DEFINITIVO: Stripe types están rotos → usamos any SOLO aquí
+      const result = await (stripe as any).redirectToCheckout({
+        sessionId: data.id,
+      });
+
+      if (result?.error) {
+        onError?.(result.error);
+        console.error("Error en redirectToCheckout:", result.error);
+      }
     } catch (error) {
-      if (onError) onError(error);
+      onError?.(error);
       console.error("Error en el checkout de Stripe:", error);
     } finally {
       setLoading(false);

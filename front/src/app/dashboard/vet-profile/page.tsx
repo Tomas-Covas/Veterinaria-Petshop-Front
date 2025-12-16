@@ -57,7 +57,7 @@ export default function VetProfilePage() {
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header con foto */}
-          <div className="bg-gradient-to-r from-orange-400 to-orange-600 h-32"></div>
+          <div className="bg-linear-to-r from-orange-400 to-orange-600 h-32"></div>
           
           <div className="px-8 pb-8">
             {/* Foto de perfil */}

@@ -8,9 +8,9 @@ import { toast } from "react-toastify";
 
 export default function ChangePasswordPage() {
   const { userData, setUserData } = useAuth();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -53,15 +53,16 @@ export default function ChangePasswordPage() {
         localStorage.setItem("authToken", result.token);
       }
 
-      toast.success("Contraseña cambiada exitosamente");
+      toast.success('Contraseña cambiada exitosamente');
       setUserData({
-        ...userData,
+        ...userData!,
         user: {
-          ...userData.user,
-          requirePasswordChange: false,
-        },
+          ...userData!.user,
+          requirePasswordChange: false
+        }
       });
-      localStorage.setItem("requirePasswordChange", "false");
+
+      localStorage.setItem('requirePasswordChange', 'false');
       document.cookie = "requirePasswordChange=false; path=/";
 
       // Redirigir al dashboard

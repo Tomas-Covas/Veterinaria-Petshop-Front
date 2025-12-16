@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import VeterinaryCard from "../components/VeterinaryCard/VeterinaryCard";
 import { IVeterinarian } from "@/src/types";
 import Image from "next/image";

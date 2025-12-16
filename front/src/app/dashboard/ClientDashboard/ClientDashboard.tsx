@@ -14,7 +14,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getUserOrders } from "@/src/services/order.services";
 
-export default function ClientDashboard() {
+interface ClientDashboardProps {
+  refreshOrders: number;
+}
+
+export default function ClientDashboard({ refreshOrders }: ClientDashboardProps) {
   const { userData, setUserData, activeTab, setActiveTab } = useAuth();
   const [pets, setPets] = useState<IPet[]>([]);
   const [showNewPetModal, setShowNewPetModal] = useState(false);
@@ -49,6 +53,7 @@ export default function ClientDashboard() {
         setOpenEdit(false);
       }
     } catch (err) {
+      throw err
       toast.error("Error al intentar editar perfil: Intentelo más tarde");
     }
   };
@@ -74,7 +79,7 @@ export default function ClientDashboard() {
 
       if (!newPet) {
         toast.error("No se pudo crear la mascota");
-        return;
+        return null;
       }
 
       setPets((prev) => [...prev, newPet]);
@@ -84,7 +89,7 @@ export default function ClientDashboard() {
       window.location.reload()
     } catch (error) {
       toast.error("Error al crear mascota");
-      console.error("❌ Error al crear mascota:", error);
+      throw error;
 
     } finally {
       setCreatingPet(false);
@@ -92,12 +97,12 @@ export default function ClientDashboard() {
   };
 
   useEffect(() => {
-    if (!userData?.user?.id) return;
+    if (!userData?.user?.id) return ;
 
     const fetchOrders = async () => {
       try {
         const response = await getUserOrders(userData.user.id);
-        setOrders(response.data || []);
+        setOrders(response || []); //antes response.data
       } catch (error) {
         console.error("Error fetching orders:", error);
         setOrders([]);
@@ -110,7 +115,7 @@ export default function ClientDashboard() {
   }, [userData?.user?.id]);
 
   useEffect(() => {
-    if (!userData?.user?.id) return;
+    if (!userData?.user?.id) return ;
 
     const fetchPets = async () => {
       try {
@@ -146,9 +151,9 @@ export default function ClientDashboard() {
   const router = useRouter()
 
   if (!userData) {
-    return (
-      router.push("/")
-    );
+    router.push("/")
+    return null
+
   }
 
   return (

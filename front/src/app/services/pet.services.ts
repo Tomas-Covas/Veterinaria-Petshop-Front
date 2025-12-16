@@ -9,6 +9,7 @@ export interface Pet {
   species: string
   breed: string
   age: number
+  image:string | ''
   appointments: Appointment[]
 }
 
@@ -233,6 +234,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Perro',
           breed: 'Golden Retriever',
           age: 5,
+          image:"",
           appointments: [
             {
               id: 'apt-001',
@@ -256,6 +258,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Gato',
           breed: 'Siamés',
           age: 3,
+          image:"",
           appointments: [
             {
               id: 'apt-003',
@@ -279,6 +282,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Perro',
           breed: 'Pastor Alemán',
           age: 7,
+          image:"",
           appointments: [
             {
               id: 'apt-005',
@@ -295,6 +299,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Gato',
           breed: 'Persa',
           age: 2,
+          image:"",
           appointments: [
             {
               id: 'apt-006',
@@ -311,6 +316,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Perro',
           breed: 'Beagle',
           age: 4,
+          image:"",
           appointments: []
         },
         {
@@ -319,6 +325,7 @@ const getMockPets = (query: string): Promise<Pet[]> => {
           species: 'Gato',
           breed: 'Angora',
           age: 6,
+          image:"",
           appointments: [
             {
               id: 'apt-007',
@@ -531,10 +538,10 @@ export interface AddMedicalRecordData {
   weight?: number;
   temperature?: number;
   medicationsUsed?: MedicationUsed[];
-  medicationsUsed?: MedicationUsed[];
 }
 
 export interface MedicalRecordResponse {
+  success?: boolean;
   message: string;
   data?: {
     medicalRecordId: string;
