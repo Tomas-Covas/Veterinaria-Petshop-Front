@@ -2,15 +2,32 @@ import { useField } from 'formik';
 import Select from 'react-select';
 import { Country, City } from 'country-state-city';
 
-export function CountrySelect({ label, name, onCountryChange }) {
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface CountrySelectProps {
+  label: string;
+  name: string;
+  onCountryChange?: (countryCode: string | null) => void;
+}
+
+interface CitySelectProps {
+  label: string;
+  name: string;
+  countryCode: string | null;
+}
+
+export function CountrySelect({ label, name, onCountryChange }: CountrySelectProps) {
   const [field, meta, helpers] = useField(name);
   
-  const countries = Country.getAllCountries().map(country => ({
+  const countries: SelectOption[] = Country.getAllCountries().map(country => ({
     value: country.isoCode,
     label: country.name
   }));
 
-  const handleChange = (option) => {
+  const handleChange = (option: SelectOption | null) => {
     helpers.setValue(option ? option.label : '');
     if (onCountryChange) {
       onCountryChange(option ? option.value : null);
@@ -40,17 +57,17 @@ export function CountrySelect({ label, name, onCountryChange }) {
   );
 }
 
-export function CitySelect({ label, name, countryCode }) {
+export function CitySelect({ label, name, countryCode }: CitySelectProps) {
   const [field, meta, helpers] = useField(name);
-  
-  const cities = countryCode 
+
+  const cities: SelectOption[] = countryCode
     ? City.getCitiesOfCountry(countryCode).map(city => ({
         value: city.name,
         label: city.name
       }))
     : [];
 
-  const handleChange = (option) => {
+  const handleChange = (option: SelectOption | null) => {
     helpers.setValue(option ? option.value : '');
   };
 
