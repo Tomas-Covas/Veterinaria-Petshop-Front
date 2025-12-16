@@ -194,7 +194,10 @@ export default function PetMedicalHistoryPage() {
 
         {/* Barra de búsqueda */}
         <div className="mb-6">
-          <PetSearchBar onSelectPet={handlePetSelect} filters={filters} />
+          <PetSearchBar 
+            onSelectPet={handlePetSelect}
+            filters={filters}
+          />
         </div>
 
         {/* Botón para mostrar/ocultar filtros */}
@@ -304,7 +307,6 @@ export default function PetMedicalHistoryPage() {
                 </select>
               </div>
 
-              {/* Filtro por 
               {/* Filtro por Fecha Desde */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -319,7 +321,7 @@ export default function PetMedicalHistoryPage() {
               </div>
 
               {/* Filtro por Fecha Hasta */}
-              <div>dueno || filters.
+              <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Fecha hasta
                 </label>

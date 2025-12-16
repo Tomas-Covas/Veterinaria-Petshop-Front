@@ -32,12 +32,12 @@ export default function Navbar() {
       <nav className="w-full mx-auto flex justify-end md:items-center md:justify-center lg:justify-between  px-4 sm:px-4 lg:px-6 h-20">
 
         {/* Logo */}
-        <Link href="/" className="hidden lg:flex items-center cursor-pointer z-50 shrink-0">
+        <Link href="/" className="hidden md:flex items-center cursor-pointer z-50 shrink-0">
           <Image
             src={Huellitas3}
             alt="Huellitas Pet"
             width={120}
-            className="transition-all duration-300"
+            className="transition-all duration-300 size-3/4 ms-5"
             loading="eager"
           />
         </Link>
@@ -197,6 +197,7 @@ export default function Navbar() {
         <div className="px-4 py-6 space-y-4">
 
           {/* Navegación general */}
+          <Link href={"/"} className="block text-gray-700 hover:text-orange-500 transition text-base font-medium">Inicio</Link>
           {navItems
             .filter(() => !isAdmin())
             .map((item) => (
@@ -204,12 +205,12 @@ export default function Navbar() {
                 key={item.id}
                 href={item.route}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-gray-700 hover:text-orange-500 transition py-2 text-base font-medium"
+                className="block text-gray-700 hover:text-orange-500 transition text-base font-medium"
               >
                 {item.nameToRender}
               </Link>
             ))}
-
+          
           <LocationButton />
           <MessagesButton />
           <br></br>

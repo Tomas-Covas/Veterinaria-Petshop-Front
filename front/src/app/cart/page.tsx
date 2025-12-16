@@ -380,7 +380,8 @@ function CartPage() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-8 right-8 z-50 bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          className="fixed bottom-30 right-8 z-50 bg-amber-500 cursor-pointer
+           hover:bg-amber-600 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
           aria-label="Abrir carrito"
         >
           <svg
