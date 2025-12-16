@@ -15,7 +15,7 @@ const CardPet: React.FC<IPet> = (pet) => {
   }
 
   return (
-    <Link href={`${process.env.NEXT_PUBLIC_API_URL}/pets/${pet.id}`}>
+    <Link href={`${process.env.NEXTAUTH_URL}/pets/${pet.id}`}>
       <div className="bg-linear-to-br from-orange-400 via-orange-200 to-orange-300 
       rounded-xl shadow-lg p-6 my-2 max-w-md mx-2 cursor-pointer hover:scale-105
       border border-gray-400 hover:shadow-xl transition-shadow">
