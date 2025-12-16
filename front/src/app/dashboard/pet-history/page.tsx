@@ -118,26 +118,45 @@ export default function PetMedicalHistoryPage() {
       matchedRecord = records.find((r: any) => r.appointmentId === appointmentId);
 
       // 2. Si no hay match directo, intentar por veterinario y fecha
-      // 2. Si no hay match directo, intentar por veterinario y fecha
       if (!matchedRecord && appointment.veterinarian && appointment.date) {
-        const vetId =
-          typeof appointment.veterinarian === "string"
-            ? appointment.veterinarian
-            : appointment.veterinarian?.id;
+        let vetId: string | undefined;
+
+        // Caso 1: viene como string
+        if (typeof appointment.veterinarian === "string") {
+          vetId = appointment.veterinarian;
+
+          // Caso 2: viene como objeto con id
+        } else if (
+          typeof appointment.veterinarian === "object" &&
+          appointment.veterinarian !== null &&
+          "id" in appointment.veterinarian
+        ) {
+          vetId = (appointment.veterinarian as any).id;
+        }
 
         const appointmentDate = appointment.date.split("T")[0];
 
         matchedRecord = records.find((r: any) => {
-          const recordVetId =
-            typeof r.veterinarian === "string"
-              ? r.veterinarian
-              : r.veterinarian?.id || r.veterinarianId;
+          let recordVetId: string | undefined;
+
+          if (typeof r.veterinarian === "string") {
+            recordVetId = r.veterinarian;
+          } else if (
+            typeof r.veterinarian === "object" &&
+            r.veterinarian !== null &&
+            "id" in r.veterinarian
+          ) {
+            recordVetId = r.veterinarian.id;
+          } else {
+            recordVetId = r.veterinarianId;
+          }
 
           const recordDate = (r.consultationDate || r.createdAt || "").split("T")[0];
 
           return recordVetId === vetId && recordDate === appointmentDate;
         });
       }
+
 
 
       // 3. Fallback: mostrar el registro más reciente
