@@ -104,6 +104,7 @@ export const getAllProducts = async (): Promise<IProduct[]> => {
                 images: allImages, // Array completo para galería
                 categoryId: product.category?.id || product.categoryId // Normalizar categoryId
             };
+            
         });
         
         /* console.log(`✅ ${products.length} productos obtenidos del backend`); */
@@ -111,6 +112,7 @@ export const getAllProducts = async (): Promise<IProduct[]> => {
     } catch (error: any) {
         console.error('getAllProducts error:', error);
     }
+    return []
 };
 
 export const getProductById = async (id: string): Promise<IProduct> => {
