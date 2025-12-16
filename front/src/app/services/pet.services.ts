@@ -532,7 +532,6 @@ export interface AddMedicalRecordData {
   weight?: number;
   temperature?: number;
   medicationsUsed?: MedicationUsed[];
-  medicationsUsed?: MedicationUsed[];
 }
 
 export interface MedicalRecordResponse {

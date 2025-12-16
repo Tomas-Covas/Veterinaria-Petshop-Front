@@ -1,11 +1,11 @@
 import React from "react";
 import Link from 'next/link';
 import Image from 'next/image';
-import { IVeterinary } from "@/src/types";
+import { IVeterinarian, IVeterinary } from "@/src/types";
 import avatar from "@/src/assets/avatar.jpg"
 
 interface VeterinaryCardProps {
-    veterinary: IVeterinary;
+    veterinary: IVeterinary | IVeterinarian;
     disableLink?: boolean; // Nueva prop para desactivar el link
 }
 
@@ -19,7 +19,7 @@ function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps
       {/* Imagen circular */}
       <div className="w-48 h-48 mx-auto overflow-hidden rounded-full bg-gray-200 relative shrink-0">
         <Image
-          src={veterinary.image || avatar}
+          src={veterinary.image ?? avatar}
           alt={veterinary.name}
           fill
           loading="lazy"
@@ -34,7 +34,7 @@ function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps
           {veterinary.name}
         </h3>
         <p className="text-base text-amber-600 font-semibold mb-3">
-          {veterinary.specialty}
+          {veterinary.specialty ?? "No especificada"}
         </p>
         <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
           {veterinary.description}
@@ -43,7 +43,7 @@ function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps
         {/* Footer con experiencia */}
         <div className="pt-4 border-t border-gray-200 mt-auto">
           <span className="text-sm text-gray-600 font-medium">
-            {veterinary.experience} años de experiencia
+            {veterinary.experience ?? 0} años de experiencia
           </span>
         </div>
       </div>
