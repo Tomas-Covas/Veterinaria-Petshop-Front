@@ -1,6 +1,6 @@
 import OurTeamClient from "./OurTeamClient";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default async function OurTeam() {
   let vets = [];

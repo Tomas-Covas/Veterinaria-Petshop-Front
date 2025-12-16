@@ -58,7 +58,7 @@ export const createPaymentPreference = async (orderData: {
   };
 }) => {
   try {
-    const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const APIURL = process.env.NEXT_PUBLIC_API_URL;
     
     const response = await fetch(`${APIURL}/payments/create-preference`, {
       method: "POST",

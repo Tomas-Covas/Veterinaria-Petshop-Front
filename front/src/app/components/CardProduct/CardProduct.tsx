@@ -20,8 +20,8 @@ function Card({ product }: CardProps) {
     if (typeof imageToUse === 'string') {
       if (imageToUse.startsWith('http://') || imageToUse.startsWith('https://')) {
         imageSrc = imageToUse;
-      } else if (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000') {
-        imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${imageToUse}`;
+      } else if (process.env.NEXT_PUBLIC_API_URL) {
+        imageSrc = `${process.env.NEXT_PUBLIC_API_URL}${imageToUse}`;
       }
     } else {
       imageSrc = imageToUse; // StaticImageData

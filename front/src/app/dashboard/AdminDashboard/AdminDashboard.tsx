@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 
 const GeneralMedicationsPage = dynamic(() => import('../general-medications/page'), { ssr: false });
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface Appointment {
   id: string;

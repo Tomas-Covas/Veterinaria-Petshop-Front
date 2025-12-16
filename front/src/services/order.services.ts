@@ -1,4 +1,4 @@
-const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const calculateShipping = async (postalCode: string, items?: Array<{productId: string, quantity: number}>, token?: string) => {
     try {

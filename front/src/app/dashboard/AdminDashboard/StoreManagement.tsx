@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { IProduct } from '@/src/types';
 import { toast } from 'react-toastify';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface StoreManagementProps {
   products: IProduct[];

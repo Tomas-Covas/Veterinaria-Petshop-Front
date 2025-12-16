@@ -1,6 +1,6 @@
 import { IProduct } from "@/src/types";
 
-const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 // Actualizar precio de producto (solo admin)
 export const updateProductPrice = async (

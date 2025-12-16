@@ -17,8 +17,8 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
     if (typeof image === 'string') {
       if (image.startsWith('http://') || image.startsWith('https://')) {
         return image;
-      } else if (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000') {
-        return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${image}`;
+      } else if (process.env.NEXT_PUBLIC_API_URL) {
+        return `${process.env.NEXT_PUBLIC_API_URL}${image}`;
       }
     }
     return image; // Es StaticImageData

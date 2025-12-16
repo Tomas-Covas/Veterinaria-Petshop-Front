@@ -33,7 +33,7 @@ export default function NewVetConversationPage() {
             
             // Cargar usuarios regulares (clientes y admins)
             try {
-                const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/users`, {
+                const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
                     credentials: 'include',
                 });
                 
@@ -69,7 +69,7 @@ export default function NewVetConversationPage() {
             
             // Cargar veterinarios
             try {
-                const vetsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/veterinarians`, {
+                const vetsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/veterinarians`, {
                     credentials: 'include',
                 });
                 

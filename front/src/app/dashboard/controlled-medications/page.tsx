@@ -5,7 +5,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import ControlledMedicationsForm from '@/src/app/components/ControlledMedicationsForm/ControlledMedicationsForm';
 import MyMedicationRequests from '@/src/app/components/MyMedicationRequests/MyMedicationRequests';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ControlledMedicationsPage() {
   const { userData } = useAuth();

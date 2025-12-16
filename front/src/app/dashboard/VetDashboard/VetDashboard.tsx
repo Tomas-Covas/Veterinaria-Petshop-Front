@@ -64,7 +64,7 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
         console.log('🔑 Token disponible:', token ? 'SÍ' : 'NO');
 
         // Buscar el veterinario por userId
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/veterinarians`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/veterinarians`, {
           method: 'GET',
           credentials: 'include',
           headers: {

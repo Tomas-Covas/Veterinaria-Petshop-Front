@@ -20,8 +20,8 @@ function AdminProductCard({ product, onPriceUpdate }: AdminProductCardProps) {
     if (typeof product.image === 'string') {
       if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
         imageSrc = product.image;
-      } else if (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000') {
-        imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${product.image}`;
+      } else if (process.env.NEXT_PUBLIC_API_URL) {
+        imageSrc = `${process.env.NEXT_PUBLIC_API_URL}${product.image}`;
       }
     } else {
       // Es un objeto StaticImageData de Next.js

@@ -277,8 +277,7 @@ function CartPage() {
           console.log("✅ Ubicación obtenida:", { latitude, longitude });
 
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-            }/sale-orders/calculate-shipping`,
+            `${process.env.NEXT_PUBLIC_API_URL}/sale-orders/calculate-shipping`,
             {
               method: "POST",
               credentials: "include",
@@ -461,9 +460,7 @@ function CartPage() {
                                   ) {
                                     imageSrc = imageToUse;
                                   } else {
-                                    imageSrc = `${process.env.NEXT_PUBLIC_API_URL ||
-                                      "http://localhost:3000"
-                                      }${imageToUse}`;
+                                    imageSrc = `${process.env.NEXT_PUBLIC_API_URL}${imageToUse}`;
                                   }
                                 } else {
                                   imageSrc = imageToUse;

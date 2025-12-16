@@ -7,7 +7,7 @@ import avatar from "@/src/assets/avatarHueso.png";
 import { createConversation } from "@/src/services/messages.services";
 import { toast } from "react-toastify";
 
-const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function NewConversationPage() {
     const { userData } = useAuth();

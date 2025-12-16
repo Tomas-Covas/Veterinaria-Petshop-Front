@@ -6,7 +6,7 @@ import laura from "../../assets/laura.jpg"
 import maria from "../../assets/maria.jpg"
 import roberto from "../../assets/roberto.jpg" */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Mock de veterinarios para desarrollo (fallback)
 /* const MOCK_VETERINARIANS: IVeterinary[] = [

@@ -3,7 +3,7 @@
 import { ILoginProps, IRegister } from "@/src/types/index";
 import { toast } from "react-toastify";
 
-const APIURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function register(userData: IRegister) {
   try {
