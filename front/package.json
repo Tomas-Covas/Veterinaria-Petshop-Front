@@ -17,7 +17,7 @@
     "country-state-city": "^3.2.1",
     "flowbite": "^4.0.1",
     "formik": "^2.4.9",
-    "next": "16.0.4",
+    "next": "16.0.10",
     "next-auth": "^4.24.13",
     "react": "19.2.0",
     "react-dom": "19.2.0",
