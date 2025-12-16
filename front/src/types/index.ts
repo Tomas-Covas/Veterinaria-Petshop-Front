@@ -212,4 +212,7 @@ export interface IVeterinary {
     image: string | StaticImageData;
     experience: number; // años de experiencia
     available: boolean;
+    phone: string;
+    email: string;
+    matricula: string;
 }
