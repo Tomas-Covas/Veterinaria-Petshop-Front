@@ -5,8 +5,8 @@ import { IVeterinarian, IVeterinary } from "@/src/types";
 import avatar from "@/src/assets/avatar.jpg"
 
 interface VeterinaryCardProps {
-    veterinary: IVeterinary | IVeterinarian;
-    disableLink?: boolean; // Nueva prop para desactivar el link
+  veterinary: IVeterinary | IVeterinarian;
+  disableLink?: boolean; // Nueva prop para desactivar el link
 }
 
 function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps) {
@@ -19,13 +19,20 @@ function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps
       {/* Imagen circular */}
       <div className="w-48 h-48 mx-auto overflow-hidden rounded-full bg-gray-200 relative shrink-0">
         <Image
-          src={veterinary.image ?? avatar}
+          src={
+            typeof veterinary === "object" &&
+              "image" in veterinary &&
+              veterinary.image
+              ? veterinary.image
+              : avatar
+          }
           alt={veterinary.name}
           fill
           loading="lazy"
           className="object-cover"
           sizes="192px"
         />
+
       </div>
 
       {/* Contenido */}
@@ -34,16 +41,28 @@ function VeterinaryCard({ veterinary, disableLink = false }: VeterinaryCardProps
           {veterinary.name}
         </h3>
         <p className="text-base text-amber-600 font-semibold mb-3">
-          {veterinary.specialty ?? "No especificada"}
+          {
+            typeof veterinary === "object" &&
+              veterinary !== null &&
+              "specialty" in veterinary
+              ? veterinary.specialty || "No especificada"
+              : "No especificada"
+          }
         </p>
         <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">
           {veterinary.description}
         </p>
-        
+
         {/* Footer con experiencia */}
         <div className="pt-4 border-t border-gray-200 mt-auto">
           <span className="text-sm text-gray-600 font-medium">
-            {veterinary.experience ?? 0} años de experiencia
+            {
+              typeof veterinary === "object" &&
+                veterinary !== null &&
+                "experience" in veterinary
+                ? veterinary.experience ?? 0
+                : 0
+            } años de experiencia
           </span>
         </div>
       </div>
