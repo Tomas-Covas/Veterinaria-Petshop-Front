@@ -21,7 +21,7 @@ interface CitySelectProps {
 
 export function CountrySelect({ label, name, onCountryChange }: CountrySelectProps) {
   const [field, meta, helpers] = useField(name);
-  
+
   const countries: SelectOption[] = Country.getAllCountries().map(country => ({
     value: country.isoCode,
     label: country.name
@@ -60,12 +60,15 @@ export function CountrySelect({ label, name, onCountryChange }: CountrySelectPro
 export function CitySelect({ label, name, countryCode }: CitySelectProps) {
   const [field, meta, helpers] = useField(name);
 
-  const cities: SelectOption[] = countryCode
-    ? City.getCitiesOfCountry(countryCode).map(city => ({
-        value: city.name,
-        label: city.name
-      }))
+  const rawCities = countryCode ? City.getCitiesOfCountry(countryCode) : [];
+
+  const cities: SelectOption[] = Array.isArray(rawCities)
+    ? rawCities.map(city => ({
+      value: city.name,
+      label: city.name
+    }))
     : [];
+
 
   const handleChange = (option: SelectOption | null) => {
     helpers.setValue(option ? option.value : '');
