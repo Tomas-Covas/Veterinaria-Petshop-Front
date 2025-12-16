@@ -5,9 +5,17 @@ import { searchPets, Pet } from '@/src/app/services/pet.services';
 
 interface PetSearchBarProps {
   onSelectPet: (pet: Pet) => void;
+  filters?: {
+    especie?: string;
+    estado?: string;
+    tamano?: string;
+    esterilizado?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+  };
 }
 
-export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
+export default function PetSearchBar({ onSelectPet, filters }: PetSearchBarProps) {
   const [query, setQuery] = useState('');
   const [allPets, setAllPets] = useState<Pet[]>([]);
   const [filteredPets, setFilteredPets] = useState<Pet[]>([]);
@@ -43,10 +51,70 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
     setQuery(searchQuery);
     setShowResults(true);
 
-    // Si el query está vacío, mostrar todas las mascotas
-    if (searchQuery.trim().length === 0) {
-      setFilteredPets(allPets);
-      return;
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      let pets = await searchPets(searchQuery, token);
+      
+      // Aplicar filtros si existen
+      if (filters) {
+        pets = pets.filter((pet: any) => {
+          // Filtro por especie
+          if (filters.especie && filters.especie !== 'TODOS') {
+            if ((pet.especie || pet.species) !== filters.especie) return false;
+          }
+          
+          // Filtro por estado
+          if (filters.estado && filters.estado !== 'TODOS') {
+            if ((pet.status || pet.estado) !== filters.estado) return false;
+          }
+          
+          // Filtro por tamaño
+          if (filters.tamano && filters.tamano !== 'TODOS') {
+            if (pet.tamano !== filters.tamano) return false;
+          }
+          
+          // Filtro por esterilización
+          if (filters.esterilizado && filters.esterilizado !== 'TODOS') {
+            if (pet.esterilizado !== filters.esterilizado) return false;
+          }
+          
+          // Filtro por rango de fechas (últimas consultas)
+          if (filters.fechaDesde || filters.fechaHasta) {
+            const appointments = pet.appointments || [];
+            if (appointments.length === 0) return false;
+            
+            // Ordenar por fecha más reciente
+            const sortedAppointments = [...appointments].sort((a: any, b: any) => 
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+            
+            const lastAppointmentDate = sortedAppointments[0]?.date;
+            if (!lastAppointmentDate) return false;
+            
+            const appointmentDate = new Date(lastAppointmentDate);
+            
+            if (filters.fechaDesde) {
+              const desde = new Date(filters.fechaDesde);
+              if (appointmentDate < desde) return false;
+            }
+            
+            if (filters.fechaHasta) {
+              const hasta = new Date(filters.fechaHasta);
+              hasta.setHours(23, 59, 59);
+              if (appointmentDate > hasta) return false;
+            }
+          }
+          
+          return true;
+        });
+      }
+      
+      setResults(pets);
+    } catch (error) {
+      console.error('Error en búsqueda:', error);
+      setResults([]);
+    } finally {
+      setLoading(false);
     }
 
     // Filtrar mascotas localmente
@@ -62,6 +130,13 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
     
     setFilteredPets(filtered);
   };
+
+  // Re-ejecutar búsqueda cuando cambien los filtros
+  useEffect(() => {
+    if (query.trim().length >= 2) {
+      handleSearch(query);
+    }
+  }, [filters]);
 
   const handleSelectPet = (pet: Pet) => {
     onSelectPet(pet);
