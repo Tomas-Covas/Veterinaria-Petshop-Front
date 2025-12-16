@@ -205,7 +205,7 @@ export interface ICategoryBasic {
 }
 
 export interface IVeterinary {
-    id: number;
+    id: string;
     name: string;
     specialty: string;
     description: string;

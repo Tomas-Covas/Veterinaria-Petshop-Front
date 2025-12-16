@@ -156,6 +156,17 @@ export const getVeterinaryById = async (id: string): Promise<IVeterinary> => {
             throw new Error('Veterinario no encontrado');
         }
         return veterinary; */
-        
+        return {
+      id,
+      name: "Veterinario desconocido",
+      specialty: getDefaultSpecialty(),
+      description: "No se pudo cargar la información del veterinario",
+      image: carlos,
+      experience: getDefaultExperience(),
+      available: false,
+      email: "",
+      phone: "",
+      matricula: "",
+    };
     }
 };
