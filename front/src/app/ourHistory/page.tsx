@@ -29,7 +29,7 @@ export default function OurHistoryPage() {
         {/* Fundación 1998 */}
         <div className="mb-16">
           <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="md:w-1/2">
+            <div className="w-full md:w-1/2">
               <span className="inline-block bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
                 1998 - Los Comienzos
               </span>
@@ -54,8 +54,8 @@ export default function OurHistoryPage() {
                 consolidaron el lugar como un referente.
               </p>
             </div>
-            <div className="md:w-1/2">
-              <div className="relative h-[400px] w-full rounded-lg overflow-hidden shadow-xl">
+            <div className="w-full md:w-1/2">
+              <div className="relative h-[300px] md:h-[400px] w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
                   src= {fundacion}
                   alt="Inauguración de la Clínica Veterinaria Argento en 1998"
@@ -73,7 +73,7 @@ export default function OurHistoryPage() {
         {/* Crecimiento 2000-2015 */}
         <div className="mb-16">
           <div className="flex flex-col md:flex-row-reverse gap-8 items-center">
-            <div className="md:w-1/2">
+            <div className="w-full md:w-1/2">
               <span className="inline-block bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
                 2000-2015 - Expansión
               </span>
@@ -115,8 +115,8 @@ export default function OurHistoryPage() {
                 </ul>
               </div>
             </div>
-            <div className="md:w-1/2">
-              <div className="relative h-[400px] w-full rounded-lg overflow-hidden shadow-xl">
+            <div className="w-full md:w-1/2">
+              <div className="relative h-[300px] md:h-[400px] w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
                   src={refundacion}
                   alt="Clínica Huellitas Pet moderna"

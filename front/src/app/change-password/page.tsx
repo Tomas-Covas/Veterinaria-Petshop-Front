@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/src/context/AuthContext';
-import { changeVeterinarianPassword } from '@/src/services/veterinarian.admin.services';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/src/context/AuthContext";
+import { changeVeterinarianPassword } from "@/src/services/veterinarian.admin.services";
+import { toast } from "react-toastify";
 
 export default function ChangePasswordPage() {
   const { userData, setUserData } = useAuth();
@@ -18,26 +18,26 @@ export default function ChangePasswordPage() {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      alert("Las contraseñas no coinciden");
       return;
     }
 
-    if (!newPassword || newPassword.trim() === '') {
-      alert('La contraseña no puede estar vacía');
+    if (!newPassword || newPassword.trim() === "") {
+      alert("La contraseña no puede estar vacía");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       if (!token) {
-        throw new Error('No hay sesión activa');
+        throw new Error("No hay sesión activa");
       }
 
       const email = userData?.user?.email;
       if (!email) {
-        throw new Error('No se pudo obtener el email del usuario');
+        throw new Error("No se pudo obtener el email del usuario");
       }
 
       const result = await changeVeterinarianPassword(
@@ -50,7 +50,7 @@ export default function ChangePasswordPage() {
 
       // Si el backend devuelve un nuevo token, guardarlo
       if (result.token) {
-        localStorage.setItem('authToken', result.token);
+        localStorage.setItem("authToken", result.token);
       }
 
       toast.success('Contraseña cambiada exitosamente');
@@ -65,11 +65,10 @@ export default function ChangePasswordPage() {
       localStorage.setItem('requirePasswordChange', 'false');
       document.cookie = "requirePasswordChange=false; path=/";
 
-
       // Redirigir al dashboard
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error: any) {
-      alert(error.message || 'Error al cambiar contraseña');
+      alert(error.message || "Error al cambiar contraseña");
     } finally {
       setIsSubmitting(false);
     }
@@ -77,9 +76,8 @@ export default function ChangePasswordPage() {
 
   useEffect(() => {
     const mustChange = userData?.user.requirePasswordChange;
-    if (!mustChange) router.push('/dashboard');
+    if (!mustChange) router.push("/dashboard");
   }, [userData]);
-
 
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 via-orange-50 to-amber-100 pt-24 pb-12 flex items-center justify-center">
@@ -142,7 +140,7 @@ export default function ChangePasswordPage() {
               disabled={isSubmitting}
               className="w-full bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-all"
             >
-              {isSubmitting ? 'Cambiando...' : 'Cambiar Contraseña'}
+              {isSubmitting ? "Cambiando..." : "Cambiar Contraseña"}
             </button>
           </form>
         </div>

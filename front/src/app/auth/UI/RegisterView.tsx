@@ -35,7 +35,7 @@ function RegisterView() {
 
             {/* Formulario */}
             <div
-                className="flex flex-col ms-10 items-center rounded-3xl md:mr-10 my-3
+                className="flex flex-col items-center rounded-3xl mx-4 md:mx-10 my-3
                     justify-center p-4 bg-white/80 backdrop-blur-sm shadow-lg"
                 style={{
                     backgroundImage: `url(${background.src})`,
@@ -93,7 +93,7 @@ function RegisterView() {
                     {({ isValid, isSubmitting }) => (
                         <Form className="flex flex-col w-full ">
 
-                            <div className='flex flex-row justify-between'>
+                            <div className='flex flex-col min-[530px]:flex-row justify-between gap-0 min-[530px]:gap-4'>
                                 <FieldFormikCustom
                                     label="Nombre y Apellido:"
                                     nameField="name"
@@ -116,7 +116,7 @@ function RegisterView() {
                                 placeholder="juanGutierrez82@mail.com"
                             />
 
-                            <div className='flex flex-row justify-between items-center'>
+                            <div className='flex flex-col min-[530px]:flex-row justify-between items-stretch min-[530px]:items-center gap-0 min-[530px]:gap-4'>
                                 <PasswordFieldFormik
                                     label="Contraseña:"
                                     nameField="password"
@@ -139,7 +139,7 @@ function RegisterView() {
                                 placeholder="155 555 5555"
                             />
 
-                            <div className='flex flex-row justify-between'>
+                            <div className='flex flex-col min-[530px]:flex-row justify-between gap-0 min-[530px]:gap-4'>
                                 <FieldFormikCustom
                                     label="País:"
                                     nameField="country"
@@ -155,7 +155,7 @@ function RegisterView() {
                                 /> */}
 
                             </div>
-                            <div className='flex flex-row justify-between'>
+                            <div className='flex flex-col min-[530px]:flex-row justify-between gap-0 min-[530px]:gap-4'>
 
                                 <FieldFormikCustom
                                     label="Ciudad:"
