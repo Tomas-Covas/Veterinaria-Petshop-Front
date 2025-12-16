@@ -622,18 +622,18 @@ export default function Analytics() {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <defs>
-                  <linearlinear id="criticallinear" x1="0" y1="0" x2="1" y2="0">
+                  <linearGradient id="criticallinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#dc2626" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#ef4444" stopOpacity={1}/>
-                  </linearlinear>
-                  <linearlinear id="lowlinear" x1="0" y1="0" x2="1" y2="0">
+                  </linearGradient>
+                  <linearGradient id="lowlinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#fbbf24" stopOpacity={1}/>
-                  </linearlinear>
-                  <linearlinear id="normallinear" x1="0" y1="0" x2="1" y2="0">
+                  </linearGradient>
+                  <linearGradient id="normallinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#34d399" stopOpacity={1}/>
-                  </linearlinear>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
@@ -1289,10 +1289,10 @@ export default function Analytics() {
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={getSalesByDate()}>
                       <defs>
-                        <linearlinear id="saleslinear" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient id="saleslinear" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/>
                           <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                        </linearlinear>
+                        </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis 
