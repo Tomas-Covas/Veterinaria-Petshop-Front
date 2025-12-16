@@ -12,7 +12,7 @@ export default function PetMedicalHistoryPage() {
   const [loading, setLoading] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [loadingRecord, setLoadingRecord] = useState(false);
-  
+
   // Estados para filtros
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -30,16 +30,16 @@ export default function PetMedicalHistoryPage() {
 
     try {
       const token = localStorage.getItem('authToken') || '';
-      
+
       const petAppointments = pet.appointments || [];
-      
+
       const updatedPet = {
         ...pet,
         appointments: petAppointments
       };
-      
+
       setSelectedPet(updatedPet);
-      
+
       const history = await getPetMedicalHistory(pet.id, token);
       setMedicalHistory(history);
     } catch (error) {
@@ -75,18 +75,18 @@ export default function PetMedicalHistoryPage() {
 
   const handleViewRecord = async (appointmentId: string) => {
     if (!selectedPet) return;
-    
+
     setLoadingRecord(true);
     try {
       const token = localStorage.getItem('authToken') || '';
-      
+
       const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
-      
+
       if (!appointment) {
         setLoadingRecord(false);
         return;
       }
-      
+
       // Obtener todos los registros médicos de la mascota
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/medical-records-pet/pet/${selectedPet.id}`, {
         method: 'GET',
@@ -96,39 +96,50 @@ export default function PetMedicalHistoryPage() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) {
         alert('No se pudo cargar el registro médico de esta consulta');
         setLoadingRecord(false);
         return;
       }
-      
+
       const result = await response.json();
       const records = result.data || result.records || result.medicalRecords || result || [];
-      
+
       if (!Array.isArray(records) || records.length === 0) {
         alert('Esta mascota aún no tiene registros médicos');
         setLoadingRecord(false);
         return;
       }
-      
+
       let matchedRecord = null;
-      
+
       // 1. Intentar match por appointment ID
       matchedRecord = records.find((r: any) => r.appointmentId === appointmentId);
-      
+
+      // 2. Si no hay match directo, intentar por veterinario y fecha
       // 2. Si no hay match directo, intentar por veterinario y fecha
       if (!matchedRecord && appointment.veterinarian && appointment.date) {
-        const vetId = appointment.veterinarian?.id || appointment.veterinarian;
-        const appointmentDate = appointment.date.split('T')[0];
-        
+        const vetId =
+          typeof appointment.veterinarian === "string"
+            ? appointment.veterinarian
+            : appointment.veterinarian?.id;
+
+        const appointmentDate = appointment.date.split("T")[0];
+
         matchedRecord = records.find((r: any) => {
-          const recordVetId = r.veterinarian?.id || r.veterinarianId;
-          const recordDate = (r.consultationDate || r.createdAt || '').split('T')[0];
+          const recordVetId =
+            typeof r.veterinarian === "string"
+              ? r.veterinarian
+              : r.veterinarian?.id || r.veterinarianId;
+
+          const recordDate = (r.consultationDate || r.createdAt || "").split("T")[0];
+
           return recordVetId === vetId && recordDate === appointmentDate;
         });
       }
-      
+
+
       // 3. Fallback: mostrar el registro más reciente
       if (!matchedRecord && records.length > 0) {
         const sortedRecords = [...records].sort((a: any, b: any) => {
@@ -138,7 +149,7 @@ export default function PetMedicalHistoryPage() {
         });
         matchedRecord = sortedRecords[0];
       }
-      
+
       if (matchedRecord) {
         setSelectedRecord(matchedRecord);
       } else {
@@ -194,7 +205,7 @@ export default function PetMedicalHistoryPage() {
 
         {/* Barra de búsqueda */}
         <div className="mb-6">
-          <PetSearchBar 
+          <PetSearchBar
             onSelectPet={handlePetSelect}
             filters={filters}
           />
@@ -206,11 +217,11 @@ export default function PetMedicalHistoryPage() {
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-orange-500 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-medium shadow-sm"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -386,8 +397,8 @@ export default function PetMedicalHistoryPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold text-orange-600 overflow-hidden">
                     {((selectedPet as any).image || selectedPet.image) ? (
-                      <img 
-                        src={(selectedPet as any).image || selectedPet.image} 
+                      <img
+                        src={(selectedPet as any).image || selectedPet.image}
                         alt={(selectedPet as any).nombre || selectedPet.name || 'Mascota'}
                         className="w-full h-full object-cover"
                       />
@@ -457,7 +468,7 @@ export default function PetMedicalHistoryPage() {
               ) : medicalHistory ? (
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Consultas y Tratamientos</h3>
-                  
+
                   {selectedPet.appointments && selectedPet.appointments.length > 0 ? (
                     <div className="space-y-4">
                       {selectedPet.appointments.map((appointment, index) => (
@@ -472,8 +483,8 @@ export default function PetMedicalHistoryPage() {
                                 {appointment.service || 'Consulta veterinaria'}
                               </h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                Veterinario: {typeof appointment.veterinarian === 'string' 
-                                  ? appointment.veterinarian 
+                                Veterinario: {typeof appointment.veterinarian === 'string'
+                                  ? appointment.veterinarian
                                   : (appointment.veterinarian?.name || 'No especificado')}
                               </p>
                             </div>
