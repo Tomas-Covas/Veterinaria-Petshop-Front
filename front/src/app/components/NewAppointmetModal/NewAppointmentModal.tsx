@@ -148,9 +148,9 @@ export default function NewAppointmentModal({ open, onClose, userId, petId, onSu
                 const error = await res.json();
                 throw new Error(error.message || 'Error al agendar el turno');
             }
-
+            const newAppointment = await res.json();
             toast.success('Turno agendado correctamente');
-            onSuccess();
+            onSuccess(newAppointment);
             onClose();
         } catch (err: any) {
             console.error('❌ Error al crear turno:', err);
