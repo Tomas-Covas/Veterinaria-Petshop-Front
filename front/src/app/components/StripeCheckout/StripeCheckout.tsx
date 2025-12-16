@@ -1,7 +1,7 @@
 "use client";
 
 import { loadStripe } from "@stripe/stripe-js";
-import type { Stripe } from "@stripe/stripe-js";
+import type { Stripe, StripeCheckout } from "@stripe/stripe-js";
 import { useState } from "react";
 
 interface StripeCheckoutProps {
@@ -25,7 +25,8 @@ export default function StripeCheckout({
     setLoading(true);
 
     try {
-      const stripe = (await stripePromise) as Stripe | null;
+      const stripe = (await stripePromise) as StripeCheckout | null;
+
       if (!stripe) throw new Error("Stripe no pudo inicializarse");
 
       const response = await fetch("/api/create-stripe-checkout-session", {
