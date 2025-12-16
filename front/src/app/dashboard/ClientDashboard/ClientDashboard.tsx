@@ -14,7 +14,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getUserOrders } from "@/src/services/order.services";
 
-export default function ClientDashboard() {
+interface ClientDashboardProps {
+  refreshOrders: number;
+}
+
+export default function ClientDashboard({ refreshOrders }: ClientDashboardProps) {
   const { userData, setUserData, activeTab, setActiveTab } = useAuth();
   const [pets, setPets] = useState<IPet[]>([]);
   const [showNewPetModal, setShowNewPetModal] = useState(false);
