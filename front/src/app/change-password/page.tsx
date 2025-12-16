@@ -7,7 +7,7 @@ import { changeVeterinarianPassword } from '@/src/services/veterinarian.admin.se
 import { toast } from 'react-toastify';
 
 export default function ChangePasswordPage() {
-  const { userData,setUserData } = useAuth();
+  const { userData, setUserData } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -54,13 +54,14 @@ export default function ChangePasswordPage() {
       }
 
       toast.success('Contraseña cambiada exitosamente');
-      setUserData((prev: any) => ({
-        ...prev,
+      setUserData({
+        ...userData!,
         user: {
-          ...prev.user,
+          ...userData!.user,
           requirePasswordChange: false
         }
-      }));
+      });
+
       localStorage.setItem('requirePasswordChange', 'false');
       document.cookie = "requirePasswordChange=false; path=/";
 
