@@ -29,6 +29,7 @@ export default function PetDetailPage() {
   const [openEdit, setOpenEdit] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [openAppointment, setOpenAppointment] = useState(false);
+  const [imageKey, setImageKey] = useState(Date.now());
 
   useEffect(() => {
     console.log("ID desde useParams:", id);
@@ -54,12 +55,16 @@ export default function PetDetailPage() {
     try {
       const res = await fetch(`${APIURL}/pets/${id}`, {
         credentials: "include",
+        cache: 'no-store'
       });
       if (!res.ok) throw new Error("Error al obtener la mascota");
       const { data } = await res.json();
       setPet(data);
+      setImageKey(Date.now());
+      return data;
     } catch (err: any) {
-      toast.error("Error actualizando los turnos");
+      toast.error("Error actualizando la mascota");
+      throw err;
     }
   };
 
@@ -134,17 +139,20 @@ export default function PetDetailPage() {
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-evenly  gap-6">
 
-            <div className="relative w-[200px] h-[50px] self-start">
+            <div className="relative w-[200px] h-[200px] self-start">
               <Image
-                src={pet.image || avatar}
+                src={pet.image ? `${pet.image}?t=${imageKey}` : avatar}
                 width={200}
                 height={200}
                 alt="mascota"
-                className="rounded-full bg-gray-400 object-cover "
+                className="rounded-full bg-gray-400 object-cover"
+                key={imageKey}
+                unoptimized={!!pet.image}
+                priority
               />
               <label
                 htmlFor="pet-image-upload"
-                className="absolute bottom-2 right-2 bg-orange-500 p-2 rounded-full shadow-md cursor-pointer hover:bg-orange-600 transition-colors"
+                className="absolute bottom-0 right-0 bg-orange-500 p-3 rounded-full shadow-lg cursor-pointer hover:bg-orange-600 transition-all hover:scale-110"
                 title="Cambiar imagen"
               >
                 <svg
@@ -171,20 +179,24 @@ export default function PetDetailPage() {
                   if (!e.target.files || e.target.files.length === 0) return;
                   const file = e.target.files[0];
 
-                  const formData = new FormData();
-                  formData.append("image", file);
-
                   try {
-                    const { data } = await updatePetImage(id, file);
-                    setPet(data); // 🔹 actualiza el estado local
-                    toast.success(
-                      "Imagen de la mascota actualizada correctamente"
-                    );
-                    window.location.reload();
+                    const response = await updatePetImage(id, file);
+                    const updatedPet = response.data || response.updatedPet;
+                    
+                    if (updatedPet) {
+                      const petWithAppointments = {
+                        ...updatedPet,
+                        appointments: updatedPet.appointments || pet?.appointments || []
+                      };
+                      setPet(petWithAppointments);
+                      setImageKey(Date.now());
+                      toast.success("Imagen actualizada correctamente");
+                    } else {
+                      await refreshPet();
+                      toast.success("Imagen actualizada correctamente");
+                    }
                   } catch (err: any) {
-                    toast.error(
-                      err.message || "Error al intentar editar la imagen"
-                    );
+                    toast.error(err.message || "Error al actualizar la imagen");
                   }
                 }}
               />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchPets, Pet } from '@/src/app/services/pet.services';
 
 interface PetSearchBarProps {
@@ -9,38 +9,63 @@ interface PetSearchBarProps {
 
 export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Pet[]>([]);
+  const [allPets, setAllPets] = useState<Pet[]>([]);
+  const [filteredPets, setFilteredPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  const handleSearch = async (searchQuery: string) => {
+  // Cargar todas las mascotas al montar el componente
+  useEffect(() => {
+    const loadAllPets = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('authToken') || '';
+        // Buscar con query vacío para obtener todas
+        const pets = await searchPets('', token);
+        setAllPets(pets);
+        setFilteredPets(pets);
+        console.log('📋 Mascotas cargadas:', pets.length);
+      } catch (error) {
+        console.error('Error al cargar mascotas:', error);
+        setAllPets([]);
+        setFilteredPets([]);
+      } finally {
+        setLoading(false);
+        setInitialLoad(false);
+      }
+    };
+
+    loadAllPets();
+  }, []);
+
+  const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
-    
-    if (searchQuery.trim().length < 2) {
-      setResults([]);
-      setShowResults(false);
+    setShowResults(true);
+
+    // Si el query está vacío, mostrar todas las mascotas
+    if (searchQuery.trim().length === 0) {
+      setFilteredPets(allPets);
       return;
     }
 
-    setLoading(true);
-    setShowResults(true);
-
-    try {
-      const token = localStorage.getItem('authToken') || '';
-      const pets = await searchPets(searchQuery, token);
-      setResults(pets);
-    } catch (error) {
-      console.error('Error en búsqueda:', error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
+    // Filtrar mascotas localmente
+    const lowerQuery = searchQuery.toLowerCase();
+    const filtered = allPets.filter((pet: any) => 
+      pet.nombre?.toLowerCase().includes(lowerQuery) ||
+      pet.name?.toLowerCase().includes(lowerQuery) ||
+      pet.breed?.toLowerCase().includes(lowerQuery) ||
+      pet.especie?.toLowerCase().includes(lowerQuery) ||
+      pet.species?.toLowerCase().includes(lowerQuery) ||
+      pet.id?.toLowerCase().includes(lowerQuery)
+    );
+    
+    setFilteredPets(filtered);
   };
 
   const handleSelectPet = (pet: Pet) => {
     onSelectPet(pet);
     setQuery('');
-    setResults([]);
     setShowResults(false);
   };
 
@@ -51,7 +76,8 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
           type="text"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar mascota por nombre o ID..."
+          onFocus={() => setShowResults(true)}
+          placeholder="Buscar mascota por nombre, raza o ID..."
           className="w-full px-4 py-3 pl-12 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-gray-900"
         />
         <svg
@@ -67,19 +93,27 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
+        {!initialLoad && allPets.length > 0 && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            {filteredPets.length} de {allPets.length}
+          </div>
+        )}
       </div>
 
       {/* Resultados de búsqueda */}
       {showResults && (
         <div className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg border-2 border-gray-200 max-h-96 overflow-y-auto">
-          {loading ? (
+          {initialLoad || loading ? (
             <div className="p-4 text-center text-gray-600">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
-              Buscando...
+              Cargando mascotas...
             </div>
-          ) : results.length > 0 ? (
+          ) : filteredPets.length > 0 ? (
             <div className="py-2">
-              {results.map((pet) => (
+              <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs text-gray-600 font-medium">
+                {filteredPets.length} mascota{filteredPets.length !== 1 ? 's' : ''} encontrada{filteredPets.length !== 1 ? 's' : ''}
+              </div>
+              {filteredPets.map((pet) => (
                 <button
                   key={pet.id}
                   onClick={() => handleSelectPet(pet)}
@@ -103,10 +137,28 @@ export default function PetSearchBar({ onSelectPet }: PetSearchBarProps) {
             </div>
           ) : (
             <div className="p-4 text-center text-gray-600">
-              No se encontraron mascotas con ese nombre o ID
+              {query.trim() ? (
+                <>
+                  <p className="font-medium mb-1">No se encontraron mascotas</p>
+                  <p className="text-sm">Intenta con otro término de búsqueda</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium mb-1">No hay mascotas registradas</p>
+                  <p className="text-sm">Aún no se han registrado mascotas en el sistema</p>
+                </>
+              )}
             </div>
           )}
         </div>
+      )}
+      
+      {/* Cerrar resultados al hacer click fuera */}
+      {showResults && (
+        <div 
+          className="fixed inset-0 z-0" 
+          onClick={() => setShowResults(false)}
+        />
       )}
     </div>
   );
