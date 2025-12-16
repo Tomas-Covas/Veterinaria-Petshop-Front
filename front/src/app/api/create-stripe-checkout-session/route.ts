@@ -4,6 +4,9 @@ import Stripe from "stripe";
 // Especifica el entorno de ejecución
 export const runtime = 'nodejs';
 
+// Esto es para App Router - reemplaza la configuración anterior
+export const dynamic = 'force-dynamic';
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-11-17.clover",
 });
@@ -13,8 +16,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { items, userId } = body;
 
-    // Resto de tu código sin cambios...
-    
     // Crea líneas de productos para Stripe
     const lineItems = items.map((item: any) => ({
       price_data:{
@@ -50,10 +51,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-// Asegura que TypeScript reconozca este archivo como un módulo
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
