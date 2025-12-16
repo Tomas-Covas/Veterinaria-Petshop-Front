@@ -75,7 +75,7 @@ export default function ClientDashboard() {
 
       if (!newPet) {
         toast.error("No se pudo crear la mascota");
-        return;
+        return null;
       }
 
       setPets((prev) => [...prev, newPet]);
@@ -93,7 +93,7 @@ export default function ClientDashboard() {
   };
 
   useEffect(() => {
-    if (!userData?.user?.id) return;
+    if (!userData?.user?.id) return null;
 
     const fetchOrders = async () => {
       try {
@@ -111,7 +111,7 @@ export default function ClientDashboard() {
   }, [userData?.user?.id]);
 
   useEffect(() => {
-    if (!userData?.user?.id) return;
+    if (!userData?.user?.id) return null;
 
     const fetchPets = async () => {
       try {
