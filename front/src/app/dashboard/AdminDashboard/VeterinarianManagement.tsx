@@ -146,56 +146,54 @@ export default function VeterinarianManagement({ appointments, loading }: Veteri
                 {isExpanded && (
                   <div className="divide-y divide-gray-100">
                     {group.appointments.map((appointment) => (
-                      <div key={appointment.id} className="p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start justify-between gap-4">
+                      <div key={appointment.id} className="p-2 sm:p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                           {/* Fecha y hora */}
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className="shrink-0">
-                              <div className="bg-amber-100 rounded-lg p-3 text-center min-w-[70px]">
-                                <p className="text-xs text-amber-700 font-medium uppercase">
-                                  {new Date(appointment.date).toLocaleDateString('es-AR', { month: 'short' })}
-                                </p>
-                                <p className="text-2xl font-bold text-amber-900">
-                                  {new Date(appointment.date).getDate()}
-                                </p>
-                                <p className="text-xs text-amber-600 font-medium">
-                                  {appointment.time}
-                                </p>
-                              </div>
+                          <div className="w-full sm:w-auto">
+                            <div className="bg-amber-100 rounded-lg p-2 sm:p-3 text-center w-full sm:min-w-[70px]">
+                              <p className="text-[10px] sm:text-xs text-amber-700 font-medium uppercase">
+                                {new Date(appointment.date).toLocaleDateString('es-AR', { month: 'short' })}
+                              </p>
+                              <p className="text-xl sm:text-2xl font-bold text-amber-900">
+                                {new Date(appointment.date).getDate()}
+                              </p>
+                              <p className="text-[10px] sm:text-xs text-amber-600 font-medium">
+                                {appointment.time}
+                              </p>
                             </div>
-                            
-                            {/* Información del turno */}
-                            <div className="flex-1 min-w-0 space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-sm">🐾</span>
-                                    <p className="text-sm font-semibold text-gray-900">
-                                      {appointment.pet?.name || 'No especificado'}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs">👤</span>
-                                    <p className="text-xs text-gray-600">
-                                      {appointment.pet?.user?.name || 'No especificado'}
-                                    </p>
-                                  </div>
-                                  {appointment.reason && (
-                                    <div className="mt-2 bg-gray-50 rounded p-2">
-                                      <p className="text-xs text-gray-500 uppercase font-medium mb-1">Motivo</p>
-                                      <p className="text-sm text-gray-700">{appointment.reason}</p>
-                                    </div>
-                                  )}
+                          </div>
+                          
+                          {/* Información del turno */}
+                          <div className="flex-1 w-full min-w-0 space-y-2">
+                            <div className="flex flex-col sm:flex-row items-start gap-2">
+                              <div className="flex-1 w-full">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs sm:text-sm">🐾</span>
+                                  <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                                    {appointment.pet?.name || 'No especificado'}
+                                  </p>
                                 </div>
-                                
-                                {/* Estado */}
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${getStatusColor(appointment.status)}`}>
-                                  {typeof appointment.status === 'boolean' 
-                                    ? (appointment.status ? 'Pendiente' : 'Cancelado')
-                                    : appointment.status
-                                  }
-                                </span>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-[10px] sm:text-xs">👤</span>
+                                  <p className="text-[10px] sm:text-xs text-gray-600 truncate">
+                                    {appointment.pet?.user?.name || 'No especificado'}
+                                  </p>
+                                </div>
+                                {appointment.reason && (
+                                  <div className="mt-2 bg-gray-50 rounded p-2">
+                                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase font-medium mb-1">Motivo</p>
+                                    <p className="text-xs sm:text-sm text-gray-700 break-words">{appointment.reason}</p>
+                                  </div>
+                                )}
                               </div>
+                              
+                              {/* Estado */}
+                              <span className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full whitespace-nowrap self-start sm:self-auto ${getStatusColor(appointment.status)}`}>
+                                {typeof appointment.status === 'boolean' 
+                                  ? (appointment.status ? 'Pendiente' : 'Cancelado')
+                                  : appointment.status
+                                }
+                              </span>
                             </div>
                           </div>
                         </div>
