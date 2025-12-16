@@ -22,7 +22,7 @@ interface OrderItem {
 export interface Order {
   id: string
   total: string
-  status: 'ACTIVE' | 'delivered'
+  status: 'ACTIVE' | 'PENDING' | 'PAID' | 'CANCELLED'
   paymentMethod: string | null
   notes: string | null
   createdAt: string
@@ -46,10 +46,17 @@ const OrderCard: React.FC<Props> = ({ order }) => {
       <p className="text-gray-700">
         Estado:{' '}
         <span
-          className={`font-semibold ${order.status === 'ACTIVE' ? 'text-blue-600' : 'text-green-600'
-            }`}
+          className={`font-semibold ${
+            order.status === 'ACTIVE' ? 'text-blue-600' : 
+            order.status === 'PENDING' ? 'text-yellow-600' :
+            order.status === 'PAID' ? 'text-green-600' : 
+            'text-red-600'
+          }`}
         >
-          {order.status === 'ACTIVE' ? 'Activa' : 'Entregada'}
+          {order.status === 'ACTIVE' ? 'Activa' : 
+           order.status === 'PENDING' ? 'Pendiente' :
+           order.status === 'PAID' ? 'Pagada' : 
+           'Cancelada'}
         </span>
       </p>
       <p className="text-gray-700">
