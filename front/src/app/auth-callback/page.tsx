@@ -47,7 +47,7 @@ export default function AuthCallback() {
         window.location.href = '/'
       } catch (err) {
         console.error("Error de autenticación:", err);
-        toast.success("Error al intentar ingresar")
+        toast.error("Error al intentar ingresar")
         setError(
           "Hubo un problema al procesar la autenticación. Por favor, intenta de nuevo."
         );

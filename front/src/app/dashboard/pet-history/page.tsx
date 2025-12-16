@@ -12,6 +12,17 @@ export default function PetMedicalHistoryPage() {
   const [loading, setLoading] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [loadingRecord, setLoadingRecord] = useState(false);
+  
+  // Estados para filtros
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    especie: 'TODOS',
+    estado: 'TODOS',
+    tamano: 'TODOS',
+    esterilizado: 'TODOS',
+    fechaDesde: '',
+    fechaHasta: '',
+  });
 
   const handlePetSelect = async (pet: Pet) => {
     setSelectedPet(pet);
@@ -19,6 +30,16 @@ export default function PetMedicalHistoryPage() {
 
     try {
       const token = localStorage.getItem('authToken') || '';
+      
+      const petAppointments = pet.appointments || [];
+      
+      const updatedPet = {
+        ...pet,
+        appointments: petAppointments
+      };
+      
+      setSelectedPet(updatedPet);
+      
       const history = await getPetMedicalHistory(pet.id, token);
       setMedicalHistory(history);
     } catch (error) {
@@ -34,15 +55,37 @@ export default function PetMedicalHistoryPage() {
     setSelectedRecord(null);
   };
 
+  const handleClearFilters = () => {
+    setFilters({
+      especie: 'TODOS',
+      estado: 'TODOS',
+      tamano: 'TODOS',
+      esterilizado: 'TODOS',
+      fechaDesde: '',
+      fechaHasta: '',
+    });
+  };
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+
   const handleViewRecord = async (appointmentId: string) => {
     if (!selectedPet) return;
     
     setLoadingRecord(true);
     try {
       const token = localStorage.getItem('authToken') || '';
-      console.log('📋 Buscando registro médico para appointment:', appointmentId);
-      console.log('🐾 Pet ID:', selectedPet.id);
-      console.log('📅 Appointments de la mascota:', selectedPet.appointments);
+      
+      const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
+      
+      if (!appointment) {
+        setLoadingRecord(false);
+        return;
+      }
       
       // Obtener todos los registros médicos de la mascota
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/medical-records-pet/pet/${selectedPet.id}`, {
@@ -55,60 +98,55 @@ export default function PetMedicalHistoryPage() {
       });
       
       if (!response.ok) {
-        console.error('❌ Error al obtener registros médicos:', response.status);
+        alert('No se pudo cargar el registro médico de esta consulta');
+        setLoadingRecord(false);
         return;
       }
       
       const result = await response.json();
-      console.log('✅ Registros médicos obtenidos:', result);
-      
-      // Extraer el array de registros
       const records = result.data || result.records || result.medicalRecords || result || [];
-      console.log('📋 Total de registros:', Array.isArray(records) ? records.length : 0);
       
       if (!Array.isArray(records) || records.length === 0) {
-        console.log('⚠️ No hay registros médicos para esta mascota');
+        alert('Esta mascota aún no tiene registros médicos');
+        setLoadingRecord(false);
         return;
       }
       
-      // Buscar el registro que corresponde al appointment
-      const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
-      console.log('🔎 Buscando registro para appointment:', appointment);
-      console.log('📋 Registros disponibles:', records);
+      let matchedRecord = null;
       
-      // Si solo hay 1 registro y 1 appointment, hacer match directo
-      if (records.length === 1) {
-        console.log('✅ Solo hay 1 registro, mostrándolo');
-        setSelectedRecord(records[0]);
-      } else if (appointment) {
-        // Intentar hacer match por veterinario y fecha
-        const record = records.find((r: any) => {
-          // Match por veterinario
-          const vetMatch = r.veterinarian?.id === appointment.veterinarian?.id || 
-                          r.veterinarianId === appointment.veterinarian?.id;
-          
-          // Match por fecha aproximada (mismo día)
-          const recordDate = r.consultationDate || r.createdAt;
-          const appointmentDate = appointment.date;
-          const dateMatch = recordDate && appointmentDate && 
-                           recordDate.split('T')[0] === appointmentDate.split('T')[0];
-          
-          return vetMatch && dateMatch;
-        });
+      // 1. Intentar match por appointment ID
+      matchedRecord = records.find((r: any) => r.appointmentId === appointmentId);
+      
+      // 2. Si no hay match directo, intentar por veterinario y fecha
+      if (!matchedRecord && appointment.veterinarian && appointment.date) {
+        const vetId = appointment.veterinarian?.id || appointment.veterinarian;
+        const appointmentDate = appointment.date.split('T')[0];
         
-        if (record) {
-          console.log('✅ Registro médico encontrado por veterinario y fecha:', record);
-          setSelectedRecord(record);
-        } else {
-          console.log('⚠️ No se encontró registro específico, mostrando el primero');
-          setSelectedRecord(records[0]);
-        }
+        matchedRecord = records.find((r: any) => {
+          const recordVetId = r.veterinarian?.id || r.veterinarianId;
+          const recordDate = (r.consultationDate || r.createdAt || '').split('T')[0];
+          return recordVetId === vetId && recordDate === appointmentDate;
+        });
+      }
+      
+      // 3. Fallback: mostrar el registro más reciente
+      if (!matchedRecord && records.length > 0) {
+        const sortedRecords = [...records].sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || a.consultationDate || 0).getTime();
+          const dateB = new Date(b.createdAt || b.consultationDate || 0).getTime();
+          return dateB - dateA;
+        });
+        matchedRecord = sortedRecords[0];
+      }
+      
+      if (matchedRecord) {
+        setSelectedRecord(matchedRecord);
       } else {
-        console.log('💡 Mostrando el primer registro como fallback');
-        setSelectedRecord(records[0]);
+        alert('No se pudo cargar el registro médico');
+        setLoadingRecord(false);
       }
     } catch (error) {
-      console.error('❌ Error al obtener registro médico:', error);
+      alert('Error al cargar el registro médico');
     } finally {
       setLoadingRecord(false);
     }
@@ -155,9 +193,189 @@ export default function PetMedicalHistoryPage() {
         </div>
 
         {/* Barra de búsqueda */}
-        <div className="mb-8">
-          <PetSearchBar onSelectPet={handlePetSelect} />
+        <div className="mb-6">
+          <PetSearchBar 
+            onSelectPet={handlePetSelect}
+            filters={filters}
+          />
         </div>
+
+        {/* Botón para mostrar/ocultar filtros */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-orange-500 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-medium shadow-sm"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+            {(filters.especie !== 'TODOS' || filters.estado !== 'TODOS' || filters.tamano !== 'TODOS' || filters.esterilizado !== 'TODOS' || filters.fechaDesde || filters.fechaHasta) && (
+              <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">
+                Activo
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Panel de filtros */}
+        {showFilters && (
+          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-2 border-orange-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Filtros de búsqueda</h3>
+              <button
+                onClick={handleClearFilters}
+                className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Filtro por Especie */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Especie
+                </label>
+                <select
+                  value={filters.especie}
+                  onChange={(e) => handleFilterChange('especie', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                >
+                  <option value="TODOS">Todas las especies</option>
+                  <option value="PERRO">🐕 Perro</option>
+                  <option value="GATO">🐱 Gato</option>
+                  <option value="AVE">🦜 Ave</option>
+                  <option value="ROEDOR">🐹 Roedor</option>
+                  <option value="REPTIL">🦎 Reptil</option>
+                  <option value="OTRO">🐾 Otro</option>
+                </select>
+              </div>
+
+              {/* Filtro por Estado */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Estado
+                </label>
+                <select
+                  value={filters.estado}
+                  onChange={(e) => handleFilterChange('estado', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                >
+                  <option value="TODOS">Todos los estados</option>
+                  <option value="VIVO">✅ Vivo</option>
+                  <option value="FALLECIDO">💔 Fallecido</option>
+                </select>
+              </div>
+
+              {/* Filtro por Tamaño */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tamaño
+                </label>
+                <select
+                  value={filters.tamano}
+                  onChange={(e) => handleFilterChange('tamano', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                >
+                  <option value="TODOS">Todos los tamaños</option>
+                  <option value="PEQUENO">Pequeño</option>
+                  <option value="MEDIANO">Mediano</option>
+                  <option value="GRANDE">Grande</option>
+                </select>
+              </div>
+
+              {/* Filtro por Esterilización */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Esterilización
+                </label>
+                <select
+                  value={filters.esterilizado}
+                  onChange={(e) => handleFilterChange('esterilizado', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                >
+                  <option value="TODOS">Todos</option>
+                  <option value="SI">✅ Esterilizado</option>
+                  <option value="NO">❌ No esterilizado</option>
+                </select>
+              </div>
+
+              {/* Filtro por Fecha Desde */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Fecha desde
+                </label>
+                <input
+                  type="date"
+                  value={filters.fechaDesde}
+                  onChange={(e) => handleFilterChange('fechaDesde', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                />
+              </div>
+
+              {/* Filtro por Fecha Hasta */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Fecha hasta
+                </label>
+                <input
+                  type="date"
+                  value={filters.fechaHasta}
+                  onChange={(e) => handleFilterChange('fechaHasta', e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Resumen de filtros activos */}
+            {(filters.especie !== 'TODOS' || filters.estado !== 'TODOS' || filters.tamano !== 'TODOS' || filters.esterilizado !== 'TODOS' || filters.fechaDesde || filters.fechaHasta) && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600 mb-2">
+                  <span className="font-semibold">Filtros activos:</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {filters.especie !== 'TODOS' && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Especie: {filters.especie}
+                    </span>
+                  )}
+                  {filters.estado !== 'TODOS' && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Estado: {filters.estado}
+                    </span>
+                  )}
+                  {filters.tamano !== 'TODOS' && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Tamaño: {filters.tamano}
+                    </span>
+                  )}
+                  {filters.esterilizado !== 'TODOS' && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Esterilizado: {filters.esterilizado}
+                    </span>
+                  )}
+                  {filters.fechaDesde && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Desde: {new Date(filters.fechaDesde).toLocaleDateString('es-ES')}
+                    </span>
+                  )}
+                  {filters.fechaHasta && (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      Hasta: {new Date(filters.fechaHasta).toLocaleDateString('es-ES')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Mascota seleccionada */}
         {selectedPet && (

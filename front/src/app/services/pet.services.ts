@@ -35,6 +35,7 @@ export interface NewPetData {
 export const createPet = async (petData: NewPetData, userId: string): Promise<IPet | null> => {
 
   try {
+    console.log("📦 Enviando mascota:", petData);
     petData.ownerId = userId
     const response = await fetch(`${API_URL}/pets/NewPet`, {
       method: 'POST',
@@ -53,11 +54,20 @@ export const createPet = async (petData: NewPetData, userId: string): Promise<IP
     const result = await response.json();
 
     return result.data || result;
+
   } catch (error) {
     toast.error('No se pudo crear la mascota, intente nuevamente')
     return null;
   }
 };
+
+export const getUserPets = async (userId: string) => {
+  const res = await fetch(`${API_URL}/users/${userId}/pets`);
+  if (!res.ok) throw new Error("Error al obtener mascotas");
+  const result = await res.json();
+  return result as IPet[];
+};
+
 
 export const deletePet = async (id: string) => {
   try {
@@ -113,7 +123,7 @@ export async function updatePetImage(id: string, file: File) {
       throw new Error(errorText || "Error al actualizar la imagen")
     }
 
-    return await res.json() // devuelve { data }
+    return await res.json();
   } catch (err) {
     throw err
   }
@@ -147,6 +157,8 @@ export const searchPets = async (query: string, token: string): Promise<Pet[]> =
         if (Array.isArray(users)) {
           users.forEach((user: any) => {
             if (user.pets && Array.isArray(user.pets)) {
+              // El backend ya envía los appointments correctamente asociados a cada mascota
+              // dentro de pet.appointments, no es necesario filtrarlos
               allPets = allPets.concat(user.pets);
             }
           });
@@ -497,6 +509,16 @@ const getMockMedicalHistory = (petId: string): Promise<any> => {
 };
 
 // Agregar información al historial médico de una mascota
+export interface MedicationUsed {
+  medicationId: string;
+  medicationName: string;
+  medicationType: 'GENERAL' | 'CONTROLLED';
+  quantity: number;
+  dosage: string;
+  duration: string;
+  prescriptionNotes?: string;
+}
+
 export interface AddMedicalRecordData {
   petId: string;
   veterinarianId: string;
@@ -506,11 +528,34 @@ export interface AddMedicalRecordData {
   observations?: string;
   nextAppointment?: string;
   vaccinations?: string;
-  weight?: string;
-  temperature?: string;
+  weight?: number;
+  temperature?: number;
+  medicationsUsed?: MedicationUsed[];
+  medicationsUsed?: MedicationUsed[];
 }
 
-export const addMedicalRecord = async (data: AddMedicalRecordData, token: string): Promise<boolean> => {
+export interface MedicalRecordResponse {
+  message: string;
+  data?: {
+    medicalRecordId: string;
+    medicationsUsed?: Array<{
+      medicationId: string;
+      name: string;
+      quantity: number;
+      remainingStock: number;
+    }>;
+    notifications?: Array<{
+      id: string;
+      type: string;
+      medicationId: string;
+      message: string;
+      isRead: boolean;
+      createdAt: string;
+    }>;
+  };
+}
+
+export const addMedicalRecord = async (data: AddMedicalRecordData, token: string): Promise<MedicalRecordResponse> => {
   try {
     console.log('📋 Creando registro médico:', data);
     
@@ -530,17 +575,39 @@ export const addMedicalRecord = async (data: AddMedicalRecordData, token: string
       const errorText = await response.text();
       console.error('❌ Error al crear registro médico:', errorText);
       toast.error('Error al guardar el historial médico');
-      return false;
+      return { success: false, message: 'Error al guardar' };
     }
     
     const result = await response.json();
     console.log('✅ Registro médico creado:', result);
-    toast.success('Historial médico actualizado correctamente');
-    return true;
+    
+    // Mostrar notificaciones de medicamentos
+    if (result.data?.medicationsUsed && result.data.medicationsUsed.length > 0) {
+      const medsUsed = result.data.medicationsUsed;
+      toast.success(`✅ ${result.message}. ${medsUsed.length} medicamento(s) descontado(s)`);
+      
+      // Mostrar info de cada medicamento
+      medsUsed.forEach((med: any) => {
+        console.log(`💊 ${med.name}: ${med.quantity} usado(s), stock restante: ${med.remainingStock}`);
+      });
+    } else {
+      toast.success(`✅ ${result.message}`);
+    }
+    
+    // Mostrar alertas de stock bajo
+    if (result.data?.notifications && result.data.notifications.length > 0) {
+      result.data.notifications.forEach((notif: any) => {
+        if (notif.type === 'LOW_STOCK') {
+          toast.warning(`⚠️ ${notif.message}`);
+        }
+      });
+    }
+    
+    return { message: result.message, data: result.data };
   } catch (error) {
     console.error('❌ Error en addMedicalRecord:', error);
     toast.error('Error al guardar el historial médico');
-    return false;
+    return { success: false, message: 'Error de conexión' };
   }
 };
 

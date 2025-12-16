@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/src/context/AuthContext'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import CompleteTurnModal, { MedicalRecordData } from '@/src/app/components/CompleteTurnModal/CompleteTurnModal'
 import { addMedicalRecord } from '@/src/app/services/pet.services'
 import { getAppointmentsByVetId, Appointment } from '@/src/services/appointment.services'
@@ -40,6 +41,9 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<VetAppointment | null>(null);
+  const [showPending, setShowPending] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCancelled, setShowCancelled] = useState(true);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -192,17 +196,27 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
       treatment: medicalData.treatment,
       medications: medicalData.medications,
       observations: medicalData.observations,
-      nextAppointment: medicalData.nextAppointment,
+      nextAppointment: medicalData.nextAppointment ? new Date(medicalData.nextAppointment).toISOString() : undefined,
       vaccinations: medicalData.vaccinations,
-      weight: medicalData.weight,
-      temperature: medicalData.temperature,
+      weight: medicalData.weight ? parseFloat(medicalData.weight) : undefined,
+      temperature: medicalData.temperature ? parseFloat(medicalData.temperature) : undefined,
+      medicationsUsed: medicalData.medicationsUsed || [],
     };
     
     console.log('📝 Guardando registro para appointment:', selectedAppointment.id);
+    console.log('💊 Medicamentos usados:', medicalData.medicationsUsed);
 
-    const success = await addMedicalRecord(recordData, token);
+    const result = await addMedicalRecord(recordData, token);
     
-    if (success) {
+    if (result.message) {
+      // Mostrar resumen de medicamentos usados
+      if (result.data?.medicationsUsed && result.data.medicationsUsed.length > 0) {
+        console.log('✅ Medicamentos descontados del stock:');
+        result.data.medicationsUsed.forEach(med => {
+          console.log(`  - ${med.name}: ${med.quantity} unidades, stock restante: ${med.remainingStock}`);
+        });
+      }
+      
       // Actualizar estado del turno
       setAppointments(prev => 
         prev.map(apt => 
@@ -244,13 +258,38 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
       <div className="pt-6 pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
           
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Mi Calendario de Turnos
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Gestiona tus citas y consultas veterinarias
-            </p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Mi Calendario de Turnos
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Gestiona tus citas y consultas veterinarias
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/dashboard/messages"
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="text-xl">💬</span>
+                <span>Mensajería</span>
+              </Link>
+              <Link
+                href="/dashboard/general-medications"
+                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="text-xl">💊</span>
+                <span>Medicamentos</span>
+              </Link>
+              <Link
+                href="/dashboard/controlled-medications"
+                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="text-xl">🔐</span>
+                <span>Controlados</span>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -350,75 +389,208 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
                 
                 <div className="space-y-4">
                   {getAppointmentsForSelectedDate().length > 0 ? (
-                    getAppointmentsForSelectedDate().map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        className={`bg-gray-50 rounded-lg p-5 border-2 transition-all ${
-                          appointment.status === 'completed'
-                            ? 'border-green-300 bg-green-50'
-                            : appointment.status === 'cancelled'
-                            ? 'border-red-300 bg-red-50'
-                            : 'border-orange-200 hover:border-orange-400 hover:shadow-md'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {appointment.petName}
-                              </h3>
-                              <span className="text-sm font-medium text-orange-600">
-                                {appointment.time}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Dueño: {appointment.petOwner}
-                            </p>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            appointment.status === 'completed'
-                              ? 'bg-green-100 text-green-800'
-                              : appointment.status === 'cancelled'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-orange-100 text-orange-800'
-                          }`}>
-                            {appointment.status === 'completed'
-                              ? '✓ Completado'
-                              : appointment.status === 'cancelled'
-                              ? '✕ Cancelado'
-                              : 'Pendiente'}
-                          </span>
-                        </div>
-
-                        <div className="border-t border-gray-200 pt-3 space-y-2">
-                          <p className="text-sm text-gray-700">
-                            <span className="font-medium">Servicio:</span> {appointment.service}
-                          </p>
-                          {appointment.notes && (
-                            <p className="text-sm text-gray-600 italic mt-2 p-2 bg-white rounded">
-                              <span className="font-medium">Notas:</span> {appointment.notes}
-                            </p>
-                          )}
-                        </div>
-
-                        {appointment.status === 'pending' && (
-                          <div className="mt-4 flex space-x-3">
-                            <button 
-                              onClick={() => handleCompleteAppointment(appointment)}
-                              className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
+                    <>
+                      {/* PENDIENTES */}
+                      {getAppointmentsForSelectedDate().filter(apt => apt.status === 'pending').length > 0 && (
+                        <div className="mb-6">
+                          <button
+                            onClick={() => setShowPending(!showPending)}
+                            className="w-full text-left text-sm font-bold text-orange-600 uppercase tracking-wide mb-3 flex items-center gap-2 hover:text-orange-700 transition-colors"
+                          >
+                            <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                            Pendientes ({getAppointmentsForSelectedDate().filter(apt => apt.status === 'pending').length})
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-4 w-4 ml-auto transition-transform ${showPending ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
                             >
-                              ✓ Completar Consulta
-                            </button>
-                            <button 
-                              onClick={() => handleCancelAppointment(appointment.id)}
-                              className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm font-medium"
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {showPending && <div className="space-y-3">
+                            {getAppointmentsForSelectedDate()
+                              .filter(apt => apt.status === 'pending')
+                              .map((appointment) => (
+                                <div
+                                  key={appointment.id}
+                                  className="bg-orange-50 rounded-lg p-5 border-2 border-orange-200 hover:border-orange-400 hover:shadow-md transition-all"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-3">
+                                        <h3 className="text-lg font-semibold text-gray-900">
+                                          {appointment.petName}
+                                        </h3>
+                                        <span className="text-sm font-medium text-orange-600">
+                                          {appointment.time}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Dueño: {appointment.petOwner}
+                                      </p>
+                                    </div>
+                                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                      Pendiente
+                                    </span>
+                                  </div>
+
+                                  <div className="border-t border-orange-200 pt-3 space-y-2">
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">Servicio:</span> {appointment.service}
+                                    </p>
+                                    {appointment.notes && (
+                                      <p className="text-sm text-gray-600 italic mt-2 p-2 bg-white rounded">
+                                        <span className="font-medium">Notas:</span> {appointment.notes}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  <div className="mt-4 flex space-x-3">
+                                    <button 
+                                      onClick={() => handleCompleteAppointment(appointment)}
+                                      className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
+                                    >
+                                      ✓ Completar Consulta
+                                    </button>
+                                    <button 
+                                      onClick={() => handleCancelAppointment(appointment.id)}
+                                      className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm font-medium"
+                                    >
+                                      ✕ Cancelar
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>}
+                        </div>
+                      )}
+
+                      {/* COMPLETADOS */}
+                      {getAppointmentsForSelectedDate().filter(apt => apt.status === 'completed').length > 0 && (
+                        <div className="mb-6">
+                          <button
+                            onClick={() => setShowCompleted(!showCompleted)}
+                            className="w-full text-left text-sm font-bold text-green-600 uppercase tracking-wide mb-3 flex items-center gap-2 hover:text-green-700 transition-colors"
+                          >
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            Completados ({getAppointmentsForSelectedDate().filter(apt => apt.status === 'completed').length})
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-4 w-4 ml-auto transition-transform ${showCompleted ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
                             >
-                              ✕ Cancelar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {showCompleted && <div className="space-y-3">
+                            {getAppointmentsForSelectedDate()
+                              .filter(apt => apt.status === 'completed')
+                              .map((appointment) => (
+                                <div
+                                  key={appointment.id}
+                                  className="bg-green-50 rounded-lg p-5 border-2 border-green-300"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-3">
+                                        <h3 className="text-lg font-semibold text-gray-900">
+                                          {appointment.petName}
+                                        </h3>
+                                        <span className="text-sm font-medium text-green-600">
+                                          {appointment.time}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Dueño: {appointment.petOwner}
+                                      </p>
+                                    </div>
+                                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                      ✓ Completado
+                                    </span>
+                                  </div>
+
+                                  <div className="border-t border-green-200 pt-3 space-y-2">
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">Servicio:</span> {appointment.service}
+                                    </p>
+                                    {appointment.notes && (
+                                      <p className="text-sm text-gray-600 italic mt-2 p-2 bg-white rounded">
+                                        <span className="font-medium">Notas:</span> {appointment.notes}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>}
+                        </div>
+                      )}
+
+                      {/* CANCELADOS */}
+                      {getAppointmentsForSelectedDate().filter(apt => apt.status === 'cancelled').length > 0 && (
+                        <div>
+                          <button
+                            onClick={() => setShowCancelled(!showCancelled)}
+                            className="w-full text-left text-sm font-bold text-red-600 uppercase tracking-wide mb-3 flex items-center gap-2 hover:text-red-700 transition-colors"
+                          >
+                            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            Cancelados ({getAppointmentsForSelectedDate().filter(apt => apt.status === 'cancelled').length})
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-4 w-4 ml-auto transition-transform ${showCancelled ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {showCancelled && <div className="space-y-3">
+                            {getAppointmentsForSelectedDate()
+                              .filter(apt => apt.status === 'cancelled')
+                              .map((appointment) => (
+                                <div
+                                  key={appointment.id}
+                                  className="bg-red-50 rounded-lg p-5 border-2 border-red-300 opacity-75"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-3">
+                                        <h3 className="text-lg font-semibold text-gray-900 line-through">
+                                          {appointment.petName}
+                                        </h3>
+                                        <span className="text-sm font-medium text-red-600">
+                                          {appointment.time}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Dueño: {appointment.petOwner}
+                                      </p>
+                                    </div>
+                                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                      ✕ Cancelado
+                                    </span>
+                                  </div>
+
+                                  <div className="border-t border-red-200 pt-3 space-y-2">
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-medium">Servicio:</span> {appointment.service}
+                                    </p>
+                                    {appointment.notes && (
+                                      <p className="text-sm text-gray-600 italic mt-2 p-2 bg-white rounded">
+                                        <span className="font-medium">Notas:</span> {appointment.notes}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>}
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="text-gray-500 text-center py-8">
                       No hay turnos programados para esta fecha

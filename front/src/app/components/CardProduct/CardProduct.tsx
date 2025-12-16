@@ -65,8 +65,8 @@ function Card({ product }: CardProps) {
         </div>
 
       </Link>
-      <div className="mt-[-35px]">
-        <AddCartButton product={product} />
+      <div className="mt-[-35px] justify-end">
+        <AddCartButton product={product} variant="icon"/>
       </div>
     </div>
   );
