@@ -64,20 +64,15 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
         getMedications(),
         getMedicationsCatalog()
       ]);
-      
+
       // Normalizar a arrays
-      const generalArray = Array.isArray(general) ? general : (general?.data || []);
-      const controlledData = controlled?.medications || controlled?.data || controlled || [];
-      const controlledArray = Array.isArray(controlledData) ? controlledData : [];
-      
-      console.log('✅ Medicamentos generales cargados:', generalArray.length);
-      console.log('✅ Medicamentos controlados cargados:', controlledArray.length);
-      console.log('📋 Estructura controlados:', controlledArray[0]);
+      const generalArray = general; // siempre array
+      const controlledArray = controlled.medications; // siempre array
       
       setGeneralMeds(generalArray);
       setControlledMeds(controlledArray);
     } catch (error) {
-      console.error('Error al cargar medicamentos:', error);
+      throw error
       toast.error('Error al cargar medicamentos disponibles');
       setGeneralMeds([]);
       setControlledMeds([]);
@@ -104,7 +99,7 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
 
   const updateMedication = (index: number, field: keyof MedicationUsed, value: any) => {
     const updated = [...selectedMedications];
-    
+
     // Si cambia el medicamento, actualizar nombre y tipo
     if (field === 'medicationId') {
       const allMeds = [...generalMeds, ...controlledMeds];
@@ -115,7 +110,7 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
         updated[index].currentStock = med.stock;
       }
     }
-    
+
     updated[index] = { ...updated[index], [field]: value };
     setSelectedMedications(updated);
   };
@@ -125,17 +120,17 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
   const handleSubmit = (values: MedicalRecordData) => {
     // Validar medicamentos si hay alguno seleccionado
     if (selectedMedications.length > 0) {
-      const invalidMeds = selectedMedications.filter(m => 
+      const invalidMeds = selectedMedications.filter(m =>
         !m.medicationId || !m.dosage || !m.duration || m.quantity <= 0
       );
-      
+
       if (invalidMeds.length > 0) {
         toast.error('Por favor completa todos los campos de los medicamentos');
         return;
       }
 
       // Validar stock
-      const insufficientStock = selectedMedications.filter(m => 
+      const insufficientStock = selectedMedications.filter(m =>
         m.currentStock !== undefined && m.quantity > m.currentStock
       );
 
@@ -147,7 +142,7 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
 
     // Limpiar currentStock antes de enviar (campo solo para validación frontend)
     const medicationsToSend = selectedMedications.map(({ currentStock, ...med }) => med);
-    
+
     // Enviar medicationsUsed al backend
     onSubmit({ ...values, medicationsUsed: medicationsToSend });
     setSelectedMedications([]);
