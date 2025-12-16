@@ -451,7 +451,7 @@ export const createCheckout = async (userId: string, token: string) => {
         // Preparar las URLs de retorno para MercadoPago
         // Usar ngrok URL si está disponible, sino usar el origin actual
         const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL;
-        const baseUrl = ngrokUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+        const baseUrl = ngrokUrl /*TODO: Ngrok || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002'); */
         
         console.log('🌐 Base URL para MercadoPago:', baseUrl);
         console.log('🌐 Endpoint:', `${APIURL}/sale-orders/checkout/${userId}`);
@@ -512,7 +512,7 @@ export const createCheckout = async (userId: string, token: string) => {
 // Checkout con Stripe
 export const checkoutStripe = async (userId: string, token: string) => {
     try {
-        const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL || 'http://localhost:3002';
+        const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL;
         
         console.log('🔵 Iniciando checkout con Stripe para userId:', userId);
         console.log('🌐 URLs de retorno basadas en:', ngrokUrl);
