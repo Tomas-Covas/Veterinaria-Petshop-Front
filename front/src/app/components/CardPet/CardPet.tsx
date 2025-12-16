@@ -25,7 +25,7 @@ const CardPet: React.FC<IPet> = (pet) => {
             {/* Nombre principal sdasdasd*/}
             <h2 className="text-3xl font-bold text-gray-900 mb-2">{pet.nombre}</h2>
 
-            {/* Línea decorativa */}
+            {/* Línea decorativa asdasdas*/}
             <div className="w-12 h-1 bg-orange-500 rounded-full mb-4" />
 
             {/* Información estructurada */}
