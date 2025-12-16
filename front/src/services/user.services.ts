@@ -22,17 +22,19 @@ export async function register(userData: IRegister) {
     }
 
     const result = await response.json();
-    
+
     // Si el backend genera contraseña aleatoria, mostrarla al usuario
     if (result.temporaryPassword || result.password) {
       toast.success(
-        `✅ Usuario registrado. Contraseña temporal: ${result.temporaryPassword || result.password}`,
+        `✅ Usuario registrado. Contraseña temporal: ${
+          result.temporaryPassword || result.password
+        }`,
         { autoClose: 10000 }
       );
     } else {
       toast.success("✅ Usuario registrado con éxito");
     }
-    
+
     return result;
   } catch (error: any) {
     toast.error("❌ Error al registrarse, inténtelo nuevamente");
@@ -51,33 +53,35 @@ export async function login(userData: ILoginProps) {
       body: JSON.stringify(userData),
     });
 
-    console.log('📡 Respuesta status:', response.status);
+    console.log("📡 Respuesta status:", response.status);
 
     if (!response.ok) {
       const error = await response.json();
-      
+
       if (response.status === 401) {
-        toast.error('❌ Credenciales inválidas. Verifica tu email y contraseña.');
+        toast.error(
+          "❌ Credenciales inválidas. Verifica tu email y contraseña."
+        );
       } else {
-        toast.error(error.message || 'Error al iniciar sesión');
+        toast.error(error.message || "Error al iniciar sesión");
       }
-      
+
       throw new Error(error.message || "Fallo al ingresar");
     }
 
     toast.success("✅ Sesión iniciada con éxito");
     const result = await response.json();
-    
+
     // Guardar el token en localStorage si viene en la respuesta
     if (result.token) {
-      localStorage.setItem('authToken', result.token);
+      localStorage.setItem("authToken", result.token);
     } else {
-      console.warn('⚠️ WARNING: Backend no envió token en la respuesta');
+      console.warn("⚠️ WARNING: Backend no envió token en la respuesta");
     }
-    
+
     return result;
   } catch (error: any) {
-    console.error('💥 Error capturado en login():', error.message);
+    console.error("💥 Error capturado en login():", error.message);
     throw error;
   }
 }
@@ -85,10 +89,10 @@ export async function login(userData: ILoginProps) {
 export async function getGoogleAuthUrl() {
   try {
     const res = await fetch(`${APIURL}/auth/google/url`);
-    if (!res.ok){
-      toast.error("❌ Error al intentar ingresar, intente nuevamente")
+    if (!res.ok) {
+      toast.error("❌ Error al intentar ingresar, intente nuevamente");
       throw new Error("Error solicitando URL de autenticación");
-    } 
+    }
     return res.json();
   } catch (error) {
     throw error;
@@ -99,32 +103,63 @@ export async function handleAuthCallback() {
   const code = new URLSearchParams(window.location.search).get("code");
   const hash = window.location.hash;
 
-  let callbackUrl = `${APIURL}/auth/callback`;
-  
-  if (code) {
-    callbackUrl += `?code=${code}`;
-  } else if (hash) {
-    callbackUrl += `?hash=${encodeURIComponent(hash)}`;
-  } else {
-    throw new Error("Información de autenticación no encontrada");
-  }
+  // Si tenemos hash (típico en OAuth con Supabase)
+  if (hash && hash.includes("access_token")) {
+    try {
+      // Extraer el token directamente del hash
+      const accessToken = hash
+        .substring(1)
+        .split("&")
+        .find((param) => param.startsWith("access_token="))
+        ?.split("=")[1];
 
-  try {
-    const response = await fetch(callbackUrl, {
-      method: "GET",
-      credentials: "include",
-    });
+      if (!accessToken) {
+        throw new Error("Token no encontrado en la URL");
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("❌ Error de autenticación:", errorData);
-      throw new Error("Error en la autenticación");
+      // Enviar el token al endpoint de sesión
+      const response = await fetch(`${APIURL}/auth/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Error al procesar la autenticación"
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error procesando el hash:", error);
+      throw error;
     }
-    
-    const response2 = await response.json();
-    return response2;
-  } catch (error) {
-    throw error;
+  }
+  // Si tenemos código de autorización
+  else if (code) {
+    try {
+      const response = await fetch(`${APIURL}/auth/callback?code=${code}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error en la autenticación");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error procesando el código:", error);
+      throw error;
+    }
+  } else {
+    throw new Error("No se encontró información de autenticación en la URL");
   }
 }
 
@@ -150,7 +185,7 @@ export async function sendTokenToBackend(token: string) {
 }
 
 export async function getUserById(id: string) {
-  try {    
+  try {
     const response = await fetch(`${APIURL}/users/${id}`, {
       method: "GET",
       headers: {
@@ -170,7 +205,7 @@ export async function getUserById(id: string) {
   }
 }
 
-export async function updateUserProfile(id:string, data: any) {
+export async function updateUserProfile(id: string, data: any) {
   const formData = new FormData();
 
   // Si hay imagen seleccionada
@@ -188,7 +223,7 @@ export async function updateUserProfile(id:string, data: any) {
   try {
     const res = await fetch(`${APIURL}/users/${id}`, {
       method: "PATCH",
-      body: formData
+      body: formData,
     });
 
     if (!res.ok) {
@@ -198,9 +233,8 @@ export async function updateUserProfile(id:string, data: any) {
     }
 
     return await res.json();
-
   } catch (err) {
     toast.error("❌ Error al intentar editar perfil: Inténtelo más tarde");
     throw err;
   }
-};
+}
