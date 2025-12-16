@@ -30,6 +30,16 @@ export default function PetMedicalHistoryPage() {
 
     try {
       const token = localStorage.getItem('authToken') || '';
+      
+      const petAppointments = pet.appointments || [];
+      
+      const updatedPet = {
+        ...pet,
+        appointments: petAppointments
+      };
+      
+      setSelectedPet(updatedPet);
+      
       const history = await getPetMedicalHistory(pet.id, token);
       setMedicalHistory(history);
     } catch (error) {
@@ -69,9 +79,13 @@ export default function PetMedicalHistoryPage() {
     setLoadingRecord(true);
     try {
       const token = localStorage.getItem('authToken') || '';
-      console.log('📋 Buscando registro médico para appointment:', appointmentId);
-      console.log('🐾 Pet ID:', selectedPet.id);
-      console.log('📅 Appointments de la mascota:', selectedPet.appointments);
+      
+      const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
+      
+      if (!appointment) {
+        setLoadingRecord(false);
+        return;
+      }
       
       // Obtener todos los registros médicos de la mascota
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/medical-records-pet/pet/${selectedPet.id}`, {
@@ -84,60 +98,55 @@ export default function PetMedicalHistoryPage() {
       });
       
       if (!response.ok) {
-        console.error('❌ Error al obtener registros médicos:', response.status);
+        alert('No se pudo cargar el registro médico de esta consulta');
+        setLoadingRecord(false);
         return;
       }
       
       const result = await response.json();
-      console.log('✅ Registros médicos obtenidos:', result);
-      
-      // Extraer el array de registros
       const records = result.data || result.records || result.medicalRecords || result || [];
-      console.log('📋 Total de registros:', Array.isArray(records) ? records.length : 0);
       
       if (!Array.isArray(records) || records.length === 0) {
-        console.log('⚠️ No hay registros médicos para esta mascota');
+        alert('Esta mascota aún no tiene registros médicos');
+        setLoadingRecord(false);
         return;
       }
       
-      // Buscar el registro que corresponde al appointment
-      const appointment = selectedPet.appointments?.find((apt: any) => apt.id === appointmentId);
-      console.log('🔎 Buscando registro para appointment:', appointment);
-      console.log('📋 Registros disponibles:', records);
+      let matchedRecord = null;
       
-      // Si solo hay 1 registro y 1 appointment, hacer match directo
-      if (records.length === 1) {
-        console.log('✅ Solo hay 1 registro, mostrándolo');
-        setSelectedRecord(records[0]);
-      } else if (appointment) {
-        // Intentar hacer match por veterinario y fecha
-        const record = records.find((r: any) => {
-          // Match por veterinario
-          const vetMatch = r.veterinarian?.id === appointment.veterinarian?.id || 
-                          r.veterinarianId === appointment.veterinarian?.id;
-          
-          // Match por fecha aproximada (mismo día)
-          const recordDate = r.consultationDate || r.createdAt;
-          const appointmentDate = appointment.date;
-          const dateMatch = recordDate && appointmentDate && 
-                           recordDate.split('T')[0] === appointmentDate.split('T')[0];
-          
-          return vetMatch && dateMatch;
-        });
+      // 1. Intentar match por appointment ID
+      matchedRecord = records.find((r: any) => r.appointmentId === appointmentId);
+      
+      // 2. Si no hay match directo, intentar por veterinario y fecha
+      if (!matchedRecord && appointment.veterinarian && appointment.date) {
+        const vetId = appointment.veterinarian?.id || appointment.veterinarian;
+        const appointmentDate = appointment.date.split('T')[0];
         
-        if (record) {
-          console.log('✅ Registro médico encontrado por veterinario y fecha:', record);
-          setSelectedRecord(record);
-        } else {
-          console.log('⚠️ No se encontró registro específico, mostrando el primero');
-          setSelectedRecord(records[0]);
-        }
+        matchedRecord = records.find((r: any) => {
+          const recordVetId = r.veterinarian?.id || r.veterinarianId;
+          const recordDate = (r.consultationDate || r.createdAt || '').split('T')[0];
+          return recordVetId === vetId && recordDate === appointmentDate;
+        });
+      }
+      
+      // 3. Fallback: mostrar el registro más reciente
+      if (!matchedRecord && records.length > 0) {
+        const sortedRecords = [...records].sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || a.consultationDate || 0).getTime();
+          const dateB = new Date(b.createdAt || b.consultationDate || 0).getTime();
+          return dateB - dateA;
+        });
+        matchedRecord = sortedRecords[0];
+      }
+      
+      if (matchedRecord) {
+        setSelectedRecord(matchedRecord);
       } else {
-        console.log('💡 Mostrando el primer registro como fallback');
-        setSelectedRecord(records[0]);
+        alert('No se pudo cargar el registro médico');
+        setLoadingRecord(false);
       }
     } catch (error) {
-      console.error('❌ Error al obtener registro médico:', error);
+      alert('Error al cargar el registro médico');
     } finally {
       setLoadingRecord(false);
     }
