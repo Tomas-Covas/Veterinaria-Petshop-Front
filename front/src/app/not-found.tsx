@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="min-h-[100dvh] bg-[#FBE5CB]">
+    <main className="min-h-100dvh bg-[#FBE5CB]">
       {/* Top "navbar-like" strip */}
       <div className="sticky top-0 z-10 border-b border-black/5 bg-[#F2EAE2]/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -34,7 +34,7 @@ export default function NotFound() {
           <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="rounded-xl bg-[#FEA537] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 active:translate-y-[1px]"
+              className="rounded-xl bg-[#FEA537] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 active:translate-y-px"
             >
               Iniciar Sesión
             </Link>
@@ -72,13 +72,13 @@ export default function NotFound() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/"
-                  className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-white/95 active:translate-y-[1px]"
+                  className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-white/95 active:translate-y-px"
                 >
                   Volver al inicio
                 </Link>
                 <Link
                   href="/store"
-                  className="rounded-2xl bg-black/15 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-black/20 active:translate-y-[1px]"
+                  className="rounded-2xl bg-black/15 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-black/20 active:translate-y-px"
                 >
                   Ir a la tienda
                 </Link>
@@ -106,7 +106,7 @@ export default function NotFound() {
                   />
                   <button
                     type="button"
-                    className="rounded-xl bg-[#FEA537] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 active:translate-y-[1px]"
+                    className="rounded-xl bg-[#FEA537] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 active:translate-y-px"
                   >
                     Buscar
                   </button>

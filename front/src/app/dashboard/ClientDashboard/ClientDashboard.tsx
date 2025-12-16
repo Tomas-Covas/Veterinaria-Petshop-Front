@@ -49,6 +49,7 @@ export default function ClientDashboard() {
         setOpenEdit(false);
       }
     } catch (err) {
+      throw err
       toast.error("Error al intentar editar perfil: Intentelo más tarde");
     }
   };
