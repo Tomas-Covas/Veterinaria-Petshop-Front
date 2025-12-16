@@ -60,7 +60,7 @@ export default function ChatbotButton() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-4 rounded-full shadow-2xl transition-all transform hover:scale-110"
+                    className="fixed bottom-6 right-6 z-50 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-4 rounded-full shadow-2xl transition-all transform hover:scale-110"
                     aria-label="Abrir chatbot"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,7 +74,7 @@ export default function ChatbotButton() {
             {isOpen && (
                 <div className="fixed bottom-6 right-6 z-50 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border-2 border-blue-200">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between">
+                    <div className="bg-linear-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="relative">
                                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">

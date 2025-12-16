@@ -378,9 +378,9 @@ function ReviewModal({ request, onClose, onUpdate }: ReviewModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-linear-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-lg">
+        <div className="bg-linear-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-lg">
           <h2 className="text-2xl font-bold">🔍 Revisar Solicitud</h2>
         </div>
 

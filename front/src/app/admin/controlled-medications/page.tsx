@@ -21,7 +21,7 @@ export default function AdminControlledMedicationsPage() {
   return (
     <div className="container mx-auto px-4 pt-24 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white shadow-lg mb-8">
+      <div className="bg-linear-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white shadow-lg mb-8">
         <h1 className="text-3xl font-bold mb-2">🔐 Gestión de Medicamentos Controlados</h1>
         <p className="text-white/90">
           Administra todas las solicitudes de medicamentos controlados de los veterinarios

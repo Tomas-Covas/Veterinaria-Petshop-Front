@@ -44,8 +44,8 @@ export default function NotFound() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Orange gradient backdrop */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FF8C34] via-[#FFA344] to-[#FFB466]" />
+        {/* Orange linear backdrop */}
+        <div className="absolute inset-0 bg-linear-to-r from-[#FF8C34] via-[#FFA344] to-[#FFB466]" />
         <div className="absolute inset-0 opacity-25">
           {/* soft pattern */}
           <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-white/30 blur-2xl" />
@@ -134,7 +134,7 @@ export default function NotFound() {
                     <p className="text-xs font-semibold text-gray-500">Código</p>
                     <p className="text-6xl font-extrabold tracking-tight text-gray-900">404</p>
                   </div>
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#FF8C34] to-[#FEA537] text-white shadow-sm">
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-linear-to-br from-[#FF8C34] to-[#FEA537] text-white shadow-sm">
                     <span className="text-lg">🐶</span>
                   </div>
                 </div>

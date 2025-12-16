@@ -270,21 +270,21 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
             <div className="flex gap-3">
               <Link
                 href="/dashboard/messages"
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+                className="flex items-center gap-2 bg-linear-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
               >
                 <span className="text-xl">💬</span>
                 <span>Mensajería</span>
               </Link>
               <Link
                 href="/dashboard/general-medications"
-                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+                className="flex items-center gap-2 bg-linear-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
               >
                 <span className="text-xl">💊</span>
                 <span>Medicamentos</span>
               </Link>
               <Link
                 href="/dashboard/controlled-medications"
-                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
+                className="flex items-center gap-2 bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all transform hover:scale-105"
               >
                 <span className="text-xl">🔐</span>
                 <span>Controlados</span>

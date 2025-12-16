@@ -587,7 +587,7 @@ export default function Analytics() {
         {showProductos && (
           <div className="space-y-6">
             {/* Stock Crítico - Gráfica de Barras Mejorada */}
-            <div className="bg-gradient-to-br from-white via-orange-50/30 to-red-50/30 rounded-2xl shadow-xl p-6 border-2 border-orange-200">
+            <div className="bg-linear-to-br from-white via-orange-50/30 to-red-50/30 rounded-2xl shadow-xl p-6 border-2 border-orange-200">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -622,18 +622,18 @@ export default function Analytics() {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <defs>
-                  <linearGradient id="criticalGradient" x1="0" y1="0" x2="1" y2="0">
+                  <linearlinear id="criticallinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#dc2626" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#ef4444" stopOpacity={1}/>
-                  </linearGradient>
-                  <linearGradient id="lowGradient" x1="0" y1="0" x2="1" y2="0">
+                  </linearlinear>
+                  <linearlinear id="lowlinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#fbbf24" stopOpacity={1}/>
-                  </linearGradient>
-                  <linearGradient id="normalGradient" x1="0" y1="0" x2="1" y2="0">
+                  </linearlinear>
+                  <linearlinear id="normallinear" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/>
                     <stop offset="100%" stopColor="#34d399" stopOpacity={1}/>
-                  </linearGradient>
+                  </linearlinear>
                 </defs>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
@@ -713,9 +713,9 @@ export default function Analytics() {
                       key={`cell-${index}`} 
                       fill={
                         entry.stock === 0 ? '#dc2626' :
-                        entry.stock <= 3 ? 'url(#criticalGradient)' : 
-                        entry.stock <= 10 ? 'url(#lowGradient)' : 
-                        'url(#normalGradient)'
+                        entry.stock <= 3 ? 'url(#criticallinear)' : 
+                        entry.stock <= 10 ? 'url(#lowlinear)' : 
+                        'url(#normallinear)'
                       }
                     />
                   ))}
@@ -727,7 +727,7 @@ export default function Analytics() {
 
             {/* Alertas de Stock Crítico */}
             {(criticalStock > 0 || lowStock > 0) && (
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-6">
+              <div className="bg-linear-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-6">
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🚨</div>
                   <div className="flex-1">
@@ -794,7 +794,7 @@ export default function Analytics() {
         {showTurnos && (
           <div className="space-y-6">
             {/* Gráfica de Veterinarios */}
-            <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl p-6 border border-blue-200">
+            <div className="bg-linear-to-br from-white to-blue-50 rounded-xl p-6 border border-blue-200">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Productividad por Veterinario</h3>
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={veterinarianStats}>
@@ -817,7 +817,7 @@ export default function Analytics() {
             </div>
 
             {/* Horarios de Turnos por Veterinario */}
-            <div className="bg-gradient-to-br from-white to-indigo-50 rounded-xl p-6 border border-indigo-200">
+            <div className="bg-linear-to-br from-white to-indigo-50 rounded-xl p-6 border border-indigo-200">
               <h3 className="text-xl font-bold text-gray-800 mb-4">🕐 Distribución de Turnos por Hora</h3>
               <p className="text-sm text-gray-600 mb-4">Horarios más solicitados por veterinario</p>
               <ResponsiveContainer width="100%" height={400}>
@@ -848,7 +848,7 @@ export default function Analytics() {
             </div>
 
             {/* Diagnósticos - Pie Chart */}
-            <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl p-6 border border-purple-200">
+            <div className="bg-linear-to-br from-white to-purple-50 rounded-xl p-6 border border-purple-200">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
                 🏥 Diagnósticos Recurrentes
                 <span className="ml-2 text-sm font-normal text-gray-600">
@@ -1007,15 +1007,15 @@ export default function Analytics() {
               <>
                 {/* Estadísticas generales */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-lg text-white">
+                  <div className="bg-linear-to-br from-indigo-500 to-purple-600 p-4 rounded-lg text-white">
                     <p className="text-sm opacity-90">Total de Usos</p>
                     <p className="text-3xl font-bold mt-1">{medicationUsage.length}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-lg text-white">
+                  <div className="bg-linear-to-br from-blue-500 to-cyan-600 p-4 rounded-lg text-white">
                     <p className="text-sm opacity-90">Medicamentos Diferentes</p>
                     <p className="text-3xl font-bold mt-1">{getMedicationUsageStats().length}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-violet-500 to-pink-600 p-4 rounded-lg text-white">
+                  <div className="bg-linear-to-br from-violet-500 to-pink-600 p-4 rounded-lg text-white">
                     <p className="text-sm opacity-90">Unidades Totales</p>
                     <p className="text-3xl font-bold mt-1">
                       {medicationUsage.reduce((sum, u) => sum + u.quantity, 0)}
@@ -1026,7 +1026,7 @@ export default function Analytics() {
                 {/* Gráficos de Torta: Dos tipos de medicamentos */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Top Medicamentos Generales (USO DIRECTO) */}
-                  <div className="bg-gradient-to-br from-white to-cyan-50 rounded-xl p-6 border border-cyan-200">
+                  <div className="bg-linear-to-br from-white to-cyan-50 rounded-xl p-6 border border-cyan-200">
                     <h3 className="text-xl font-bold text-gray-800 mb-4">💊 Top 5 Medicamentos Generales Más Usados</h3>
                     <p className="text-sm text-gray-600 mb-4">Uso directo registrado por veterinarios</p>
                     <ResponsiveContainer width="100%" height={300}>
@@ -1066,7 +1066,7 @@ export default function Analytics() {
                   </div>
 
                   {/* Top Medicamentos Controlados */}
-                  <div className="bg-gradient-to-br from-white to-red-50 rounded-xl p-6 border border-red-200">
+                  <div className="bg-linear-to-br from-white to-red-50 rounded-xl p-6 border border-red-200">
                     <h3 className="text-xl font-bold text-gray-800 mb-4">
                       🔴 Top 5 Medicamentos Controlados Más Solicitados
                     </h3>
@@ -1117,7 +1117,7 @@ export default function Analytics() {
                 </div>
 
                 {/* Gráfica de barras */}
-                <div className="bg-gradient-to-br from-slate-50 to-indigo-50 p-6 rounded-lg border border-indigo-200">
+                <div className="bg-linear-to-br from-slate-50 to-indigo-50 p-6 rounded-lg border border-indigo-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     📊 Medicamentos Más Utilizados (Todos)
                   </h3>
@@ -1151,7 +1151,7 @@ export default function Analytics() {
                           </div>
                           <div className="relative h-10 bg-gray-200 rounded-lg overflow-hidden shadow-inner">
                             <div 
-                              className={`absolute top-0 left-0 h-full bg-gradient-to-r ${barColor} transition-all duration-500 flex items-center justify-end pr-3`}
+                              className={`absolute top-0 left-0 h-full bg-linear-to-r ${barColor} transition-all duration-500 flex items-center justify-end pr-3`}
                               style={{ width: `${percentage}%` }}
                             >
                               {percentage > 15 && (
@@ -1174,7 +1174,7 @@ export default function Analytics() {
                   </h3>
                   <div className="space-y-3">
                     {medicationUsage.slice(0, 20).map((usage) => (
-                      <div key={usage.id} className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+                      <div key={usage.id} className="p-4 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -1252,17 +1252,17 @@ export default function Analytics() {
           <div className="space-y-6">
             {/* Métricas de resumen */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-200">
+              <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-200">
                 <p className="text-sm text-gray-600 font-medium">Total Ingresos</p>
                 <p className="text-3xl font-bold text-green-700">${getTotalRevenue().toFixed(2)}</p>
                 <p className="text-xs text-gray-500 mt-1">{Array.isArray(orders) ? orders.length : 0} órdenes</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 border-2 border-blue-200">
+              <div className="bg-linear-to-br from-blue-50 to-cyan-50 rounded-lg p-4 border-2 border-blue-200">
                 <p className="text-sm text-gray-600 font-medium">Promedio por Orden</p>
                 <p className="text-3xl font-bold text-blue-700">${getAverageRevenue()}</p>
                 <p className="text-xs text-gray-500 mt-1">valor promedio</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200">
+              <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200">
                 <p className="text-sm text-gray-600 font-medium">Productos Vendidos</p>
                 <p className="text-3xl font-bold text-purple-700">
                   {Array.isArray(orders) ? orders.reduce((sum, o) => sum + (o.items?.reduce((s, i) => s + i.quantity, 0) || 0), 0) : 0}
@@ -1280,7 +1280,7 @@ export default function Analytics() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 1. Línea de Tiempo de Ventas */}
-                <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/30 rounded-2xl shadow-xl p-6 border-2 border-green-200">
+                <div className="bg-linear-to-br from-white via-green-50/30 to-emerald-50/30 rounded-2xl shadow-xl p-6 border-2 border-green-200">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">📈</span>
                     Línea de Tiempo de Ventas
@@ -1289,10 +1289,10 @@ export default function Analytics() {
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={getSalesByDate()}>
                       <defs>
-                        <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <linearlinear id="saleslinear" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#10b981" stopOpacity={0.8}/>
                           <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                        </linearGradient>
+                        </linearlinear>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis 
@@ -1327,7 +1327,7 @@ export default function Analytics() {
                 </div>
 
                 {/* 2. Top 10 Productos Más Vendidos */}
-                <div className="bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 rounded-2xl shadow-xl p-6 border-2 border-blue-200">
+                <div className="bg-linear-to-br from-white via-blue-50/30 to-cyan-50/30 rounded-2xl shadow-xl p-6 border-2 border-blue-200">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">💰</span>
                     Top 10 Productos Más Vendidos
@@ -1364,7 +1364,7 @@ export default function Analytics() {
                 </div>
 
                 {/* 3. Distribución de Rangos de Precios */}
-                <div className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl shadow-xl p-6 border-2 border-purple-200">
+                <div className="bg-linear-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl shadow-xl p-6 border-2 border-purple-200">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">💵</span>
                     Distribución de Precios
@@ -1401,7 +1401,7 @@ export default function Analytics() {
                 </div>
 
                 {/* 4. Top Productos por Ingresos */}
-                <div className="bg-gradient-to-br from-white via-orange-50/30 to-amber-50/30 rounded-2xl shadow-xl p-6 border-2 border-orange-200">
+                <div className="bg-linear-to-br from-white via-orange-50/30 to-amber-50/30 rounded-2xl shadow-xl p-6 border-2 border-orange-200">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">🏆</span>
                     Top Productos por Ingresos
@@ -1438,7 +1438,7 @@ export default function Analytics() {
                 </div>
 
                 {/* 5. Tamaño Promedio del Carrito */}
-                <div className="bg-gradient-to-br from-white via-teal-50/30 to-cyan-50/30 rounded-2xl shadow-xl p-6 border-2 border-teal-200">
+                <div className="bg-linear-to-br from-white via-teal-50/30 to-cyan-50/30 rounded-2xl shadow-xl p-6 border-2 border-teal-200">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">🛒</span>
                     Tamaño del Carrito
@@ -1446,7 +1446,7 @@ export default function Analytics() {
                   <p className="text-sm text-gray-600 mb-4">Cantidad promedio de productos por orden</p>
                   <div className="flex items-center justify-center h-[200px]">
                     <div className="text-center">
-                      <p className="text-6xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                      <p className="text-6xl font-bold bg-linear-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
                         {getAverageCartSize().toFixed(1)}
                       </p>
                       <p className="text-xl text-gray-600 mt-2">productos/orden</p>
@@ -1455,7 +1455,7 @@ export default function Analytics() {
                 </div>
 
                 {/* 6. Cantidad de Productos por Categoría */}
-                <div className="bg-gradient-to-br from-white via-indigo-50/30 to-violet-50/30 rounded-2xl shadow-xl p-6 border-2 border-indigo-200 lg:col-span-2">
+                <div className="bg-linear-to-br from-white via-indigo-50/30 to-violet-50/30 rounded-2xl shadow-xl p-6 border-2 border-indigo-200 lg:col-span-2">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2">
                     <span className="text-2xl">📦</span>
                     Cantidad de Productos Vendidos por Categoría

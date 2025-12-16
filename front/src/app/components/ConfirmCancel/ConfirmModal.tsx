@@ -18,7 +18,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   cancelText = "No",
 }) => {
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md">
       <div className="bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-sm text-center animate-fadeIn">
         <p className="font-semibold text-gray-800 mb-4">{message}</p>
         <div className="flex justify-center gap-3 mt-4">

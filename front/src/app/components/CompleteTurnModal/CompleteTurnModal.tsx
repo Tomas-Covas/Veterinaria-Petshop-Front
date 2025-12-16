@@ -155,10 +155,10 @@ export default function CompleteTurnModal({ isOpen, onClose, onSubmit, appointme
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-linear-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-400 to-orange-600 p-6 sticky top-0">
+        <div className="bg-linear-to-r from-orange-400 to-orange-600 p-6 sticky top-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">Completar Consulta</h2>

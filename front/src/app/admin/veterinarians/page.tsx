@@ -623,7 +623,7 @@ export default function VeterinarianManagement() {
                 setShowPasswordModal(false);
                 setPasswordData(null);
               }}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+              className="w-full bg-linear-to-r from-amber-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
             >
               Entendido
             </button>
@@ -674,7 +674,7 @@ export default function VeterinarianManagement() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-md"
+                className="flex-1 bg-linear-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-md"
               >
                 Sí, Eliminar
               </button>
