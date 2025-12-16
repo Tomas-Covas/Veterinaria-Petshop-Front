@@ -46,11 +46,10 @@ export default function GeneralMedicationsPage() {
   const router = useRouter();
   const [medications, setMedications] = useState<Medication[]>([]);
   const [requests, setRequests] = useState<MedicationRequest[]>([]);
-  const [usageHistory, setUsageHistory] = useState<MedicationUsage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedication, setSelectedMedication] = useState<string>("");
-  const [requestQuantity, setRequestQuantity] = useState<number>(0);
-  const [useQuantity, setUseQuantity] = useState<number>(0);
+  const [requestQuantity, setRequestQuantity] = useState<string | number>("");
+  const [useQuantity, setUseQuantity] = useState<string | number>("");
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showUseForm, setShowUseForm] = useState(false);
   const [selectedForUse, setSelectedForUse] = useState<string>("");
@@ -61,10 +60,9 @@ export default function GeneralMedicationsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [medsData, reqsData, usageData] = await Promise.all([
+      const [medsData, reqsData] = await Promise.all([
         getMedications(),
-        getMedicationRequests(),
-        getMedicationUsageHistory()
+        getMedicationRequests()
       ]);
       console.log('✅ Medicamentos cargados:', medsData);
       console.log('✅ Solicitudes cargadas:', reqsData);
@@ -90,14 +88,12 @@ export default function GeneralMedicationsPage() {
         console.log('⚠️ El backend devolvió un array vacío de solicitudes');
       }
       
-      console.log('✅ Historial de uso:', usageData);
       console.log('👤 Usuario actual:', userData?.user?.name, '- Rol:', userData?.user?.role);
       setMedications(medsData || []);
       setRequests(reqsData || []);
-      setUsageHistory(usageData || []);
     } catch (error) {
       console.error('❌ Error al cargar datos:', error);
-      toast.error('Error al cargar medicamentos');
+      toast.error('❌ Error al cargar medicamentos');
     } finally {
       setLoading(false);
     }
@@ -119,71 +115,73 @@ export default function GeneralMedicationsPage() {
   }, [userData?.user?.id, userData?.user?.role, router]);
 
   const handleRequestRestock = async () => {
-    if (!selectedMedication || requestQuantity <= 0) {
+    const qty = typeof requestQuantity === 'string' ? parseInt(requestQuantity) : requestQuantity;
+    if (!selectedMedication || !qty || qty <= 0) {
       toast.error('Selecciona un medicamento y cantidad válida');
       return;
     }
 
     try {
-      const result = await requestMedicationRestock(selectedMedication, requestQuantity);
+      const result = await requestMedicationRestock(selectedMedication, qty);
       console.log('✅ Solicitud creada exitosamente:', result);
-      toast.success('Solicitud de reposición enviada al administrador');
+      toast.success('✅ Solicitud de reposición enviada al administrador');
       setSelectedMedication("");
-      setRequestQuantity(0);
+      setRequestQuantity("");
       setShowRequestForm(false);
       loadData();
     } catch (error: any) {
       console.error('❌ Error al solicitar reposición:', error);
       console.error('Response del servidor:', error.message);
-      toast.error(error.message || 'Error al solicitar reposición');
+      toast.error('❌ ' + (error.message || 'Error al solicitar reposición'));
     }
   };
 
   const handleUseMedication = async () => {
-    if (!selectedForUse || useQuantity <= 0) {
-      toast.error('Selecciona un medicamento y cantidad válida');
+    const qty = typeof useQuantity === 'string' ? parseInt(useQuantity) : useQuantity;
+    if (!selectedForUse || !qty || qty <= 0) {
+      toast.error('⚠️ Selecciona un medicamento y cantidad válida');
       return;
     }
 
     try {
-      await useMedication(selectedForUse, useQuantity);
-      toast.success('Uso de medicamento registrado');
+      await useMedication(selectedForUse, qty);
+      toast.success('✅ Uso de medicamento registrado');
       setSelectedForUse("");
-      setUseQuantity(0);
+      setUseQuantity("");
       setShowUseForm(false);
       loadData();
     } catch (error: any) {
-      toast.error(error.message || 'Error al registrar uso');
+      toast.error('❌ ' + (error.message || 'Error al registrar uso'));
     }
   };
 
   const handleApproveRequest = async (requestId: string) => {
     try {
       await approveRequest(requestId);
-      toast.success('Solicitud aprobada');
+      toast.success('✅ Solicitud aprobada');
       loadData();
     } catch (error: any) {
-      toast.error(error.message || 'Error al aprobar solicitud');
+      toast.error('❌ ' + (error.message || 'Error al aprobar solicitud'));
     }
   };
 
   const handleRejectRequest = async (requestId: string) => {
     try {
       await rejectRequest(requestId);
-      toast.success('Solicitud rechazada');
+      toast.success('✅ Solicitud rechazada');
       loadData();
     } catch (error: any) {
-      toast.error(error.message || 'Error al rechazar solicitud');
+      toast.error('❌ ' + (error.message || 'Error al rechazar solicitud'));
     }
   };
 
   const handleCompleteRequest = async (requestId: string) => {
     try {
       await completeRequest(requestId);
-      toast.success('Solicitud completada y stock actualizado');
+      toast.success('✅ Solicitud completada y stock actualizado');
       loadData();
     } catch (error: any) {
-      toast.error(error.message || 'Error al completar solicitud');
+      toast.error('❌ ' + (error.message || 'Error al completar solicitud'));
     }
   };
 
@@ -193,10 +191,10 @@ export default function GeneralMedicationsPage() {
     }
     try {
       await cancelRequest(requestId);
-      toast.success('Solicitud cancelada');
+      toast.success('✅ Solicitud cancelada');
       loadData();
     } catch (error: any) {
-      toast.error(error.message || 'Error al cancelar solicitud');
+      toast.error('❌ ' + (error.message || 'Error al cancelar solicitud'));
     }
   };
 
@@ -230,21 +228,8 @@ export default function GeneralMedicationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span className="text-4xl">💊</span>
-            Medicamentos Generales
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Gestión de stock y solicitudes de reposición
-            {userData?.user?.role === 'admin' && (
-              <span className="ml-2 text-indigo-600 font-semibold">- Panel de Administrador</span>
-            )}
-          </p>
-        </div>
+    <div>
+      <div>
 
         {/* Alerta de solicitudes pendientes (para admin) */}
         {userData?.user?.role === 'admin' && requests.filter(r => r.status === 'pending').length > 0 && (
@@ -282,42 +267,44 @@ export default function GeneralMedicationsPage() {
           </div>
         )}
 
-        {/* Botones de acción */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setShowUseForm(!showUseForm)}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
-          >
-            <span className="text-xl">💉</span>
-            Registrar Uso
-            <svg 
-              className={`w-5 h-5 transition-transform ${showUseForm ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+        {/* Botones de acción - Solo para veterinarios */}
+        {userData?.user?.role === 'veterinarian' && (
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setShowUseForm(!showUseForm)}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setShowRequestForm(!showRequestForm)}
-            className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
-          >
-            <span className="text-xl">📦</span>
-            Solicitar Reposición
-            <svg 
-              className={`w-5 h-5 transition-transform ${showRequestForm ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+              <span className="text-xl">💉</span>
+              Registrar Uso
+              <svg 
+                className={`w-5 h-5 transition-transform ${showUseForm ? 'rotate-180' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowRequestForm(!showRequestForm)}
+              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
+              <span className="text-xl">📦</span>
+              Solicitar Reposición
+              <svg 
+                className={`w-5 h-5 transition-transform ${showRequestForm ? 'rotate-180' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        )}
 
-        {/* Formulario de uso */}
-        {showUseForm && (
+        {/* Formulario de uso - Solo para veterinarios */}
+        {userData?.user?.role === 'veterinarian' && showUseForm && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-blue-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Registrar Uso de Medicamento</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -346,7 +333,7 @@ export default function GeneralMedicationsPage() {
                   type="number"
                   min="0"
                   value={useQuantity}
-                  onChange={(e) => setUseQuantity(Number(e.target.value))}
+                  onChange={(e) => setUseQuantity(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="0"
                 />
@@ -363,7 +350,7 @@ export default function GeneralMedicationsPage() {
                 onClick={() => {
                   setShowUseForm(false);
                   setSelectedForUse("");
-                  setUseQuantity(0);
+                  setUseQuantity("");
                 }}
                 className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium"
               >
@@ -373,8 +360,8 @@ export default function GeneralMedicationsPage() {
           </div>
         )}
 
-        {/* Formulario de solicitud */}
-        {showRequestForm && (
+        {/* Formulario de solicitud - Solo para veterinarios */}
+        {userData?.user?.role === 'veterinarian' && showRequestForm && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-orange-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Solicitar Reposición</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,7 +393,7 @@ export default function GeneralMedicationsPage() {
                   type="number"
                   min="0"
                   value={requestQuantity}
-                  onChange={(e) => setRequestQuantity(Number(e.target.value))}
+                  onChange={(e) => setRequestQuantity(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   placeholder="0"
                 />
@@ -423,7 +410,7 @@ export default function GeneralMedicationsPage() {
                 onClick={() => {
                   setShowRequestForm(false);
                   setSelectedMedication("");
-                  setRequestQuantity(0);
+                  setRequestQuantity("");
                 }}
                 className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium"
               >

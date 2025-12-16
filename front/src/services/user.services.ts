@@ -30,12 +30,12 @@ export async function register(userData: IRegister) {
         { autoClose: 10000 }
       );
     } else {
-      toast.success("Usuario registrado con éxito");
+      toast.success("✅ Usuario registrado con éxito");
     }
     
     return result;
   } catch (error: any) {
-    toast.error("Error al registrarse, intentelo nuevamente");
+    toast.error("❌ Error al registrarse, inténtelo nuevamente");
     throw error;
   }
 }
@@ -57,7 +57,7 @@ export async function login(userData: ILoginProps) {
       const error = await response.json();
       
       if (response.status === 401) {
-        toast.error('Credenciales inválidas. Verifica tu email y contraseña.');
+        toast.error('❌ Credenciales inválidas. Verifica tu email y contraseña.');
       } else {
         toast.error(error.message || 'Error al iniciar sesión');
       }
@@ -65,7 +65,7 @@ export async function login(userData: ILoginProps) {
       throw new Error(error.message || "Fallo al ingresar");
     }
 
-    toast.success("Se ha logueado con éxito");
+    toast.success("✅ Sesión iniciada con éxito");
     const result = await response.json();
     
     // Guardar el token en localStorage si viene en la respuesta
@@ -86,7 +86,7 @@ export async function getGoogleAuthUrl() {
   try {
     const res = await fetch(`${APIURL}/auth/google/url`);
     if (!res.ok){
-      toast.error("Error al intentar ingresar, intente nuevamente")
+      toast.error("❌ Error al intentar ingresar, intente nuevamente")
       throw new Error("Error solicitando URL de autenticación");
     } 
     return res.json();
@@ -194,13 +194,13 @@ export async function updateUserProfile(id:string, data: any) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error("Error del servidor:", errorText);
-      toast.error("Error al intentar editar perfil");
+      toast.error("❌ Error al intentar editar perfil");
     }
 
     return await res.json();
 
   } catch (err) {
-    toast.error("Error al intentar editar perfil: Intentelo más tarde");
+    toast.error("❌ Error al intentar editar perfil: Inténtelo más tarde");
     throw err;
   }
 };

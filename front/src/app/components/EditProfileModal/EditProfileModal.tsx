@@ -54,7 +54,7 @@ export default function EditProfileModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50">
       {/* Fondo translúcido con blur */}
       <div className="absolute inset-0 bg-cyan-700/40 backdrop-blur-sm" />
 

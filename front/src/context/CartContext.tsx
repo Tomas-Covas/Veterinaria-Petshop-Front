@@ -125,7 +125,7 @@ export const CartProvider: React.FC<CartProvider> = ({ children }) => {
                     
                     if (existsInBackend) {
                         console.log('⚠️ Producto ya existe en el carrito del backend');
-                        toast.error("El producto ya está en el carrito");
+                        toast.error("⚠️ El producto ya está en el carrito");
                         return;
                     }
                     
@@ -137,18 +137,18 @@ export const CartProvider: React.FC<CartProvider> = ({ children }) => {
                     );
                     // Recargar el carrito desde el backend después de agregar
                     await loadCartFromBackend();
-                    toast.success("El producto se agregó al carrito");
+                    toast.success("🛒 Producto agregado al carrito");
                 } else {
                     // Si no hay usuario, verificar localStorage
                     const existingProduct = cartItems.some(item => item.id === product.id);
                     if (existingProduct) {
-                        toast.error("El producto ya está en el carrito");
+                        toast.error("⚠️ El producto ya está en el carrito");
                         return;
                     }
                     
                     // Solo guardar en localStorage
                     setCartItems((prevItems) => [...prevItems, product]);
-                    toast.success("El producto se agregó al carrito");
+                    toast.success("🛒 Producto agregado al carrito");
                 }
             } catch (error: any) {
                 console.error('Error al agregar al carrito:', error);

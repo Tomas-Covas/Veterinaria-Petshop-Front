@@ -42,7 +42,22 @@ export default function ControlledMedicationsForm({
     try {
       setLoading(true);
       const data = await getMedicationsCatalog();
-      setCatalog(data.medications);
+      console.log('📋 Catálogo recibido:', data);
+      console.log('🔍 Primer medicamento:', data.medications[0]);
+      
+      // Normalizar datos: el backend puede devolver 'name' en vez de 'nombre'
+      const normalized = data.medications.map(med => ({
+        id: med.id,
+        nombre: med.nombre || (med as any).name || 'Sin nombre',
+        categoria: med.categoria || (med as any).category || 'General',
+        descripcion: med.descripcion || (med as any).description || '',
+        presentacion: med.presentacion || (med as any).presentation || (med as any).unit || '',
+        requiereMatricula: med.requiereMatricula ?? (med as any).requiresPrescription ?? false,
+        restricciones: med.restricciones || (med as any).restrictions || ''
+      }));
+      
+      console.log('✅ Datos normalizados:', normalized);
+      setCatalog(normalized);
     } catch (error) {
       console.error('Error cargando catálogo:', error);
     } finally {

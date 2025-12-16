@@ -1,7 +1,5 @@
 /**
- * Enum de diagnósticos que coincide con el backend (DiagnosisType)
- * Estos valores están disponibles automáticamente en el sistema
- * cuando se crea un registro médico.
+ * Enum de diagnósticos - EXACTAMENTE como los acepta el backend
  */
 export enum DiagnosisType {
   PARVOVIROSIS_CANINA = 'Parvovirosis Canina',
@@ -16,14 +14,15 @@ export enum DiagnosisType {
   CONTROL_DE_RUTINA = 'Control de Rutina',
   INFECCION_RESPIRATORIA = 'Infección Respiratoria',
   FRACTURA = 'Fractura',
-  LEISHMANIASIS = 'Leishmaniasis',
+  OBESIDAD = 'Obesidad',
   INSUFICIENCIA_RENAL = 'Insuficiencia Renal',
   DIABETES = 'Diabetes',
-  PROBLEMAS_CARDIACOS = 'Problemas Cardiacos',
+  ALERGIAS_ALIMENTARIAS = 'Alergias Alimentarias',
+  PROBLEMAS_CARDIACOS = 'Problemas Cardíacos',
+  EPILEPSIA = 'Epilepsia',
+  INFECCION_URINARIA = 'Infección Urinaria',
+  TRAUMATISMO = 'Traumatismo',
   INTOXICACION = 'Intoxicación',
-  ALERGIA_ALIMENTARIA = 'Alergia Alimentaria',
-  SARNA = 'Sarna',
-  HERIDAS = 'Heridas',
   OTRO = 'Otro'
 }
 
@@ -31,27 +30,28 @@ export enum DiagnosisType {
  * Lista de diagnósticos con emojis para el formulario
  */
 export const DIAGNOSIS_OPTIONS = [
-  { value: DiagnosisType.PARVOVIROSIS_CANINA, label: '🦠 Parvovirosis Canina', icon: '🦠' },
-  { value: DiagnosisType.MOQUILLO, label: '🤒 Moquillo', icon: '🤒' },
-  { value: DiagnosisType.DERMATITIS_ALERGICA, label: '🐾 Dermatitis Alérgica', icon: '🐾' },
-  { value: DiagnosisType.GASTROENTERITIS, label: '🤢 Gastroenteritis', icon: '🤢' },
-  { value: DiagnosisType.OTITIS_EXTERNA, label: '👂 Otitis Externa', icon: '👂' },
-  { value: DiagnosisType.ENFERMEDAD_PERIODONTAL, label: '🦷 Enfermedad Periodontal', icon: '🦷' },
-  { value: DiagnosisType.CONJUNTIVITIS, label: '👁️ Conjuntivitis', icon: '👁️' },
-  { value: DiagnosisType.PARASITOS_INTESTINALES, label: '🪱 Parásitos Intestinales', icon: '🪱' },
-  { value: DiagnosisType.ARTROSIS, label: '🦴 Artrosis', icon: '🦴' },
-  { value: DiagnosisType.INFECCION_RESPIRATORIA, label: '🫁 Infección Respiratoria', icon: '🫁' },
-  { value: DiagnosisType.FRACTURA, label: '💔 Fractura', icon: '💔' },
-  { value: DiagnosisType.LEISHMANIASIS, label: '🦟 Leishmaniasis', icon: '🦟' },
-  { value: DiagnosisType.INSUFICIENCIA_RENAL, label: '🫘 Insuficiencia Renal', icon: '🫘' },
-  { value: DiagnosisType.DIABETES, label: '🩸 Diabetes', icon: '🩸' },
-  { value: DiagnosisType.PROBLEMAS_CARDIACOS, label: '❤️ Problemas Cardiacos', icon: '❤️' },
-  { value: DiagnosisType.INTOXICACION, label: '☠️ Intoxicación', icon: '☠️' },
-  { value: DiagnosisType.ALERGIA_ALIMENTARIA, label: '🍖 Alergia Alimentaria', icon: '🍖' },
-  { value: DiagnosisType.SARNA, label: '🦠 Sarna', icon: '🦠' },
-  { value: DiagnosisType.HERIDAS, label: '🩹 Heridas', icon: '🩹' },
-  { value: DiagnosisType.CONTROL_DE_RUTINA, label: '✅ Control de Rutina', icon: '✅' },
-  { value: DiagnosisType.OTRO, label: '📋 Otro', icon: '📋' },
+  { value: 'Parvovirosis Canina', label: '🦠 Parvovirosis Canina', icon: '🦠' },
+  { value: 'Moquillo', label: '🤒 Moquillo', icon: '🤒' },
+  { value: 'Dermatitis Alérgica', label: '🐾 Dermatitis Alérgica', icon: '🐾' },
+  { value: 'Gastroenteritis', label: '🤢 Gastroenteritis', icon: '🤢' },
+  { value: 'Otitis Externa', label: '👂 Otitis Externa', icon: '👂' },
+  { value: 'Enfermedad Periodontal', label: '🦷 Enfermedad Periodontal', icon: '🦷' },
+  { value: 'Conjuntivitis', label: '👁️ Conjuntivitis', icon: '👁️' },
+  { value: 'Parásitos Intestinales', label: '🪱 Parásitos Intestinales', icon: '🪱' },
+  { value: 'Artrosis', label: '🦴 Artrosis', icon: '🦴' },
+  { value: 'Control de Rutina', label: '✅ Control de Rutina', icon: '✅' },
+  { value: 'Infección Respiratoria', label: '🫁 Infección Respiratoria', icon: '🫁' },
+  { value: 'Fractura', label: '💔 Fractura', icon: '💔' },
+  { value: 'Obesidad', label: '⚖️ Obesidad', icon: '⚖️' },
+  { value: 'Insuficiencia Renal', label: '🫘 Insuficiencia Renal', icon: '🫘' },
+  { value: 'Diabetes', label: '🩸 Diabetes', icon: '🩸' },
+  { value: 'Alergias Alimentarias', label: '🍖 Alergias Alimentarias', icon: '🍖' },
+  { value: 'Problemas Cardíacos', label: '❤️ Problemas Cardíacos', icon: '❤️' },
+  { value: 'Epilepsia', label: '🧠 Epilepsia', icon: '🧠' },
+  { value: 'Infección Urinaria', label: '💧 Infección Urinaria', icon: '💧' },
+  { value: 'Traumatismo', label: '🤕 Traumatismo', icon: '🤕' },
+  { value: 'Intoxicación', label: '☠️ Intoxicación', icon: '☠️' },
+  { value: 'Otro', label: '📋 Otro', icon: '📋' },
 ] as const;
 
 /**
