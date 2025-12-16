@@ -113,7 +113,9 @@ export const getAllOrders = async (token:string) => {
 };
 
 export const getUserOrders = async (userId: string/* , token: string */) => {
-    try { 
+    try {
+        console.log('🛒 Obteniendo órdenes para userId:', userId);
+        
         const res = await fetch(`${APIURL}/sale-orders/history/${userId}`, {
             method: 'GET',
             cache: 'no-cache',
@@ -126,15 +128,39 @@ export const getUserOrders = async (userId: string/* , token: string */) => {
         console.log("📦 Órdenes recibidas:", res);
 
         if (!res.ok) {
-            console.error('Error al obtener órdenes del usuario:', res.status);
+            console.error('❌ Error al obtener órdenes del usuario:', res.status);
             return [];
         }
         
         const response = await res.json();
+        console.log('📦 Respuesta completa del backend:', response);
         
-        return response
+        // El backend devuelve {message: string, data: Array}
+        const orders = response.data/*  || response.orders || response.saleOrders || response; */
+        
+        console.log('📋 Órdenes recibidas:', orders);
+        console.log('📊 Cantidad de órdenes:', orders?.length || 0);
+        
+        // Mostrar detalles de cada orden
+        if (Array.isArray(orders) && orders.length > 0) {
+            orders.forEach((order: any, index: number) => {
+                console.log(`\n📦 Orden ${index + 1}:`, {
+                    id: order.id,
+                    status: order.status,
+                    total: order.total,
+                    createdAt: order.createdAt,
+                    buyerId: order.buyer?.id,
+                    itemsCount: order.items?.length || 0
+                });
+            });
+        } else {
+            console.warn('⚠️ No se recibieron órdenes o el array está vacío');
+        }
+        
+        // Asegurarse de que sea un array
+        return Array.isArray(orders) ? orders : [];
     } catch (error: any) {
-        console.error('Error en getUserOrders:', error);
+        console.error('❌ Error en getUserOrders:', error);
         return [];
     }
 }
@@ -199,6 +225,9 @@ export interface SaleOrdersResponse {
 // Obtener el historial de compras del usuario
 export const getOrderHistory = async (userId: string, token: string) => {
     try {
+        console.log('📤 Obteniendo historial para userId:', userId);
+        console.log('🔗 URL:', `${APIURL}/sale-orders/history/${userId}`);
+        
         const response = await fetch(`${APIURL}/sale-orders/history/${userId}`, {
             method: 'GET',
             cache: 'no-cache',
@@ -216,6 +245,20 @@ export const getOrderHistory = async (userId: string, token: string) => {
         }
         
         const result = await response.json();
+        console.log('📦 Respuesta del backend:', result);
+        console.log('📋 Órdenes recibidas:', result.data?.length || 0);
+        
+        // Verificar si las órdenes realmente pertenecen a este usuario
+        if (result.data && Array.isArray(result.data)) {
+            result.data.forEach((order: any, index: number) => {
+                console.log(`   Orden ${index + 1}:`, {
+                    id: order.id,
+                    buyerId: order.buyerId || order.buyer?.id || 'NO TIENE',
+                    matchUserId: (order.buyerId === userId || order.buyer?.id === userId)
+                });
+            });
+        }
+        
         // Backend retorna { message: string, data: Order[] }
         return result.data || [];
     } catch (error: any) {

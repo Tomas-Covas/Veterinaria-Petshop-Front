@@ -101,8 +101,26 @@ export default function HistoryOrders() {
         setLoading(true);
         const result = await getOrderHistory(String(userData.user.id), userData.token || '');
         console.log('✅ Historial recibido:', result);
-        console.log('📦 Cantidad de órdenes:', result?.length || 0);
-        setOrders(result || []);
+        console.log('📦 Cantidad de órdenes del backend:', result?.length || 0);
+        
+        // Filtrar solo las órdenes que realmente pertenecen a este usuario
+        const userOrders = (result || []).filter((order: any) => {
+          const orderUserId = order.buyerId || order.buyer?.id || order.userId;
+          const belongs = orderUserId === userData.user.id;
+          
+          if (!belongs) {
+            console.warn('⚠️ Orden filtrada (no pertenece al usuario):', {
+              orderId: order.id,
+              orderBuyerId: orderUserId,
+              currentUserId: userData.user.id
+            });
+          }
+          
+          return belongs;
+        });
+        
+        console.log('✅ Órdenes del usuario actual:', userOrders.length);
+        setOrders(userOrders);
       } catch (err: any) {
         console.error('❌ Error al cargar historial:', err);
         setError(err.message || 'Error al cargar el historial de compras');
