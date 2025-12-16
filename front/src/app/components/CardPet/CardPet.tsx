@@ -22,7 +22,7 @@ const CardPet: React.FC<IPet> = (pet) => {
 
         <div className="flex flex-row justify-evenly items-center">
           <div className='flex flex-col items-center text-center'>
-            {/* Nombre principal */}
+            {/* Nombre principal sdasdasd*/}
             <h2 className="text-3xl font-bold text-gray-900 mb-2">{pet.nombre}</h2>
 
             {/* Línea decorativa */}
