@@ -85,7 +85,7 @@ export default function ClientDashboard() {
       window.location.reload()
     } catch (error) {
       toast.error("Error al crear mascota");
-      console.error("❌ Error al crear mascota:", error);
+      throw error;
 
     } finally {
       setCreatingPet(false);
@@ -93,7 +93,7 @@ export default function ClientDashboard() {
   };
 
   useEffect(() => {
-    if (!userData?.user?.id) return null;
+    if (!userData?.user?.id) return ;
 
     const fetchOrders = async () => {
       try {
@@ -111,7 +111,7 @@ export default function ClientDashboard() {
   }, [userData?.user?.id]);
 
   useEffect(() => {
-    if (!userData?.user?.id) return null;
+    if (!userData?.user?.id) return ;
 
     const fetchPets = async () => {
       try {
@@ -147,9 +147,9 @@ export default function ClientDashboard() {
   const router = useRouter()
 
   if (!userData) {
-    return (
-      router.push("/")
-    );
+    router.push("/")
+    return null
+
   }
 
   return (
