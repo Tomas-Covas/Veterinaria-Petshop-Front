@@ -15,14 +15,14 @@ const CardPet: React.FC<IPet> = (pet) => {
   }
 
   return (
-    <Link href={`${process.env.NEXTAUTH_URL}pets/${pet.id}`}>
+    <Link href={`${process.env.NEXTAUTH_URL}/pets/${pet.id}`}>
       <div className="bg-linear-to-br from-orange-400 via-orange-200 to-orange-300 
       rounded-xl shadow-lg p-6 my-2 max-w-md mx-2 cursor-pointer hover:scale-105
       border border-gray-400 hover:shadow-xl transition-shadow">
 
         <div className="flex flex-row justify-evenly items-center">
           <div className='flex flex-col items-center text-center'>
-            {/* Nombre principal sdasdasd*/}
+            {/* Nombre principal*/}
             <h2 className="text-3xl font-bold text-gray-900 mb-2">{pet.nombre}</h2>
 
             {/* Línea decorativa asdasdas*/}
