@@ -113,7 +113,7 @@ export async function updatePetImage(id: string, file: File) {
       throw new Error(errorText || "Error al actualizar la imagen")
     }
 
-    return await res.json() // devuelve { data }
+    return await res.json();
   } catch (err) {
     throw err
   }
@@ -147,6 +147,8 @@ export const searchPets = async (query: string, token: string): Promise<Pet[]> =
         if (Array.isArray(users)) {
           users.forEach((user: any) => {
             if (user.pets && Array.isArray(user.pets)) {
+              // El backend ya envía los appointments correctamente asociados a cada mascota
+              // dentro de pet.appointments, no es necesario filtrarlos
               allPets = allPets.concat(user.pets);
             }
           });

@@ -38,8 +38,14 @@ const CardPet: React.FC<IPet> = (pet) => {
             <p className='font-bold mt-3 border-t-5 border-b-5 p-2 rounded-2xl'>Ver detalles</p>
           </div>
           <div>
-            <Image src={pet.image || avatar} width={120} height={120} alt='${pet.nombre}' 
-            className='rounded-full bg-gray-400'
+            <Image 
+              src={pet.image || avatar} 
+              width={120} 
+              height={120} 
+              alt={pet.nombre}
+              className='rounded-full bg-gray-400 object-cover'
+              unoptimized={!!pet.image}
+              key={pet.image || 'avatar'}
             />
           </div>
           
