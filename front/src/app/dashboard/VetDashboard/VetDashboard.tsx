@@ -196,17 +196,27 @@ export default function VetDashboard({ veterinarian }: VetDashboardProps) {
       treatment: medicalData.treatment,
       medications: medicalData.medications,
       observations: medicalData.observations,
-      nextAppointment: medicalData.nextAppointment,
+      nextAppointment: medicalData.nextAppointment ? new Date(medicalData.nextAppointment).toISOString() : undefined,
       vaccinations: medicalData.vaccinations,
-      weight: medicalData.weight,
-      temperature: medicalData.temperature,
+      weight: medicalData.weight ? parseFloat(medicalData.weight) : undefined,
+      temperature: medicalData.temperature ? parseFloat(medicalData.temperature) : undefined,
+      medicationsUsed: medicalData.medicationsUsed || [],
     };
     
     console.log('📝 Guardando registro para appointment:', selectedAppointment.id);
+    console.log('💊 Medicamentos usados:', medicalData.medicationsUsed);
 
-    const success = await addMedicalRecord(recordData, token);
+    const result = await addMedicalRecord(recordData, token);
     
-    if (success) {
+    if (result.message) {
+      // Mostrar resumen de medicamentos usados
+      if (result.data?.medicationsUsed && result.data.medicationsUsed.length > 0) {
+        console.log('✅ Medicamentos descontados del stock:');
+        result.data.medicationsUsed.forEach(med => {
+          console.log(`  - ${med.name}: ${med.quantity} unidades, stock restante: ${med.remainingStock}`);
+        });
+      }
+      
       // Actualizar estado del turno
       setAppointments(prev => 
         prev.map(apt => 

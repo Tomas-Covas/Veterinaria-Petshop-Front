@@ -110,19 +110,16 @@ export default function ChatPage() {
             );
             
             if (unreadMessages.length > 0) {
-                // Marcar cada mensaje como leído
-                unreadMessages.forEach(async (msg: Message) => {
-                    try {
-                        await markAsRead(msg.id);
-                    } catch (error) {
-                        console.error('Error al marcar mensaje como leído:', error);
-                    }
-                });
-                
-                // Actualizar el contador de no leídos inmediatamente
-                setTimeout(() => {
-                    refreshUnreadCount();
-                }, 500);
+                // Marcar la conversación completa como leída (no cada mensaje individual)
+                try {
+                    await markAsRead(conversationId);
+                    // Actualizar el contador de no leídos inmediatamente
+                    setTimeout(() => {
+                        refreshUnreadCount();
+                    }, 500);
+                } catch (error) {
+                    console.error('Error al marcar conversación como leída:', error);
+                }
             }
             
             // Identificar al otro usuario
@@ -153,9 +150,9 @@ export default function ChatPage() {
             await sendMessage(conversationId, newMessage);
             setNewMessage("");
             await loadMessages();
-            toast.success("Mensaje enviado");
+            toast.success("✅ Mensaje enviado");
         } catch (error) {
-            toast.error("Error al enviar mensaje");
+            toast.error("❌ Error al enviar mensaje");
         } finally {
             setSending(false);
         }

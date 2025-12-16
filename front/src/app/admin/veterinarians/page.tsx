@@ -10,6 +10,7 @@ import {
   ICreateVeterinarian,
 } from "@/src/services/veterinarian.admin.services";
 import { IVeterinarian } from "@/src/types";
+import { toast } from "react-toastify";
 
 export default function VeterinarianManagement() {
   const { isLoading, hasAccess } = useRequireRole("admin");
@@ -30,8 +31,20 @@ export default function VeterinarianManagement() {
   const [errors, setErrors] = useState<{
     phone?: string;
     email?: string; 
-    matricula?: string 
+    matricula?: string;
+    name?: string;
+    description?: string;
+    scheduleStart?: string;
+    scheduleEnd?: string;
 }>({});
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState<{
+    email: string;
+    password: string;
+    name: string;
+  } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [vetToDelete, setVetToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [scheduleStart, setScheduleStart] = useState("");
   const [scheduleEnd, setScheduleEnd] = useState("");
@@ -68,19 +81,37 @@ export default function VeterinarianManagement() {
   const validateForm = () => {
     const errors: any = {};
 
-    if (!emailRegex.test(formData.email)) {
+    if (!formData.name || formData.name.trim().length < 3) {
+      errors.name = "El nombre debe tener al menos 3 caracteres";
+    }
+
+    if (!formData.email || !emailRegex.test(formData.email)) {
       errors.email = "Ingresá un email válido";
     }
 
-    /*     if (!matriculaRegex.test(formData.matricula)) {
-          setErrors((prev) => ({ ...prev, matricula: "La matrícula debe tener entre 3 y 6 números" }));
-        } else {
-          setErrors((prev) => ({ ...prev, matricula: undefined }));
-        } */
+    if (!formData.matricula || !matriculaRegex.test(formData.matricula)) {
+      errors.matricula = "La matrícula debe tener entre 3 y 6 números";
+    }
 
     const cleanPhone = formData.phone.replace(/\D/g, "");
-    if (!phoneRegex.test(cleanPhone)) {
+    if (!formData.phone || !phoneRegex.test(cleanPhone)) {
       errors.phone = "Ingresá un teléfono válido (10 a 13 dígitos)";
+    }
+
+    if (!formData.description || formData.description.trim().length < 10) {
+      errors.description = "La descripción debe tener al menos 10 caracteres";
+    }
+
+    if (!scheduleStart) {
+      errors.scheduleStart = "Seleccioná un horario de inicio";
+    }
+
+    if (!scheduleEnd) {
+      errors.scheduleEnd = "Seleccioná un horario de fin";
+    }
+
+    if (scheduleStart && scheduleEnd && scheduleStart >= scheduleEnd) {
+      errors.scheduleEnd = "El horario de fin debe ser posterior al de inicio";
     }
 
     return errors;
@@ -112,19 +143,26 @@ export default function VeterinarianManagement() {
       };
       const result = await createVeterinarian(dataToSend, userData?.token || "");
 
-      // Mostrar el mensaje completo del backend (incluye contraseña temporal)
-      if (result.message) {
-        alert(result.message);
-      } else if (result.temporaryPassword || result.password) {
-        const tempPassword = result.temporaryPassword || result.password;
-        alert(
-          `✅ Veterinario creado exitosamente\n\n` +
-          `📧 Email: ${result.email || formData.email}\n` +
-          `🔑 Contraseña temporal: ${tempPassword}\n\n` +
-          `⚠️ IMPORTANTE: Guarda esta contraseña, el veterinario debe cambiarla al iniciar sesión.`
-        );
-      } else {
-        alert("Veterinario creado exitosamente");
+      // Extraer contraseña del message
+      let tempPassword = result.temporaryPassword || 
+                        result.password || 
+                        result.data?.temporaryPassword;
+      
+      // Si no está en los campos, extraerla del message
+      if (!tempPassword && result.message) {
+        const match = result.message.match(/contraseña temporal es:\s*(.+?)(?:\.|$)/i);
+        if (match) {
+          tempPassword = match[1].trim();
+        }
+      }
+
+      if (tempPassword) {
+        setPasswordData({
+          email: formData.email,
+          password: tempPassword,
+          name: formData.name
+        });
+        setShowPasswordModal(true);
       }
 
       setShowCreateForm(false);
@@ -140,23 +178,30 @@ export default function VeterinarianManagement() {
       });
       setScheduleStart("");
       setScheduleEnd("");
+      setErrors({});
       loadVeterinarians();
     } catch (error: any) {
-      alert(error.message || "Error al crear veterinario");
+      toast.error('❌ ' + (error.message || "Error al crear veterinario"));
     }
   };
 
 
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este veterinario?")) return;
+  const handleDelete = (id: string, name: string) => {
+    setVetToDelete({ id, name });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!vetToDelete) return;
 
     try {
-      await deleteVeterinarian(id, userData?.token || "");
-      alert("Veterinario eliminado exitosamente");
+      await deleteVeterinarian(vetToDelete.id, userData?.token || "");
+      setShowDeleteModal(false);
+      setVetToDelete(null);
       loadVeterinarians();
     } catch (error: any) {
-      alert(error.message || "Error al eliminar veterinario");
+      console.error("Error al eliminar:", error);
     }
   };
 
@@ -218,10 +263,25 @@ export default function VeterinarianManagement() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full border-2 border-amber-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({ ...formData, name: value });
+                      
+                      if (value.trim().length < 3 && value.length > 0) {
+                        setErrors((prev) => ({ ...prev, name: "El nombre debe tener al menos 3 caracteres" }));
+                      } else {
+                        setErrors((prev) => ({ ...prev, name: undefined }));
+                      }
+                    }}
+                    className={`w-full border-2 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                      errors.name ? "border-red-500" : "border-amber-300"
+                    }`}
+                    placeholder="Ej: Dr. Juan Pérez"
                     required
                   />
+                  {errors.name && (
+                    <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -279,6 +339,7 @@ export default function VeterinarianManagement() {
                     }}
                     className={`w-full border-2 border-amber-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
                      ${errors.matricula ? "border-red-500" : "border-amber-300"}`}
+                    placeholder="Ej: 12345"
                     required
                   />
                   {errors.matricula && (
@@ -325,8 +386,14 @@ export default function VeterinarianManagement() {
                     </label>
                     <select
                       value={scheduleStart}
-                      onChange={(e) => setScheduleStart(e.target.value)}
-                      className="w-full border-2 border-amber-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setScheduleStart(value);
+                        setErrors((prev) => ({ ...prev, scheduleStart: undefined }));
+                      }}
+                      className={`w-full border-2 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                        errors.scheduleStart ? "border-red-500" : "border-amber-300"
+                      }`}
                       required
                     >
                       <option value="">Seleccionar hora</option>
@@ -338,6 +405,9 @@ export default function VeterinarianManagement() {
                         <option key={time} value={time}>{time}</option>
                       ))}
                     </select>
+                    {errors.scheduleStart && (
+                      <p className="text-red-600 text-sm mt-1">{errors.scheduleStart}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -345,8 +415,19 @@ export default function VeterinarianManagement() {
                     </label>
                     <select
                       value={scheduleEnd}
-                      onChange={(e) => setScheduleEnd(e.target.value)}
-                      className="w-full border-2 border-amber-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setScheduleEnd(value);
+                        
+                        if (scheduleStart && value && scheduleStart >= value) {
+                          setErrors((prev) => ({ ...prev, scheduleEnd: "El horario de fin debe ser posterior al de inicio" }));
+                        } else {
+                          setErrors((prev) => ({ ...prev, scheduleEnd: undefined }));
+                        }
+                      }}
+                      className={`w-full border-2 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                        errors.scheduleEnd ? "border-red-500" : "border-amber-300"
+                      }`}
                       required
                     >
                       <option value="">Seleccionar hora</option>
@@ -358,6 +439,9 @@ export default function VeterinarianManagement() {
                         <option key={time} value={time}>{time}</option>
                       ))}
                     </select>
+                    {errors.scheduleEnd && (
+                      <p className="text-red-600 text-sm mt-1">{errors.scheduleEnd}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -365,6 +449,9 @@ export default function VeterinarianManagement() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Descripción
                 </label>
+                {errors.description && (
+                  <p className="text-red-600 text-sm mb-1">{errors.description}</p>
+                )}
                 <textarea
                   value={formData.description}
                   onChange={(e) =>
@@ -452,7 +539,7 @@ export default function VeterinarianManagement() {
                       <td className="px-4 py-3 text-sm text-gray-600">{vet.phone}</td>
                       <td className="px-4 py-3 text-sm">
                         <button
-                          onClick={() => handleDelete(vet.id)}
+                          onClick={() => handleDelete(vet.id, vet.name)}
                           className="text-red-600 hover:text-red-800 font-semibold"
                         >
                           Eliminar
@@ -466,6 +553,135 @@ export default function VeterinarianManagement() {
           )}
         </div>
       </div>
+
+      {/* Modal de Contraseña Temporal */}
+      {showPasswordModal && passwordData && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform animate-fadeIn">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">¡Veterinario Creado!</h3>
+              <p className="text-gray-600 mt-2">Credenciales generadas exitosamente</p>
+            </div>
+
+            {/* Info */}
+            <div className="space-y-4 mb-6">
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="font-semibold text-amber-900 mb-1">Importante</p>
+                    <p className="text-sm text-amber-800">Guarda esta contraseña. El veterinario debe cambiarla en su primer inicio de sesión.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Nombre</p>
+                  <p className="text-gray-900 font-semibold">{passwordData.name}</p>
+                </div>
+                
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Email (enviado por correo)</p>
+                  <p className="text-gray-900 font-semibold flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {passwordData.email}
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Contraseña Temporal</p>
+                  <div className="bg-white border-2 border-amber-300 rounded-lg p-3 font-mono text-lg text-center text-gray-900 font-bold">
+                    {passwordData.password}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800 flex items-start gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span>Se ha enviado un email a <strong>{passwordData.email}</strong> con las credenciales de acceso.</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Botón */}
+            <button
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordData(null);
+              }}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteModal && vetToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform animate-fadeIn">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">¿Eliminar Veterinario?</h3>
+              <p className="text-gray-600 mt-2">Esta acción no se puede deshacer</p>
+            </div>
+
+            {/* Info del veterinario */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-600 mb-1">Veterinario a eliminar:</p>
+              <p className="text-lg font-semibold text-gray-900">{vetToDelete.name}</p>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+              <p className="text-sm text-red-800 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Al eliminar este veterinario se perderán todos sus datos, turnos y registros asociados.</span>
+              </p>
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setVetToDelete(null);
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-md"
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

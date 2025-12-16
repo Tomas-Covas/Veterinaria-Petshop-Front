@@ -99,7 +99,7 @@ export default function VetConversationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50" style={{ paddingTop: '140px' }}>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando chat...</p>
@@ -109,7 +109,7 @@ export default function VetConversationPage() {
     }
 
     return (
-        <div className="min-h-screen pt-20 bg-gradient-to-br from-purple-50 to-violet-50">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-violet-50" style={{ paddingTop: '140px' }}>
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
                     {/* Header */}

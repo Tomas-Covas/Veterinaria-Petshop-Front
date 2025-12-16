@@ -60,6 +60,7 @@ export interface AllRequestsResponse {
   pending: number;
   approved: number;
   rejected: number;
+  delivered: number;
   requests: MedicationRequest[];
 }
 
@@ -77,8 +78,9 @@ export interface UpdateStatusBody {
  */
 export async function getMedicationsCatalog(): Promise<MedicationCatalogResponse> {
   try {
+    // Nuevo endpoint según documentación del backend
     const response = await fetch(
-      `${APIURL}/veterinarians/controlled-medications/catalog`,
+      `${APIURL}/general-medications/controlled`,
       {
         method: 'GET',
         headers: {
@@ -89,15 +91,24 @@ export async function getMedicationsCatalog(): Promise<MedicationCatalogResponse
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al obtener catálogo');
+      console.error('❌ Error al obtener medicamentos controlados:', response.status);
+      // Si falla, retornar array vacío en lugar de lanzar error
+      return { total: 0, medications: [] };
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ Medicamentos controlados cargados:', data);
+    
+    // Normalizar respuesta: puede ser array directo o objeto con data
+    if (Array.isArray(data)) {
+      return { total: data.length, medications: data };
+    }
+    
+    return data;
   } catch (error: any) {
-    console.error('❌ Error al obtener catálogo:', error);
-    toast.error('Error al cargar catálogo de medicamentos');
-    throw error;
+    console.error('❌ Error al obtener catálogo de controlados:', error);
+    // Retornar array vacío en lugar de lanzar error
+    return { total: 0, medications: [] };
   }
 }
 

@@ -142,12 +142,17 @@ export const markAsRead = async (conversationId: string) => {
         });
 
         if (!response.ok) {
-            throw new Error('Error al marcar conversación como leída');
+            // Si es 404, el endpoint no existe en el backend - no mostrar warning
+            if (response.status === 404) {
+                return null;
+            }
+            console.warn('No se pudo marcar como leída la conversación:', conversationId);
+            return null;
         }
 
         return await response.json();
     } catch (error: any) {
-        console.error('Error en markAsRead:', error);
-        throw error;
+        // Error de red - silencioso
+        return null;
     }
 };

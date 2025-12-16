@@ -15,7 +15,7 @@ export default function AdminMedicationRequests() {
   const [requests, setRequests] = useState<MedicationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('todos');
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, delivered: 0 });
   const [selectedRequest, setSelectedRequest] = useState<MedicationRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -37,11 +37,16 @@ export default function AdminMedicationRequests() {
       
       console.log('📋 Solicitudes procesadas:', requestsWithIndex);
       setRequests(requestsWithIndex);
+      
+      // Calcular delivered manualmente si el backend no lo envía
+      const deliveredCount = requestsWithIndex.filter((req: MedicationRequest) => req.estado === 'entregado').length;
+      
       setStats({
         total: data.total,
         pending: data.pending,
         approved: data.approved,
         rejected: data.rejected,
+        delivered: data.delivered || deliveredCount,
       });
     } catch (error) {
       console.error('Error cargando solicitudes:', error);
@@ -88,7 +93,19 @@ export default function AdminMedicationRequests() {
     console.log('📤 Enviando actualización:', updateData);
 
     try {
-      await updateRequestStatus(updateData);
+      const result = await updateRequestStatus(updateData);
+      console.log('✅ Respuesta del backend:', result);
+      
+      // Si se marcó como entregado, mostrar mensaje específico
+      if (newStatus === 'entregado') {
+        const mensaje = result.message || '';
+        if (mensaje.toLowerCase().includes('stock')) {
+          console.log('✅ El backend confirmó actualización de stock:', mensaje);
+        } else {
+          console.warn('⚠️ El backend no mencionó actualización de stock. Respuesta:', result);
+        }
+      }
+      
       handleCloseModal();
       loadRequests();
     } catch (error) {
@@ -112,7 +129,7 @@ export default function AdminMedicationRequests() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
           <div className="flex justify-between items-center">
             <div>
@@ -140,6 +157,16 @@ export default function AdminMedicationRequests() {
               <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
             </div>
             <div className="text-4xl">✅</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-600">Entregadas (Stock Repuesto)</p>
+              <p className="text-3xl font-bold text-purple-600">{stats.delivered}</p>
+            </div>
+            <div className="text-4xl">📦</div>
           </div>
         </div>
 
@@ -186,6 +213,16 @@ export default function AdminMedicationRequests() {
             }`}
           >
             Aprobados ({stats.approved})
+          </button>
+          <button
+            onClick={() => setFilter('entregado')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              filter === 'entregado'
+                ? 'bg-purple-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Entregados ({stats.delivered})
           </button>
           <button
             onClick={() => setFilter('rechazado')}
@@ -273,13 +310,20 @@ export default function AdminMedicationRequests() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(
-                          request.estado
-                        )}`}
-                      >
-                        {request.estado.toUpperCase()}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(
+                            request.estado
+                          )}`}
+                        >
+                          {request.estado.toUpperCase()}
+                        </span>
+                        {request.estado === 'entregado' && (
+                          <span className="text-xs text-purple-600 font-medium flex items-center gap-1">
+                            📦 Stock repuesto
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(request.fechaSolicitud)}
@@ -322,17 +366,19 @@ interface ReviewModalProps {
 function ReviewModal({ request, onClose, onUpdate }: ReviewModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<'pendiente' | 'aprobado' | 'rechazado' | 'entregado' | 'cancelado'>(request.estado);
   const [comentario, setComentario] = useState(request.comentarioAdmin || '');
+  const [error, setError] = useState('');
 
   const handleSubmit = () => {
     if (selectedStatus !== request.estado && !comentario.trim()) {
-      alert('Por favor, agrega un comentario explicando tu decisión');
+      setError('Por favor, agrega un comentario explicando tu decisión');
       return;
     }
+    setError('');
     onUpdate(selectedStatus, comentario);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-lg">
           <h2 className="text-2xl font-bold">🔍 Revisar Solicitud</h2>
@@ -445,14 +491,27 @@ function ReviewModal({ request, onClose, onUpdate }: ReviewModalProps) {
             </label>
             <textarea
               value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
+              onChange={(e) => {
+                setComentario(e.target.value);
+                if (error) setError('');
+              }}
               rows={4}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200"
+              className={`w-full p-3 border-2 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 ${
+                error ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Explica tu decisión o proporciona información adicional..."
             />
-            <p className="text-xs text-gray-500 mt-1">
-              El veterinario recibirá un email con tu respuesta
-            </p>
+            {error && (
+              <p className="text-sm text-red-600 mt-2 flex items-center gap-1">
+                <span>⚠️</span>
+                {error}
+              </p>
+            )}
+            {!error && (
+              <p className="text-xs text-gray-500 mt-1">
+                El veterinario recibirá un email con tu respuesta
+              </p>
+            )}
           </div>
 
           {/* Botones */}

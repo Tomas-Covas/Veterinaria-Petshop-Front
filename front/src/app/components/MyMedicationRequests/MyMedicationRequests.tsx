@@ -22,6 +22,10 @@ export default function MyMedicationRequests({
   const [requests, setRequests] = useState<MedicationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('todos');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<number | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<MedicationRequest | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -40,10 +44,17 @@ export default function MyMedicationRequests({
   };
 
   const handleDelete = async (requestIndex: number) => {
-    if (!confirm('¿Estás seguro de eliminar esta solicitud?')) return;
+    setRequestToDelete(requestIndex);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (requestToDelete === null) return;
 
     try {
-      await deleteMyMedicationRequest(veterinarianId, requestIndex);
+      await deleteMyMedicationRequest(veterinarianId, requestToDelete);
+      setShowDeleteModal(false);
+      setRequestToDelete(null);
       loadRequests();
     } catch (error) {
       console.error('Error eliminando solicitud:', error);
@@ -197,14 +208,8 @@ export default function MyMedicationRequests({
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
-                          alert(
-                            `Medicamento: ${request.nombre}\n` +
-                            `Cantidad: ${request.cantidad}\n` +
-                            `Urgencia: ${request.urgencia}\n` +
-                            `Estado: ${request.estado}\n` +
-                            `Justificación: ${request.justificacion || 'N/A'}\n` +
-                            `Comentario Admin: ${request.comentarioAdmin || 'N/A'}`
-                          );
+                          setSelectedRequest(request);
+                          setShowDetailsModal(true);
                         }}
                         className="text-blue-600 hover:text-blue-900"
                       >
@@ -251,6 +256,105 @@ export default function MyMedicationRequests({
                 </p>
               </div>
             ))}
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <span className="text-2xl">🗑️</span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                ¿Eliminar solicitud?
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar esta solicitud?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setRequestToDelete(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de detalles */}
+      {showDetailsModal && selectedRequest && (
+        <div className="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/50 to-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">
+                📋 Detalles de la Solicitud
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedRequest(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <span className="text-sm font-semibold text-gray-600">Medicamento:</span>
+                <p className="text-gray-900">{selectedRequest.nombre}</p>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-600">Cantidad:</span>
+                <p className="text-gray-900">{selectedRequest.cantidad}</p>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-600">Urgencia:</span>
+                <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${getUrgencyColor(selectedRequest.urgencia)}`}>
+                  {selectedRequest.urgencia.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-600">Estado:</span>
+                <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedRequest.estado)}`}>
+                  {selectedRequest.estado.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-600">Justificación:</span>
+                <p className="text-gray-900">{selectedRequest.justificacion || 'N/A'}</p>
+              </div>
+              {selectedRequest.comentarioAdmin && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <span className="text-sm font-semibold text-blue-900">Comentario del Admin:</span>
+                  <p className="text-blue-800 mt-1">{selectedRequest.comentarioAdmin}</p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setShowDetailsModal(false);
+                setSelectedRequest(null);
+              }}
+              className="w-full mt-6 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       )}
     </div>

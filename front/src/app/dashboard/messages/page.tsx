@@ -48,7 +48,7 @@ export default function VetMessagesPage() {
     // Si no hay usuario después de cargar
     if (!userData?.user?.id) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
+            <div className="min-h-screen pt-32 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
                     <p className="text-gray-600">Debes iniciar sesión para ver tus mensajes</p>
                     <button
@@ -64,7 +64,7 @@ export default function VetMessagesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
+            <div className="min-h-screen pt-32 flex items-center justify-center bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Cargando mensajes...</p>
@@ -78,7 +78,7 @@ export default function VetMessagesPage() {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12 bg-gradient-to-br from-purple-50 to-violet-50">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-violet-50" style={{ paddingTop: '140px', paddingBottom: '48px' }}>
             <div className="max-w-4xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     {/* Header */}
