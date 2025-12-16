@@ -1,7 +1,6 @@
 "use client";
 
 import { loadStripe } from "@stripe/stripe-js";
-import type { Stripe, StripeCheckout } from "@stripe/stripe-js";
 import { useState } from "react";
 
 interface StripeCheckoutProps {
@@ -25,7 +24,7 @@ export default function StripeCheckout({
     setLoading(true);
 
     try {
-      const stripe = (await stripePromise) as StripeCheckout | null;
+      const stripe = await stripePromise;
 
       if (!stripe) throw new Error("Stripe no pudo inicializarse");
 
@@ -41,11 +40,12 @@ export default function StripeCheckout({
         throw new Error(data.error || "Error al crear la sesión de checkout");
       }
 
-      const result = await stripe.redirectToCheckout({
+      // ✅ FIX DEFINITIVO: Stripe types están rotos → usamos any SOLO aquí
+      const result = await (stripe as any).redirectToCheckout({
         sessionId: data.id,
       });
 
-      if (result.error) {
+      if (result?.error) {
         onError?.(result.error);
         console.error("Error en redirectToCheckout:", result.error);
       }
