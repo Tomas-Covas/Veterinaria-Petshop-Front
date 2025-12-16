@@ -9,7 +9,7 @@ export interface Pet {
   species: string
   breed: string
   age: number
-  image:string
+  image:string | ''
   appointments: Appointment[]
 }
 

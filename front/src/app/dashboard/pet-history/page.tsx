@@ -502,9 +502,18 @@ export default function PetMedicalHistoryPage() {
                                 {appointment.service || 'Consulta veterinaria'}
                               </h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                Veterinario: {typeof appointment.veterinarian === 'string'
-                                  ? appointment.veterinarian
-                                  : (appointment.veterinarian?.name || 'No especificado')}
+                                Veterinario:
+                                {
+                                  typeof appointment.veterinarian === "string"
+                                    ? appointment.veterinarian
+                                    : (
+                                      appointment.veterinarian &&
+                                        typeof appointment.veterinarian === "object" &&
+                                        "name" in appointment.veterinarian
+                                        ? (appointment.veterinarian as any).name
+                                        : "No especificado"
+                                    )
+                                }
                               </p>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
