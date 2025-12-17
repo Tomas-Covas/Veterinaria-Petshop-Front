@@ -347,10 +347,10 @@ const getMockPets = (query: string): Promise<Pet[]> => {
 
       // Filtrar resultados según la query
       const filtered = mockPets.filter(pet => 
-        pet.name.toLowerCase().includes(query.toLowerCase()) ||
-        pet.id.toLowerCase().includes(query.toLowerCase()) ||
-        pet.species.toLowerCase().includes(query.toLowerCase()) ||
-        pet.breed.toLowerCase().includes(query.toLowerCase())
+        (pet.name || '').toLowerCase().includes(query.toLowerCase()) ||
+        (pet.id || '').toLowerCase().includes(query.toLowerCase()) ||
+        (pet.species || '').toLowerCase().includes(query.toLowerCase()) ||
+        (pet.breed || '').toLowerCase().includes(query.toLowerCase())
       );
 
       resolve(filtered);

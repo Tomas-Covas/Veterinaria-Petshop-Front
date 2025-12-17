@@ -12,7 +12,7 @@ export const useRole = () => {
   const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!userData?.user?.role) return false;
 
-    const userRole = userData.user.role.toLowerCase() as UserRole;
+    const userRole = (userData.user.role  || '').toLowerCase() as UserRole;
     
     if (Array.isArray(requiredRole)) {
       return requiredRole.includes(userRole);
