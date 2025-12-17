@@ -1,9 +1,11 @@
 import Link from "next/link";
+import MapDisplay from "../map/MapDisplay";
+
 
 export default function Footer() {
   return (
     <footer className="bg-linear-to-b from-gray-50 to-gray-200 mt-auto py-8 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Columna 1: Información de la tienda */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Huellitas Pet Shop</h3>
@@ -44,6 +46,15 @@ export default function Footer() {
             Email: info@huellitas.com </p>
             <p className="text-gray-600 text-sm mt-3">Tel: (123) 456-7890
           </p>
+        </div>
+
+       
+        {/* Columna 3: mapa */}     
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Nuestra ubicación</h3>
+          <div className="w-full max-w-xs rounded-lg overflow-hidden shadow-md">
+            <MapDisplay />
+          </div>
         </div>
       </div>
 

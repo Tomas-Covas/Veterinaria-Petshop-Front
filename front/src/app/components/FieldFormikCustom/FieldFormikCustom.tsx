@@ -10,19 +10,23 @@ interface FieldCustomProps {
 
 const FieldFormikCustom: React.FC<FieldCustomProps> = ({ label, nameField, type, placeholder }) => {
   return (
-    <div className='flex flex-col items-center mx-3 text-black'>
+    <div className='flex flex-col items-center text-black'>
 
       {/* Placeholder e Imput */}
-      <div className='flex md:flex-row flex-col md:w-full mb-1 mt-2 justify-between '>
-        <label className='font-bold mr-3 flex self-start'>{label}</label>
+      <div className='flex flex-col w-full mt-2'>
+
+        <label className='font-bold ml-2 flex self-start
+        bg-white rounded-2xl p-1 backdrop-blur-sm
+        '>{label}</label>
 
         <Field
-          className="border-2 rounded-2xl p-2 w-80"
+          className="border-2 focus:ring-2 focus:ring-orange-400
+           focus:border-orange-400 rounded-2xl p-2 bg-white
+           "
           name={nameField}
           type={type}
           placeholder={placeholder}
         />
-
       </div>
 
       {/* Error */}

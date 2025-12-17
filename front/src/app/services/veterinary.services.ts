@@ -1,13 +1,15 @@
 import { IVeterinary } from "@/src/types";
-import ana from "../../assets/ana.jpg";
 import carlos from "../../assets/carlos.jpg"
+/* import ana from "../../assets/ana.jpg";
 import juan from "../../assets/juan.jpg"
 import laura from "../../assets/laura.jpg"
 import maria from "../../assets/maria.jpg"
-import roberto from "../../assets/roberto.jpg"
+import roberto from "../../assets/roberto.jpg" */
 
-// Mock de veterinarios para desarrollo
-const MOCK_VETERINARIANS: IVeterinary[] = [
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Mock de veterinarios para desarrollo (fallback)
+/* const MOCK_VETERINARIANS: IVeterinary[] = [
     {
         id: 1,
         name: "Dr. Carlos Mendoza",
@@ -62,20 +64,109 @@ const MOCK_VETERINARIANS: IVeterinary[] = [
         experience: 7,
         available: true
     }
-];
+]; */
+
+const getDefaultSpecialty = () => {
+    const specialties = [
+        'Medicina General',
+        'Cirugía Veterinaria',
+        'Dermatología',
+        'Odontología Veterinaria',
+        'Cardiología',
+        'Emergencias'
+    ];
+    return specialties[Math.floor(Math.random() * specialties.length)];
+};
+
+const getDefaultExperience = () => {
+    return Math.floor(Math.random() * 10) + 5; // Entre 5 y 14 años
+};
 
 export const getAllVeterinarians = async (): Promise<IVeterinary[]> => {
-    console.log('🔧 Usando veterinarios mockeados para desarrollo');
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(MOCK_VETERINARIANS), 300);
-    });
+    try {
+        const response = await fetch(`${API_URL}/veterinarians`, {
+            cache: 'no-store',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('📦 Respuesta completa del backend:', data);
+            const vets = Array.isArray(data) ? data : data.data || [];
+            console.log('👥 Primer veterinario (para ver estructura):', vets[0]);
+            
+            // Filtrar solo veterinarios activos
+            return vets.filter((vet: any) => vet.isActive !== false).map((vet: any) => {
+                console.log(`🔍 Mapeando veterinario: ${vet.name}, profileImageUrl: ${vet.profileImageUrl}`);
+                return {
+                    id: vet.id,
+                    name: vet.name,
+                    specialty: vet.specialty || getDefaultSpecialty(),
+                    description: vet.description || `Veterinario profesional especializado en el cuidado de tu mascota`,
+                    image: vet.profileImageUrl || vet.image || vet.imgUrl || vet.imageUrl || vet.photo || carlos,
+                    experience: vet.experience || getDefaultExperience(),
+                    available: vet.isActive !== false,
+                    email: vet.email,
+                    phone: vet.phone,
+                    matricula: vet.matricula,
+                };
+            });
+        }
+        
+        console.log('⚠️ No se pudieron cargar veterinarios del backend, usando mock');
+        return []
+    } catch (error) {
+        console.error('Error al cargar veterinarios:', error);
+        console.log('⚠️ Usando veterinarios mockeados como fallback');
+        return []
+    }
 };
 
 export const getVeterinaryById = async (id: string): Promise<IVeterinary> => {
-    const allVeterinarians = await getAllVeterinarians();
-    const veterinary = allVeterinarians.find((vet) => vet.id === Number(id));
-    if (!veterinary) {
-        throw new Error('Veterinario no encontrado');
+    try {
+        const response = await fetch(`${API_URL}/veterinarians/${id}`, {
+            cache: 'no-store',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const vet = data.data || data;
+            console.log('📦 Veterinario individual del backend:', vet);
+            
+            return {
+                id: vet.id,
+                name: vet.name,
+                specialty: vet.specialty || getDefaultSpecialty(),
+                description: vet.description || `Veterinario profesional especializado en el cuidado de tu mascota`,
+                image: vet.profileImageUrl || vet.image || vet.imgUrl || vet.imageUrl || vet.photo || carlos,
+                experience: vet.experience || getDefaultExperience(),
+                available: vet.isActive !== false,
+                email: vet.email,
+                phone: vet.phone,
+                matricula: vet.matricula,
+            };
+        }
+        
+        throw new Error('Veterinario no encontrado en el backend');
+    } catch (error) {
+        console.error('Error al cargar veterinario por ID:', error);
+        // Fallback al mock
+        /* const allVeterinarians = MOCK_VETERINARIANS; */
+        /* const veterinary = allVeterinarians.find((vet) => vet.id === Number(id) || vet.id === id);
+        if (!veterinary) {
+            throw new Error('Veterinario no encontrado');
+        }
+        return veterinary; */
+        return {
+      id,
+      name: "Veterinario desconocido",
+      specialty: getDefaultSpecialty(),
+      description: "No se pudo cargar la información del veterinario",
+      image: carlos,
+      experience: getDefaultExperience(),
+      available: false,
+      email: "",
+      phone: "",
+      matricula: "",
+    };
     }
-    return veterinary;
 };

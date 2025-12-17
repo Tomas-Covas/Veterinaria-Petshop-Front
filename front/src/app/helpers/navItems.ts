@@ -17,15 +17,5 @@ export const navItems = [
         nameToRender:"Nuestro equipo",
         route: PATHROUTES.NOSOTROS
      },
-    {
-        id:4,
-        nameToRender:"Mi perfil",
-        route: PATHROUTES.PERFIL
 
-    },
-    {
-        id:5,
-        nameToRender:"Ingresar",
-        route: PATHROUTES.LOGIN
-    }
     ];

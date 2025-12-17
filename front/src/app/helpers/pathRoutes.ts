@@ -4,7 +4,6 @@ export enum PATHROUTES {
   NOSOTROS = "/ourTeam",
   HISTORIA = "/ourHistory" ,
   PERFIL = "/dashboard" ,
-  LOGIN = "/auth/login",
   CART="/cart",
 }
   

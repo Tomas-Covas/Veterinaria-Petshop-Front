@@ -1,39 +1,51 @@
-import VeterinaryCard from "../components/VeterinaryCard/VeterinaryCard";
-import { getAllVeterinarians } from "../services/veterinary.services";
-import Image from "next/image";
-import gatomedico from "../../assets/gatomedico.png"
+import OurTeamClient from "./OurTeamClient";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default async function OurTeam() {
-  const vets = await getAllVeterinarians();
-  
-  return (
-    <div className="flex flex-col min-h-screen items-center bg-orange-200 pt-20">
-      
-      {/* Banner con imagen y título */}
-      <div className="w-full bg-amber-100 shadow-lg mb-12 md:h-64 overflow-hidden">
-        <div className="w-full h-full flex md:items-center md:flex-row md:justify-between
-         flex-col items-center justify-center">
-          <Image
-            src={gatomedico}
-            alt='banner gato'
-            height={300}
-            width={300}
-            className="object-cover"
-          />
-          <h1 className="text-5xl md:text-6xl font-bold text-amber-500 md:pr-12 md:mr-7 text-shadow-black ">
-            Nuestro equipo
-          </h1>
-        </div>
-      </div>
+  let vets = [];
 
-      <div className="w-full max-w-7xl px-6 pb-12">
-        {/* Grid de veterinarios */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {vets.map((vet) => (
-            <VeterinaryCard key={vet.id} veterinary={vet} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  try {
+    // Obtener veterinarios del backend
+    const response = await fetch(`${API_URL}/veterinarians`, {
+      cache: 'no-store',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('📦 [SERVER] Veterinarios del backend:', data);
+      vets = Array.isArray(data) ? data : data.data || [];
+      console.log('👥 [SERVER] Primer veterinario:', vets[0]);
+    } else {
+      console.log('No se pudieron cargar veterinarios del backend');
+    }
+  } catch (error) {
+    console.error('Error al cargar veterinarios:', error);
+  }
+
+  // Convertir a formato IVeterinarian y filtrar solo activos
+  const formattedVets = vets
+    .filter((vet: any) => vet.isActive !== false) // Mostrar solo veterinarios activos
+    .map((vet: any) => {
+      console.log(`🔍 [SERVER] Mapeando: ${vet.name}, profileImageUrl: ${vet.profileImageUrl}`);
+      return {
+        id: vet.id,
+        name: vet.name,
+        email: vet.email || '',
+        matricula: vet.matricula || '',
+        description: vet.description || 'Veterinario profesional',
+        phone: vet.phone || '',
+        time: vet.time || new Date().toISOString(),
+        isActive: vet.isActive !== undefined ? vet.isActive : true,
+        specialty: vet.specialty || 'Veterinaria General',
+        experience: vet.experience || 5,
+        image: vet.profileImageUrl || vet.image || undefined,
+        available: vet.isActive !== false,
+      };
+    });
+
+  console.log('✅ [SERVER] Veterinarios formateados:', formattedVets.length);
+  console.log('🖼️ [SERVER] Primer vet con imagen:', formattedVets.find((v: any) => v.image));
+
+  return <OurTeamClient initialVets={formattedVets} />;
 }

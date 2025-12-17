@@ -10,15 +10,14 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const passwordSize = 8
 const passwordSizeRegex= "La contraseña debe tener al menos 8 caracteres"
 
-/* TODO: fijarse si sigue funcionando correctamente */
+
 const mailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/
 
 export const validateLoginForm = Yup.object({
         email: Yup.string()
-        /* .matches(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) */
         .matches(mailRegex, invalidEmail)
         .required(required),
-        password: Yup.string().min(passwordSize, passwordSizeRegex).matches(passwordRegex,lenghtPassword).required(required)
+        password: Yup.string().required(required)
 })
 
 export const validateSchemaRegister = Yup.object({

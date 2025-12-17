@@ -1,6 +1,4 @@
-/* import React from 'react' */
 import LoginView from '../UI/LoginView'
-/* TODO: chequear el comentario de React a ver si afecta o no a su funcionamiento */
 
 function Login() {
   return (

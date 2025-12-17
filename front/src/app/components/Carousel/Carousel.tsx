@@ -40,6 +40,7 @@ export default function Carousel() {
                             fill
                             sizes="100vw"
                             className="object-cover"
+                            loading="eager"
                         />
                     </div>
                 </div>

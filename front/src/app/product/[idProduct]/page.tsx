@@ -3,29 +3,29 @@ import AddCartButton from '../../components/AddCartButton/AddCartButton';
 import ProductGallery from '../../components/ProductGallery/ProductGallery';
 
 interface ProductDetailProps {
-    params: {
-        idProduct: string;
-            };
+  params: {
+    idProduct: string;
+  };
 }
 
 
-export default 
-async function ProductDetailPage({params}:ProductDetailProps) {
-  const{idProduct}= await params;
+export default
+  async function ProductDetailPage({ params }: ProductDetailProps) {
+  const { idProduct } = await params;
   const product = await getProductById(idProduct);
-  
+
   // Construir array de imágenes: si tiene galería usar esa, sino usar solo la imagen principal
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
+  const productImages = product.images && product.images.length > 0
+    ? product.images
     : [product.image];
-  
+
   return (
-    <div className="bg-white pt-20">
+    <div className="bg-orange-200  pt-20">
       <div className="pt-6 pb-16">
-       
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
           <div className="md:grid md:grid-cols-3 md:gap-x-8">
-            
+
             {/* Galería de imágenes - Izquierda (2 columnas) */}
             <div className="md:col-span-2">
               <ProductGallery images={productImages} productName={product.name} />
@@ -56,7 +56,7 @@ async function ProductDetailPage({params}:ProductDetailProps) {
                 <p className="text-3xl font-bold tracking-tight text-gray-900 mb-6">
                   ${product.price}
                 </p>
-                <AddCartButton product={product}/>
+                <AddCartButton product={product} />
               </div>
             </div>
 
