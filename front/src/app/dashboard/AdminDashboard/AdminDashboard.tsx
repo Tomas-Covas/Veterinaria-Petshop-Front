@@ -207,7 +207,7 @@ export default function AdminDashboard() {
                     activeTab === 'analytics' ? 'bg-amber-100 text-amber-600 font-semibold' : 'text-gray-700'
                   }`}
                 >
-                  📊 Analytics
+                  📊 Analisis
                 </button>
                 <button
                   onClick={() => { setActiveTab('appointments'); setIsDropdownOpen(false); }}

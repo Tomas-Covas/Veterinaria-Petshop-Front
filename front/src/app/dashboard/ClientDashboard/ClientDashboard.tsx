@@ -209,7 +209,8 @@ export default function ClientDashboard({ refreshOrders }: ClientDashboardProps)
                   <div className="px-8 pb-8">
                     {/* Foto de perfil */}
                     <div className="relative  mb-6">
-                      <div className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold text-gray-600 shadow-lg">
+                      <div className="w-32 h-32 rounded-full flex items-center justify-center 
+                      mt-3 text-4xl font-bold text-gray-600 shadow-lg">
                         {userData.user.profileImageUrl ? (
                           <Image
                             src={userData.user.profileImageUrl}
