@@ -69,7 +69,7 @@ export default function StoreClient({ initialProducts, categories }: StoreClient
     if (categoryNameFromUrl) {
       const normalized = categoryNameFromUrl.toLowerCase();
       const found = categories.find(
-        c => c.name.toLowerCase() === normalized
+        c => (c.name || '').toLowerCase() === normalized
       );
       if (found) {
         setSelectedCategory(found.id);
