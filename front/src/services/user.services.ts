@@ -117,7 +117,7 @@ export async function handleAuthCallback() {
         throw new Error("Token no encontrado en la URL");
       }
 
-      // Enviar el token al endpoint de sesión
+      // Enviar el token al endpoint de sesión que cagada
       const response = await fetch(`${APIURL}/auth/session`, {
         method: "POST",
         headers: {
