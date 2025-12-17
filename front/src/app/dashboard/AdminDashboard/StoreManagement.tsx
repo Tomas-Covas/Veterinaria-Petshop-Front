@@ -42,8 +42,8 @@ export default function StoreManagement({ products, loading, onProductsChange, u
   });
 
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Categorizar productos por nivel de stock

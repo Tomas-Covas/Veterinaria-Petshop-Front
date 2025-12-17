@@ -150,6 +150,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             localStorage.removeItem('requirePasswordChange');
+            localStorage.clear();
+
             document.cookie = "role=; path=/; max-age=0";
             document.cookie = "requirePasswordChange=; path=/; max-age=0";
             window.location.href = "/"
