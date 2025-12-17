@@ -167,7 +167,7 @@ export default function StoreManagement({ products, loading, onProductsChange, u
 
     try {
       const response = await fetch(`${API_URL}/products/${productId}`, {
-        method: 'DELETE',
+        method: 'PUT',
         credentials: 'include',
         headers: {
           ...(userToken && { Authorization: `Bearer ${userToken}` }),
