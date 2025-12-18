@@ -16,7 +16,7 @@ function HomeCategories() {
 
   const defaultImages = [category1, category2, category3, category4, category5];
 
-  const [cookies, setCookie, removeCookie] = useCookies(["access_token"]);
+  const [cookies] = useCookies(["access_token"]);
   const cookieValue = cookies.access_token;
 
   useEffect(() => {
