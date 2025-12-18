@@ -18,12 +18,12 @@ export default function ChangePasswordPage() {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
+      toast.warning("Las contraseñas no coinciden");
       return;
     }
 
     if (!newPassword || newPassword.trim() === "") {
-      alert("La contraseña no puede estar vacía");
+      toast.warning("La contraseña no puede estar vacía");
       return;
     }
 
@@ -68,7 +68,7 @@ export default function ChangePasswordPage() {
       // Redirigir al dashboard
       router.push("/dashboard");
     } catch (error: any) {
-      alert(error.message || "Error al cambiar contraseña");
+      toast.error(error.message || "Error al cambiar contraseña");
     } finally {
       setIsSubmitting(false);
     }

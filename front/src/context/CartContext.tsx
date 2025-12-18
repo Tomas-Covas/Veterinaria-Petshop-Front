@@ -204,7 +204,7 @@ export const CartProvider: React.FC<CartProvider> = ({ children }) => {
                 await loadCartFromBackend();
             } catch (error) {
                 console.error('Error al actualizar cantidad:', error);
-                alert("Error al actualizar la cantidad del producto");
+                toast.error("Error al actualizar la cantidad del producto");
             }
         } else {
             // Si no hay usuario, actualizar solo el estado local

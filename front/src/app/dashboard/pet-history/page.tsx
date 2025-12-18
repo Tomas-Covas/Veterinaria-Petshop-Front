@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PetSearchBar from '@/src/app/components/PetSearchBar/PetSearchBar';
 import { Pet, getPetMedicalHistory } from '@/src/app/services/pet.services';
+import { toast } from 'react-toastify';
 
 export default function PetMedicalHistoryPage() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function PetMedicalHistoryPage() {
       });
 
       if (!response.ok) {
-        alert('No se pudo cargar el registro médico de esta consulta');
+        toast.error('No se pudo cargar el registro médico de esta consulta');
         setLoadingRecord(false);
         return;
       }
@@ -107,7 +108,7 @@ export default function PetMedicalHistoryPage() {
       const records = result.data || result.records || result.medicalRecords || result || [];
 
       if (!Array.isArray(records) || records.length === 0) {
-        alert('Esta mascota aún no tiene registros médicos');
+        toast.error('Esta mascota aún no tiene registros médicos');
         setLoadingRecord(false);
         return;
       }
@@ -172,11 +173,11 @@ export default function PetMedicalHistoryPage() {
       if (matchedRecord) {
         setSelectedRecord(matchedRecord);
       } else {
-        alert('No se pudo cargar el registro médico');
+        toast.error('No se pudo cargar el registro médico');
         setLoadingRecord(false);
       }
     } catch (error) {
-      alert('Error al cargar el registro médico');
+      toast.error('Error al cargar el registro médico');
     } finally {
       setLoadingRecord(false);
     }

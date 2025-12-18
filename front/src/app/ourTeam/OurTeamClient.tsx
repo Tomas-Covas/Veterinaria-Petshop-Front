@@ -12,6 +12,7 @@ import {
   deleteVeterinarian,
   ICreateVeterinarian,
 } from "@/src/services/veterinarian.admin.services";
+import { toast } from "react-toastify";
 
 interface OurTeamClientProps {
   initialVets: IVeterinarian[];
@@ -36,7 +37,7 @@ export default function OurTeamClient({ initialVets }: OurTeamClientProps) {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userData?.token) {
-      alert("Debes iniciar sesión como admin");
+      toast.error("Debes iniciar sesión como admin");
       return;
     }
 
@@ -79,11 +80,11 @@ export default function OurTeamClient({ initialVets }: OurTeamClientProps) {
           `⚠️ IMPORTANTE: Guarda esta contraseña, el veterinario debe cambiarla al iniciar sesión.`
         );
       } else {
-        alert("Veterinario creado exitosamente");
+        toast.success("Veterinario creado exitosamente");
       }
     } catch (error: any) {
       console.error('Error completo:', error);
-      alert(error.message || "Error al crear veterinario");
+      toast.error(error.message || "Error al crear veterinario");
     } finally {
       setIsCreating(false);
     }
@@ -92,16 +93,16 @@ export default function OurTeamClient({ initialVets }: OurTeamClientProps) {
   const handleDelete = async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este veterinario?")) return;
     if (!userData?.token) {
-      alert("Debes iniciar sesión como admin");
+      toast.error("Debes iniciar sesión como admin");
       return;
     }
 
     try {
       await deleteVeterinarian(id, userData.token);
       setVets(vets.filter((v) => v.id !== id));
-      alert("Veterinario eliminado exitosamente");
+      toast.success("Veterinario eliminado exitosamente");
     } catch (error: any) {
-      alert(error.message || "Error al eliminar veterinario");
+      toast.error(error.message || "Error al eliminar veterinario");
     }
   };
 

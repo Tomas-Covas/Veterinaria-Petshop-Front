@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { useRole } from '@/src/hooks/useRole';
 import { updateProductPrice } from '@/src/services/product.admin.services';
+import { toast } from 'react-toastify';
 
 interface StoreClientProps {
   initialProducts: IProduct[];
@@ -41,12 +42,12 @@ export default function StoreClient({ initialProducts, categories }: StoreClient
 
   const handlePriceUpdate = async (productId: string | number, newPrice: number) => {
     if (!isAdmin()) {
-      alert('No tienes permisos de administrador');
+      toast.error('No tienes permisos de administrador');
       return;
     }
 
     if (isNaN(newPrice) || newPrice <= 0) {
-      alert('Ingresa un precio válido');
+      toast.error('Ingresa un precio válido');
       return;
     }
 
@@ -57,10 +58,10 @@ export default function StoreClient({ initialProducts, categories }: StoreClient
       setProducts(products.map(p => 
         p.id === productId ? { ...p, price: newPrice } : p
       ));
-      alert('Precio actualizado exitosamente');
+      toast.success('Precio actualizado exitosamente');
     } catch (error: any) {
       console.error('❌ Error al actualizar precio:', error);
-      alert(error.message || 'Error al actualizar el precio');
+      toast.success(error.message || 'Error al actualizar el precio');
     }
   };
 

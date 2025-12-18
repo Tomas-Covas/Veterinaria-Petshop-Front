@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getMessages, sendMessage, markAsRead } from "@/src/services/messages.services";
 import Image from "next/image";
 import avatar from "@/src/assets/avatarHueso.png";
+import { toast } from "react-toastify";
 
 const QUICK_MESSAGES = {
     veterinarian: [
@@ -86,7 +87,7 @@ export default function VetConversationPage() {
             await loadMessages(true);
         } catch (error) {
             console.error('Error al enviar mensaje:', error);
-            alert('Error al enviar el mensaje');
+            toast.error('Error al enviar el mensaje');
         } finally {
             setSending(false);
         }

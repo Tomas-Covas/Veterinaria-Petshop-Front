@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from 'next/link'
 import Image from 'next/image'
 import { IProduct } from "@/src/types";
+import { toast } from "react-toastify";
 
 interface AdminProductCardProps {
     product: IProduct;
@@ -32,7 +33,7 @@ function AdminProductCard({ product, onPriceUpdate }: AdminProductCardProps) {
   const handleSavePrice = async () => {
     const price = parseFloat(newPrice);
     if (isNaN(price) || price <= 0) {
-      alert('Ingresa un precio válido');
+      toast.error('Ingresa un precio válido');
       return;
     }
 
