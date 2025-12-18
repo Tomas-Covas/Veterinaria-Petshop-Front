@@ -450,9 +450,13 @@ export const createCheckout = async (userId: string, token: string) => {
         
         // Preparar las URLs de retorno para MercadoPago
         // Usar ngrok URL si está disponible, sino usar el origin actual
-        const ngrokUrl = process.env.NEXT_PUBLIC_NGROK_URL;/* jgjgj */
-        const baseUrl = ngrokUrl /*TODO: Ngrok || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002'); */
         
+        const baseUrl = process.env.NEXT_PUBLIC_NGROK_URL || (typeof window !== 'undefined' && window.location.origin);
+
+        if (!baseUrl) {
+            throw new Error('No se pudo determinar la URL base para MercadoPago. Configura NEXT_PUBLIC_NGROK_URL en las variables de entorno.');
+        }
+
         console.log('🌐 Base URL para MercadoPago:', baseUrl);
         console.log('🌐 Endpoint:', `${APIURL}/sale-orders/checkout/${userId}`);
         console.log('🔐 Authorization header:', token ? 'Presente (primeros 20 chars): ' + token.substring(0, 20) + '...' : 'AUSENTE');
