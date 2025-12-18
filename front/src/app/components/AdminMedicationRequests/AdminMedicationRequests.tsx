@@ -10,6 +10,7 @@ import {
   getUrgencyColor,
   formatDate,
 } from '@/src/services/controlled-medications.services';
+import { toast } from 'react-toastify';
 
 export default function AdminMedicationRequests() {
   const [requests, setRequests] = useState<MedicationRequest[]>([]);
@@ -73,13 +74,13 @@ export default function AdminMedicationRequests() {
     
     if (!selectedRequest || !selectedRequest.veterinarianId) {
       console.error('❌ Falta veterinarianId');
-      alert('Error: No se encontró el ID del veterinario');
+      toast.error('Error: No se encontró el ID del veterinario');
       return;
     }
 
     if (selectedRequest.requestIndex === undefined) {
       console.error('❌ Falta requestIndex');
-      alert('Error: No se encontró el índice de la solicitud');
+      toast.error('Error: No se encontró el índice de la solicitud');
       return;
     }
 

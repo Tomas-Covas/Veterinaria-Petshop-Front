@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createConversation } from "@/src/services/messages.services";
 import Image from "next/image";
 import avatar from "@/src/assets/avatarHueso.png";
+import { toast } from "react-toastify";
 
 export default function NewVetConversationPage() {
     const { userData } = useAuth();
@@ -115,7 +116,7 @@ export default function NewVetConversationPage() {
             router.push(`/dashboard/messages/${conversation.id}`);
         } catch (error: any) {
             console.error('Error al crear conversación:', error);
-            alert(error.message || 'Error al crear la conversación');
+            toast.error(error.message || 'Error al crear la conversación');
         } finally {
             setCreating(false);
         }
