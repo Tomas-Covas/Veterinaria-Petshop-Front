@@ -152,7 +152,8 @@ export default function PetDetailPage() {
               />
               <label
                 htmlFor="pet-image-upload"
-                className="absolute bottom-0 right-0 bg-orange-500 p-3 rounded-full shadow-lg cursor-pointer hover:bg-orange-600 transition-all hover:scale-110"
+                className="absolute bottom-10 right-0 bg-orange-500 p-3 rounded-full shadow-lg
+                 cursor-pointer hover:bg-orange-600 transition-all hover:scale-110"
                 title="Cambiar imagen"
               >
                 <svg
