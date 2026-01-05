@@ -1,8 +1,8 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## Iniciar proyecto
 
-First, run the development server:
+Primero, iniciar el servidor:
 
 ```bash
 npm run dev
@@ -14,11 +14,11 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3002](http://localhost:3002) para ver el resultado (Utilizar puerto configurado en el enviroment).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Si todo esta configurado correctamente ya puedes navegar en el proyecto!
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Este proyecto utiliza [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para optimizar automaticamente y carga [Geist](https://vercel.com/font), una nueva fuente para Vercel.
 
 ## Learn More
 
